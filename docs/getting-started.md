@@ -76,7 +76,9 @@ sudo udevadm control --reload-rules && sudo udevadm trigger
 
 ### Windows
 
-Windows requires the [WinUSB](https://learn.microsoft.com/en-us/windows-hardware/drivers/usbcon/winusb) driver. Use [Zadig](https://zadig.akeo.ie/) to replace the default driver with WinUSB for your QL printer.
+**Node.js only:** If `brother-ql list` finds no printers, the official Brother driver may be blocking raw USB access. Use [Zadig](https://zadig.akeo.ie/) to replace the printer driver with WinUSB and try again.
+
+WebUSB (browser) does not require Zadig — Chrome and Edge manage USB access through their own driver stack.
 
 ### Editor Lite Mode
 
