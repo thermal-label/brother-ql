@@ -12,4 +12,11 @@ export default [
       '@typescript-eslint/no-import-type-side-effects': 'off',
     },
   },
+  {
+    // CLI source files intentionally use console for user-facing output.
+    files: ['packages/cli/src/**/*.ts'],
+    rules: {
+      'no-console': 'off',
+    },
+  },
 ];
