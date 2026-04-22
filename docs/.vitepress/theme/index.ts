@@ -1,10 +1,13 @@
 import DefaultTheme from 'vitepress/theme';
-import type { App } from 'vue';
+import type { Theme } from 'vitepress';
 import LiveDemo from '../components/LiveDemo.vue';
+import './custom.css';
 
-export default {
-  extends: DefaultTheme,
-  enhanceApp({ app }: { app: App }) {
+const theme: Theme = {
+  ...DefaultTheme,
+  enhanceApp({ app }) {
     app.component('LiveDemo', LiveDemo);
   },
 };
+
+export default theme;

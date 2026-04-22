@@ -1,171 +1,162 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
-import {
-  renderText,
-  renderImage,
-  findMedia,
-  MEDIA,
-  rotateBitmap,
-} from '@thermal-label/brother-ql-web';
+import { renderText, findMedia, MEDIA, rotateBitmap } from '@thermal-label/brother-ql-web';
 
-// Media selector
+const TARGET_H = 48; // target preview canvas height in pixels before CSS scaling
+
 const mediaOptions = Object.values(MEDIA).filter(m => m.type === 'continuous');
 const selectedMediaId = ref<number>(259);
 const media = computed(() => findMedia(selectedMediaId.value) ?? mediaOptions[0]!);
 
-// Tab: single vs two-color
 type Tab = 'single' | 'two-color';
 const activeTab = ref<Tab>('single');
 
-// Single-color inputs
 const singleText = ref('Hello QL');
 const singleInvert = ref(false);
-
-// Two-color inputs
 const blackText = ref('Black layer');
 const redText = ref('Red layer');
 
-// Canvas previews
 const singleCanvas = ref<HTMLCanvasElement | null>(null);
 const blackCanvas = ref<HTMLCanvasElement | null>(null);
 const redCanvas = ref<HTMLCanvasElement | null>(null);
 const compositeCanvas = ref<HTMLCanvasElement | null>(null);
 
-// WebUSB
 const printer = ref<import('@thermal-label/brother-ql-web').WebBrotherQLPrinter | null>(null);
-const isConnected = ref(false);
+const printerName = ref('');
+const isConnecting = ref(false);
+const isPrinting = ref(false);
 const statusMessage = ref('');
+const statusType = ref<'idle' | 'ok' | 'error'>('idle');
 
 const isWebUSBAvailable = ref(false);
 onMounted(() => {
   isWebUSBAvailable.value = typeof navigator !== 'undefined' && 'usb' in navigator;
 });
 
-function renderBitmapToCanvas(
+const stateClass = computed(() => {
+  if (printer.value) return 'dot-connected';
+  if (isConnecting.value) return 'dot-connecting';
+  return 'dot-idle';
+});
+const stateLabel = computed(() => {
+  if (isConnecting.value) return 'Connecting…';
+  if (printer.value) return printerName.value || 'Connected';
+  return 'No printer connected';
+});
+const statusClass = computed(() => ({
+  'status-ok': statusType.value === 'ok',
+  'status-error': statusType.value === 'error',
+}));
+
+function drawBitmap(
   canvas: HTMLCanvasElement,
   bitmap: ReturnType<typeof renderText>,
+  fg = '#111',
+  bg = '#fff',
+  scale?: number,
 ): void {
-  const scale = 2;
   const { widthPx, heightPx, data } = bitmap;
-  canvas.width = widthPx * scale;
-  canvas.height = heightPx * scale;
+  const s = scale ?? Math.max(1, Math.round(TARGET_H / heightPx));
+  canvas.width = widthPx * s;
+  canvas.height = heightPx * s;
   const ctx = canvas.getContext('2d')!;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const imageData = ctx.createImageData(widthPx * scale, heightPx * scale);
+  ctx.imageSmoothingEnabled = false;
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = fg;
   for (let y = 0; y < heightPx; y++) {
     for (let x = 0; x < widthPx; x++) {
-      const byteIdx = Math.floor((y * widthPx + x) / 8);
-      const bitIdx = 7 - ((y * widthPx + x) % 8);
-      const bit = (data[byteIdx]! >> bitIdx) & 1;
-      const color = bit === 1 ? 0 : 255; // 1bpp: 1 = black, 0 = white
-      for (let sy = 0; sy < scale; sy++) {
-        for (let sx = 0; sx < scale; sx++) {
-          const idx = ((y * scale + sy) * widthPx * scale + (x * scale + sx)) * 4;
-          imageData.data[idx] = color;
-          imageData.data[idx + 1] = color;
-          imageData.data[idx + 2] = color;
-          imageData.data[idx + 3] = 255;
-        }
-      }
+      const i = y * widthPx + x;
+      const bit = (data[Math.floor(i / 8)]! >> (7 - (i % 8))) & 1;
+      if (bit) ctx.fillRect(x * s, y * s, s, s);
     }
   }
-  ctx.putImageData(imageData, 0, 0);
 }
 
 function updateSinglePreview(): void {
   if (!singleCanvas.value) return;
-  const bitmap = rotateBitmap(
-    renderText(singleText.value, { invert: singleInvert.value, scaleX: 1, scaleY: 1 }),
-    90,
-  );
-  renderBitmapToCanvas(singleCanvas.value, bitmap);
+  const bitmap = renderText(singleText.value || ' ', {
+    invert: singleInvert.value,
+    scaleX: 1,
+    scaleY: 1,
+  });
+  drawBitmap(singleCanvas.value, bitmap, singleInvert.value ? '#fff' : '#111', singleInvert.value ? '#111' : '#fff');
 }
 
 function updateTwoColorPreview(): void {
   if (!blackCanvas.value || !redCanvas.value || !compositeCanvas.value) return;
-  const bk = rotateBitmap(renderText(blackText.value, { scaleX: 1, scaleY: 1 }), 90);
-  const rd = rotateBitmap(renderText(redText.value, { scaleX: 1, scaleY: 1 }), 90);
-  renderBitmapToCanvas(blackCanvas.value, bk);
+  const bk = renderText(blackText.value || ' ', { scaleX: 1, scaleY: 1 });
+  const rd = renderText(redText.value || ' ', { scaleX: 1, scaleY: 1 });
+  const maxH = Math.max(bk.heightPx, rd.heightPx);
+  const scale = Math.max(1, Math.round(TARGET_H / maxH));
+  drawBitmap(blackCanvas.value, bk, '#111', '#fff', scale);
+  drawBitmap(redCanvas.value, rd, '#cc0000', '#fff', scale);
 
-  // Red layer: draw in red
-  const scale = 2;
-  redCanvas.value.width = rd.widthPx * scale;
-  redCanvas.value.height = rd.heightPx * scale;
-  const rctx = redCanvas.value.getContext('2d')!;
-  rctx.clearRect(0, 0, redCanvas.value.width, redCanvas.value.height);
-  const rimgData = rctx.createImageData(rd.widthPx * scale, rd.heightPx * scale);
-  for (let y = 0; y < rd.heightPx; y++) {
-    for (let x = 0; x < rd.widthPx; x++) {
-      const byteIdx = Math.floor((y * rd.widthPx + x) / 8);
-      const bitIdx = 7 - ((y * rd.widthPx + x) % 8);
-      const bit = (rd.data[byteIdx]! >> bitIdx) & 1;
-      for (let sy = 0; sy < scale; sy++) {
-        for (let sx = 0; sx < scale; sx++) {
-          const idx = ((y * scale + sy) * rd.widthPx * scale + (x * scale + sx)) * 4;
-          rimgData.data[idx] = bit === 1 ? 200 : 255;
-          rimgData.data[idx + 1] = bit === 1 ? 0 : 255;
-          rimgData.data[idx + 2] = bit === 1 ? 0 : 255;
-          rimgData.data[idx + 3] = 255;
-        }
-      }
-    }
-  }
-  rctx.putImageData(rimgData, 0, 0);
-
-  // Composite: overlay both layers
+  const cw = Math.max(bk.widthPx, rd.widthPx) * scale;
+  const ch = maxH * scale;
   const cctx = compositeCanvas.value.getContext('2d')!;
-  compositeCanvas.value.width = Math.max(bk.widthPx, rd.widthPx) * scale;
-  compositeCanvas.value.height = Math.max(bk.heightPx, rd.heightPx) * scale;
-  cctx.fillStyle = '#ffffff';
-  cctx.fillRect(0, 0, compositeCanvas.value.width, compositeCanvas.value.height);
+  compositeCanvas.value.width = cw;
+  compositeCanvas.value.height = ch;
+  cctx.fillStyle = '#fff';
+  cctx.fillRect(0, 0, cw, ch);
   cctx.drawImage(blackCanvas.value, 0, 0);
   cctx.globalCompositeOperation = 'multiply';
   cctx.drawImage(redCanvas.value, 0, 0);
   cctx.globalCompositeOperation = 'source-over';
 }
 
-watch(
-  [singleText, singleInvert, selectedMediaId],
-  () => {
-    updateSinglePreview();
-  },
-  { immediate: false },
-);
-watch(
-  [blackText, redText, selectedMediaId],
-  () => {
-    updateTwoColorPreview();
-  },
-  { immediate: false },
-);
+watch([singleText, singleInvert, selectedMediaId], updateSinglePreview);
+watch([blackText, redText, selectedMediaId], updateTwoColorPreview);
 watch(activeTab, tab => {
   if (tab === 'single') setTimeout(updateSinglePreview, 0);
   else setTimeout(updateTwoColorPreview, 0);
 });
-onMounted(() => {
-  updateSinglePreview();
-});
+onMounted(updateSinglePreview);
 
 async function connect(): Promise<void> {
+  isConnecting.value = true;
+  statusMessage.value = '';
+  statusType.value = 'idle';
   try {
-    statusMessage.value = 'Connecting…';
     const { requestPrinter } = await import('@thermal-label/brother-ql-web');
     printer.value = await requestPrinter();
-    isConnected.value = true;
-    statusMessage.value = `Connected: ${printer.value.descriptor.name}`;
+    printerName.value = printer.value.descriptor.name;
+    statusType.value = 'ok';
+    statusMessage.value = 'Ready to print.';
   } catch (err) {
-    statusMessage.value = `Connection failed: ${err instanceof Error ? err.message : String(err)}`;
+    statusType.value = 'error';
+    statusMessage.value = err instanceof Error ? err.message : 'Connection failed.';
+  } finally {
+    isConnecting.value = false;
   }
+}
+
+async function disconnect(): Promise<void> {
+  if (!printer.value) return;
+  try {
+    await printer.value.disconnect();
+  } catch {
+    // ignore
+  }
+  printer.value = null;
+  printerName.value = '';
+  statusMessage.value = '';
+  statusType.value = 'idle';
 }
 
 async function printLabel(): Promise<void> {
   if (!printer.value) return;
+  isPrinting.value = true;
+  statusMessage.value = 'Sending to printer…';
+  statusType.value = 'idle';
   try {
-    statusMessage.value = 'Printing…';
     if (activeTab.value === 'single') {
-      await printer.value.printText(singleText.value, media.value, { invert: singleInvert.value });
+      await printer.value.printText(singleText.value, media.value, {
+        invert: singleInvert.value,
+      });
     } else {
       if (!printer.value.descriptor.twoColor) {
+        statusType.value = 'error';
         statusMessage.value = 'Two-color printing requires a QL-800, QL-810W, or QL-820NWB.';
         return;
       }
@@ -173,10 +164,8 @@ async function printLabel(): Promise<void> {
         const bmp = rotateBitmap(renderText(text, { scaleX: 1, scaleY: 1 }), 90);
         const arr = new Uint8ClampedArray(bmp.widthPx * bmp.heightPx * 4);
         for (let i = 0; i < bmp.widthPx * bmp.heightPx; i++) {
-          const byteIdx = Math.floor(i / 8);
-          const bitIdx = 7 - (i % 8);
-          const bit = (bmp.data[byteIdx]! >> bitIdx) & 1;
-          const v = bit === 1 ? 0 : 255;
+          const bit = (bmp.data[Math.floor(i / 8)]! >> (7 - (i % 8))) & 1;
+          const v = bit ? 0 : 255;
           arr[i * 4] = v;
           arr[i * 4 + 1] = v;
           arr[i * 4 + 2] = v;
@@ -190,167 +179,421 @@ async function printLabel(): Promise<void> {
         media.value,
       );
     }
-    statusMessage.value = 'Printed!';
+    statusType.value = 'ok';
+    statusMessage.value = 'Label sent ✓';
   } catch (err) {
-    statusMessage.value = `Print error: ${err instanceof Error ? err.message : String(err)}`;
+    statusType.value = 'error';
+    statusMessage.value = err instanceof Error ? err.message : 'Print failed.';
+  } finally {
+    isPrinting.value = false;
   }
 }
 </script>
 
 <template>
-  <div class="live-demo">
-    <div class="demo-controls">
-      <label>
-        Media:
-        <select v-model="selectedMediaId">
-          <option v-for="m in mediaOptions" :key="m.id" :value="m.id">
-            {{ m.name }} ({{ m.widthMm }}mm)
-          </option>
-        </select>
-      </label>
+  <section class="live-demo">
+    <!-- Preview -->
+    <div class="preview-wrap">
+      <div v-if="activeTab === 'single'" class="tape-label" :class="{ inverted: singleInvert }">
+        <canvas ref="singleCanvas" class="preview-canvas" />
+      </div>
+      <template v-else>
+        <div class="tape-label">
+          <canvas ref="blackCanvas" class="preview-canvas" />
+        </div>
+        <div class="tape-label tape-label--red">
+          <canvas ref="redCanvas" class="preview-canvas" />
+        </div>
+        <div class="tape-label">
+          <canvas ref="compositeCanvas" class="preview-canvas" />
+        </div>
+      </template>
+      <p class="preview-hint">Live preview · updates as you type</p>
+    </div>
 
-      <div class="tabs">
-        <button :class="{ active: activeTab === 'single' }" @click="activeTab = 'single'">
-          Single color
-        </button>
-        <button :class="{ active: activeTab === 'two-color' }" @click="activeTab = 'two-color'">
-          Two-color
-        </button>
+    <!-- Controls -->
+    <div class="controls">
+      <div class="control-row">
+        <label class="control">
+          <span class="control-label">Media</span>
+          <select v-model="selectedMediaId" class="select-input">
+            <option v-for="m in mediaOptions" :key="m.id" :value="m.id">
+              {{ m.name }} ({{ m.widthMm }}mm)
+            </option>
+          </select>
+        </label>
+
+        <div class="demo-tabs">
+          <button
+            :class="['demo-tab', { active: activeTab === 'single' }]"
+            @click="activeTab = 'single'"
+          >
+            Single color
+          </button>
+          <button
+            :class="['demo-tab', { active: activeTab === 'two-color' }]"
+            @click="activeTab = 'two-color'"
+          >
+            Two-color
+          </button>
+        </div>
+      </div>
+
+      <div v-if="activeTab === 'single'" class="control-row">
+        <label class="control control-text">
+          <span class="control-label">Label text</span>
+          <input
+            v-model="singleText"
+            type="text"
+            class="text-input"
+            placeholder="Type your label…"
+            @input="updateSinglePreview"
+          />
+        </label>
+        <label class="control control-checkbox">
+          <input v-model="singleInvert" type="checkbox" @change="updateSinglePreview" />
+          <span class="control-label">Invert</span>
+        </label>
+      </div>
+      <div v-else class="control-row">
+        <label class="control control-text">
+          <span class="control-label">Black layer</span>
+          <input
+            v-model="blackText"
+            type="text"
+            class="text-input"
+            placeholder="Black layer text…"
+            @input="updateTwoColorPreview"
+          />
+        </label>
+        <label class="control control-text">
+          <span class="control-label">Red layer</span>
+          <input
+            v-model="redText"
+            type="text"
+            class="text-input text-input--red"
+            placeholder="Red layer text…"
+            @input="updateTwoColorPreview"
+          />
+        </label>
       </div>
     </div>
 
-    <div v-if="activeTab === 'single'" class="tab-content">
-      <label>
-        Text:
-        <input v-model="singleText" type="text" @input="updateSinglePreview" />
-      </label>
-      <label>
-        <input v-model="singleInvert" type="checkbox" @change="updateSinglePreview" />
-        Invert (white on black)
-      </label>
-      <div class="preview-label">Preview:</div>
-      <canvas ref="singleCanvas" class="preview-canvas" />
-    </div>
+    <!-- Actions -->
+    <div class="actions">
+      <div class="printer-state">
+        <span class="state-dot" :class="stateClass" />
+        <span class="state-label">{{ stateLabel }}</span>
+        <button v-if="printer" class="btn-disconnect" @click="disconnect">Disconnect</button>
+      </div>
 
-    <div v-else class="tab-content">
-      <label>
-        Black layer text:
-        <input v-model="blackText" type="text" @input="updateTwoColorPreview" />
-      </label>
-      <label>
-        Red layer text:
-        <input v-model="redText" type="text" @input="updateTwoColorPreview" />
-      </label>
-      <div class="preview-label">Black layer:</div>
-      <canvas ref="blackCanvas" class="preview-canvas" />
-      <div class="preview-label">Red layer:</div>
-      <canvas ref="redCanvas" class="preview-canvas" />
-      <div class="preview-label">Composite preview:</div>
-      <canvas ref="compositeCanvas" class="preview-canvas" />
-    </div>
+      <div class="action-buttons">
+        <template v-if="isWebUSBAvailable">
+          <button
+            v-if="!printer"
+            class="btn btn-connect"
+            :disabled="isConnecting"
+            @click="connect"
+          >
+            {{ isConnecting ? 'Waiting for browser…' : '🔌 Connect printer' }}
+          </button>
+          <button
+            class="btn btn-print"
+            :disabled="!printer || isPrinting"
+            @click="printLabel"
+          >
+            {{ isPrinting ? 'Printing…' : '▶ Print label' }}
+          </button>
+        </template>
+        <template v-else>
+          <p class="webusb-note">
+            Printing requires <strong>Chrome</strong> or <strong>Edge</strong> with WebUSB. The
+            preview works in any browser.
+          </p>
+        </template>
+      </div>
 
-    <div class="demo-actions">
-      <template v-if="isWebUSBAvailable">
-        <button v-if="!isConnected" class="btn-primary" @click="connect">Connect printer</button>
-        <button v-else class="btn-primary" @click="printLabel">Print label</button>
-        <p v-if="statusMessage" class="status">{{ statusMessage }}</p>
-      </template>
-      <template v-else>
-        <p class="browser-note">
-          Live printing requires Chrome or Edge with WebUSB support.<br />
-          Preview works in all browsers.
-        </p>
-      </template>
-      <p class="editor-lite-note">
+      <p v-if="statusMessage" class="status-msg" :class="statusClass">{{ statusMessage }}</p>
+      <p v-if="isWebUSBAvailable && !printer" class="editor-lite-note">
         If your printer is not detected, check that
         <a href="/brother-ql/hardware#editor-lite-mode">Editor Lite mode is disabled</a>.
       </p>
     </div>
-  </div>
+  </section>
 </template>
 
 <style scoped>
 .live-demo {
   border: 1px solid var(--vp-c-divider);
-  border-radius: 8px;
-  padding: 1.5rem;
-  margin: 1rem 0;
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 1.5rem 0;
 }
-.demo-controls {
+
+/* ── Preview ── */
+.preview-wrap {
+  background: var(--vp-c-bg-soft);
+  border-bottom: 1px solid var(--vp-c-divider);
+  padding: 1.25rem 1.25rem 0.5rem;
   display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  align-items: center;
-  margin-bottom: 1rem;
+  flex-direction: column;
+  gap: 0.6rem;
 }
-.tabs {
-  display: flex;
-  gap: 0.5rem;
-}
-.tabs button {
-  padding: 0.25rem 1rem;
-  border: 1px solid var(--vp-c-divider);
+
+.tape-label {
+  background: #fff;
+  border: 1px solid #d0ccc0;
   border-radius: 4px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+  display: inline-block;
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 6px 10px;
+}
+
+.tape-label.inverted {
+  background: #111;
+  border-color: #444;
+}
+
+.tape-label--red {
+  border-color: #fca5a5;
+}
+
+.preview-canvas {
+  display: block;
+  image-rendering: pixelated;
+}
+
+.preview-hint {
+  color: var(--vp-c-text-3);
+  font-size: 0.78rem;
+  margin: 0.2rem 0 0;
+  text-align: center;
+}
+
+/* ── Controls ── */
+.controls {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--vp-c-divider);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.control-row {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.control {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.control-text {
+  flex: 1;
+  min-width: 160px;
+}
+
+.control-checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.4rem;
+  padding-bottom: 0.15rem;
+}
+
+.control-label {
+  color: var(--vp-c-text-2);
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.text-input,
+.select-input {
+  background: var(--vp-c-bg);
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 6px;
+  color: var(--vp-c-text-1);
+  font-size: 0.95rem;
+  padding: 0.45rem 0.6rem;
+  transition: border-color 0.15s;
+}
+
+.text-input {
+  width: 100%;
+}
+
+.text-input--red:focus {
+  border-color: #e53e3e;
+}
+
+.text-input:focus,
+.select-input:focus {
+  border-color: var(--vp-c-brand-1);
+  outline: none;
+}
+
+.demo-tabs {
+  display: flex;
+  gap: 0.4rem;
+  padding-bottom: 0.15rem;
+}
+
+.demo-tab {
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 6px;
   background: transparent;
   cursor: pointer;
-  color: var(--vp-c-text-1);
+  color: var(--vp-c-text-2);
+  font-size: 0.88rem;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
 }
-.tabs button.active {
+
+.demo-tab.active {
   background: var(--vp-c-brand-1);
-  color: #fff;
   border-color: var(--vp-c-brand-1);
+  color: #fff;
 }
-.tab-content {
+
+/* ── Actions ── */
+.actions {
+  padding: 1rem 1.25rem;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
+  gap: 0.75rem;
 }
-.tab-content label {
+
+.printer-state {
   display: flex;
-  gap: 0.5rem;
   align-items: center;
+  gap: 0.5rem;
+  min-height: 1.4rem;
 }
-.tab-content input[type='text'] {
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 4px;
-  padding: 0.25rem 0.5rem;
-  background: var(--vp-c-bg);
-  color: var(--vp-c-text-1);
+
+.state-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.dot-idle {
+  background: var(--vp-c-text-3);
+}
+
+.dot-connecting {
+  background: #f0a500;
+  animation: pulse 1s infinite;
+}
+
+.dot-connected {
+  background: #4caf50;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.state-label {
+  font-size: 0.88rem;
+  color: var(--vp-c-text-2);
   flex: 1;
 }
-.preview-label {
-  font-size: 0.85rem;
-  color: var(--vp-c-text-2);
-  margin-top: 0.5rem;
-}
-.preview-canvas {
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 4px;
-  max-width: 100%;
-  background: #fff;
-}
-.demo-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-.btn-primary {
-  padding: 0.5rem 1.5rem;
-  background: var(--vp-c-brand-1);
-  color: #fff;
+
+.btn-disconnect {
+  background: none;
   border: none;
-  border-radius: 4px;
+  color: var(--vp-c-text-3);
   cursor: pointer;
-  align-self: flex-start;
+  font-size: 0.78rem;
+  padding: 0;
+  text-decoration: underline;
 }
-.status {
-  font-size: 0.9rem;
-  color: var(--vp-c-text-2);
+
+.btn-disconnect:hover {
+  color: var(--vp-c-text-1);
 }
-.browser-note,
-.editor-lite-note {
+
+.action-buttons {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.btn {
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.55rem 1.2rem;
+  transition:
+    opacity 0.15s,
+    transform 0.1s;
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.btn:not(:disabled):active {
+  transform: scale(0.97);
+}
+
+.btn-connect {
+  background: var(--vp-c-brand-1);
+  color: var(--vp-c-white);
+}
+
+.btn-connect:not(:disabled):hover {
+  opacity: 0.88;
+}
+
+.btn-print {
+  background: #4caf50;
+  color: #fff;
+}
+
+.btn-print:not(:disabled):hover {
+  opacity: 0.88;
+}
+
+.status-msg {
   font-size: 0.85rem;
-  color: var(--vp-c-text-2);
+  margin: 0;
+  padding: 0.4rem 0.7rem;
+  border-radius: 6px;
+  background: var(--vp-c-bg-soft);
+}
+
+.status-ok {
+  color: #4caf50;
+}
+
+.status-error {
+  color: var(--vp-c-danger-1, #f44336);
+}
+
+.webusb-note,
+.editor-lite-note {
+  color: var(--vp-c-text-3);
+  font-size: 0.8rem;
+  margin: 0;
 }
 </style>

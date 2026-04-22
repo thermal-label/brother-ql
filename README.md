@@ -6,7 +6,7 @@
 [![npm cli](https://img.shields.io/npm/v/@thermal-label/brother-ql-cli)](https://npmjs.com/package/@thermal-label/brother-ql-cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-# brother-ql
+# @thermal-label/brother-ql
 
 TypeScript-first Brother QL label printer driver suite for Node.js, browser WebUSB, and CLI workflows.
 

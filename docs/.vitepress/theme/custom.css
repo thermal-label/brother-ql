@@ -1,0 +1,158 @@
+/* ── Landing page ── */
+
+.home-extra {
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+
+/* Reference link tiles */
+.ref-links {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  margin-bottom: 2.5rem;
+}
+
+.ref-link {
+  align-items: center;
+  background: var(--vp-c-bg-soft);
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 10px;
+  color: var(--vp-c-text-1);
+  display: flex;
+  gap: 0.85rem;
+  padding: 0.85rem 1rem;
+  text-decoration: none;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+
+.ref-link:hover {
+  border-color: var(--vp-c-brand-1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+
+.ref-icon {
+  font-size: 1.4rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.ref-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 0.1rem;
+}
+
+.ref-body strong {
+  font-size: 0.95rem;
+}
+
+.ref-body span {
+  color: var(--vp-c-text-2);
+  font-size: 0.82rem;
+}
+
+.ref-arrow {
+  color: var(--vp-c-text-3);
+  font-size: 1.1rem;
+}
+
+/* Feature card accent borders */
+.VPFeatures .VPFeature {
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.VPFeatures .VPFeature:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.VPFeatures .VPFeature:nth-child(1) {
+  border-top: 3px solid #68a063; /* Node.js green */
+}
+
+.VPFeatures .VPFeature:nth-child(2) {
+  border-top: 3px solid #f0a500; /* WebUSB amber */
+}
+
+.VPFeatures .VPFeature:nth-child(3) {
+  border-top: 3px solid #7c8cf8; /* CLI indigo */
+}
+
+.VPFeatures .VPFeature:nth-child(4) {
+  border-top: 3px solid #e53e3e; /* Two-color red */
+}
+
+.VPFeatures .VPFeature:nth-child(5) {
+  border-top: 3px solid #00b4d8; /* Protocol teal */
+}
+
+.VPFeatures .VPFeature:nth-child(6) {
+  border-top: 3px solid #8b5cf6; /* Demo purple */
+}
+
+/* Hero — allow long scoped package name to wrap */
+.VPHero .name {
+  word-break: break-word;
+}
+
+.VPHero .tagline {
+  font-size: 1.05rem;
+  letter-spacing: 0.01em;
+}
+
+/* Ecosystem strip */
+.ecosystem {
+  border-top: 1px solid var(--vp-c-divider);
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+}
+
+.ecosystem-label {
+  color: var(--vp-c-text-3);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  margin: 0 0 0.75rem;
+  text-transform: uppercase;
+}
+
+.ecosystem-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.ecosystem-link {
+  align-items: baseline;
+  background: var(--vp-c-bg-soft);
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  color: var(--vp-c-text-1);
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem 0.85rem;
+  text-decoration: none;
+  transition: border-color 0.15s;
+}
+
+.ecosystem-link:hover {
+  border-color: var(--vp-c-brand-1);
+}
+
+.eco-name {
+  font-family: var(--vp-font-family-mono);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.eco-desc {
+  color: var(--vp-c-text-3);
+  font-size: 0.8rem;
+}

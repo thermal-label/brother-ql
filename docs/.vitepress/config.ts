@@ -2,7 +2,7 @@ import { defineConfig } from 'vitepress';
 import { fileURLToPath } from 'node:url';
 
 export default defineConfig({
-  title: 'brother-ql',
+  title: '@thermal-label/brother-ql',
   description: 'TypeScript driver for Brother QL label printers — USB, TCP, WebUSB',
   base: '/brother-ql/',
   ignoreDeadLinks: [
