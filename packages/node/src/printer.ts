@@ -14,7 +14,7 @@ import {
   type TextPrintOptions,
   type ImagePrintOptions,
 } from '@thermal-label/brother-ql-core';
-import { rotateBitmap } from '@mbtech-nl/bitmap';
+import { rotateBitmap, flipHorizontal } from '@mbtech-nl/bitmap';
 import { UsbTransport, TcpTransport, type Transport } from './transport.js';
 import { parseStatus, STATUS_REQUEST } from './status.js';
 import { listPrinters } from './discovery.js';
@@ -61,8 +61,7 @@ export class BrotherQLPrinter {
       scaleX: effectiveScaleX,
       scaleY: effectiveScaleY,
     });
-    // Rotate to print orientation: label is fed along the height axis
-    const bitmap = rotateBitmap(rawBitmap, 90);
+    const bitmap = flipHorizontal(rotateBitmap(rawBitmap, 270));
     const page: PageData = {
       bitmap,
       media,
@@ -91,7 +90,7 @@ export class BrotherQLPrinter {
       ...(invert !== undefined ? { invert } : {}),
       ...(rotate !== undefined ? { rotate } : {}),
     });
-    const bitmap = rotateBitmap(rawBitmap, 90);
+    const bitmap = flipHorizontal(rotateBitmap(rawBitmap, 270));
     const page: PageData = {
       bitmap,
       media,

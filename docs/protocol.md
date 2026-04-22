@@ -179,15 +179,15 @@ disable), which is a different command.
 
 13 bytes total. The 10 parameter bytes:
 
-| Offset | Field             | Notes                                                           |
-| -----: | ----------------- | --------------------------------------------------------------- |
+| Offset | Field             | Notes                                                          |
+| -----: | ----------------- | -------------------------------------------------------------- |
 |      0 | Valid flags       | Bit 1 = width valid, bit 2 = type valid, bit 6 = recovery mode |
 |      1 | Media type        | `0x0A` continuous, `0x0B` die-cut                              |
 |      2 | Media width (mm)  | e.g. `0x3E` = 62                                               |
 |      3 | Media length (mm) | `0x00` for continuous                                          |
-|    4–5 | Row count         | Total raster rows, little-endian 16-bit                         |
-|      6 | Page index        | 0-indexed                                                       |
-|    7–9 | Reserved          | `0x00`                                                          |
+|    4–5 | Row count         | Total raster rows, little-endian 16-bit                        |
+|      6 | Page index        | 0-indexed                                                      |
+|    7–9 | Reserved          | `0x00`                                                         |
 
 Row count is the total number of raster rows in the page (i.e. the label height
 in pixels at the print resolution). For QL printers the print resolution is
@@ -213,10 +213,10 @@ final cut happens at all; this command controls cuts between pages.
 
 One flag byte:
 
-| Bit | Function                                |
-| --: | --------------------------------------- |
-|   0 | Two-color mode (required for DK-22251)  |
-|   3 | Cut at end of job                       |
+| Bit | Function                                 |
+| --: | ---------------------------------------- |
+|   0 | Two-color mode (required for DK-22251)   |
+|   3 | Cut at end of job                        |
 |   4 | High resolution (600 DPI feed direction) |
 
 **Bit 0 is critical for two-color tape.** The QL-820NWB series firmware checks
@@ -270,10 +270,10 @@ the printer handles the margins internally.
 
 ### (h) Print command
 
-| Byte   | Meaning                    |
-| :----: | -------------------------- |
+|  Byte  | Meaning                       |
+| :----: | ----------------------------- |
 | `0x0C` | Print page, more pages follow |
-| `0x1A` | Print page, end of job     |
+| `0x1A` | Print page, end of job        |
 
 The last page of every job **must** end with `0x1A`. Ending with `0x0C` causes
 the final page to sit in the printer buffer unprinted until the next job starts.
@@ -290,10 +290,10 @@ This enables TIFF-style RLE compression for the remainder of the page. In
 compressed mode a fully blank raster row can be sent as the single byte `0x5A`
 instead of the full 92-byte row.
 
-| Mode        | Empty row encoding | Behavior                                            |
-| ----------- | :----------------: | --------------------------------------------------- |
+| Mode         |   Empty row encoding   | Behavior                                        |
+| ------------ | :--------------------: | ----------------------------------------------- |
 | Uncompressed | 92 bytes (`67 00 00…`) | Printer prints rows as they arrive (concurrent) |
-| Compressed  | 1 byte (`5A`)      | Printer buffers the full page before printing       |
+| Compressed   |     1 byte (`5A`)      | Printer buffers the full page before printing   |
 
 The Node.js driver uses **uncompressed** mode for USB (concurrent printing is
 safe and latency is low) and **compressed** mode for TCP (buffered mode avoids
@@ -334,7 +334,7 @@ may introduce reordering or fragmentation that makes concurrent printing
 unreliable.
 
 ```typescript
-const printer = await openPrinterTcp('192.168.1.100');  // default port 9100
+const printer = await openPrinterTcp('192.168.1.100'); // default port 9100
 ```
 
 ## WebUSB (browser)

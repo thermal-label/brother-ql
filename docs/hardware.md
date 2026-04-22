@@ -62,16 +62,16 @@ The print head is fixed width. The label stock determines how many pins are acti
 
 ### Continuous length tape
 
-| Label ID | Width | Print area (dots) | Left margin | Right margin | Notes                     |
-| -------- | ----- | ----------------- | ----------- | ------------ | ------------------------- |
-| 257      | 12mm  | 106               | 585         | 29           |                           |
-| 258      | 29mm  | 306               | 408         | 6            |                           |
-| 264      | 38mm  | 413               | 295         | 12           |                           |
-| 262      | 50mm  | 554               | 154         | 12           |                           |
-| 261      | 54mm  | 590               | 130         | 0            |                           |
-| 259      | 62mm  | 696               | 12          | 12           | DK-22205 (black on white) |
+| Label ID | Width | Print area (dots) | Left margin | Right margin | Notes                                                          |
+| -------- | ----- | ----------------- | ----------- | ------------ | -------------------------------------------------------------- |
+| 257      | 12mm  | 106               | 585         | 29           |                                                                |
+| 258      | 29mm  | 306               | 408         | 6            |                                                                |
+| 264      | 38mm  | 413               | 295         | 12           |                                                                |
+| 262      | 50mm  | 554               | 154         | 12           |                                                                |
+| 261      | 54mm  | 590               | 130         | 0            |                                                                |
+| 259      | 62mm  | 696               | 12          | 12           | DK-22205 (black on white)                                      |
 | 251      | 62mm  | 696               | 12          | 12           | DK-22251 (black+red) — two-color tape, requires two-color mode |
-| 260      | 102mm | 1164              | 76          | 56           |                           |
+| 260      | 102mm | 1164              | 76          | 56           |                                                                |
 
 ::: tip DK-22251 (media ID 251)
 The 62mm black+red two-color tape is marked **"251"** on the roll. It requires
