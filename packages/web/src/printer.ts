@@ -51,7 +51,10 @@ export class WebBrotherQLPrinter {
   async printText(text: string, media: MediaDescriptor, options?: TextPrintOptions): Promise<void> {
     const { invert, scaleX, scaleY, ...pageOptions } = options ?? {};
     const base = renderText(text, { scaleX: 1, scaleY: 1 });
-    const autoScale = Math.max(1, Math.floor(media.printAreaDots / Math.max(base.widthPx, base.heightPx)));
+    const autoScale = Math.max(
+      1,
+      Math.floor(media.printAreaDots / Math.max(base.widthPx, base.heightPx)),
+    );
     const rawBitmap = renderText(text, {
       ...(invert !== undefined ? { invert } : {}),
       scaleX: scaleX ?? autoScale,

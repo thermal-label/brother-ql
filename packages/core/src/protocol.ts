@@ -53,7 +53,11 @@ export function buildVariousMode(autoCut: boolean): Uint8Array {
   return new Uint8Array([0x1b, 0x69, 0x4d, autoCut ? 0x40 : 0x00]);
 }
 
-export function buildExpandedMode(cutAtEnd: boolean, highRes: boolean, twoColor = false): Uint8Array {
+export function buildExpandedMode(
+  cutAtEnd: boolean,
+  highRes: boolean,
+  twoColor = false,
+): Uint8Array {
   let flags = 0x00;
   if (twoColor) flags |= 0x01;
   if (cutAtEnd) flags |= 0x08;
@@ -103,9 +107,14 @@ export function buildPrintCommand(isLastPage: boolean): Uint8Array {
 }
 
 // Copy srcWidthPx bits from src (MSB-first packed) into dst at bit offset dstOffsetBits.
-function placeBits(src: Uint8Array, srcWidthPx: number, dst: Uint8Array, dstOffsetBits: number): void {
+function placeBits(
+  src: Uint8Array,
+  srcWidthPx: number,
+  dst: Uint8Array,
+  dstOffsetBits: number,
+): void {
   for (let px = 0; px < srcWidthPx; px++) {
-    const srcBit = (src[px >> 3] ?? 0) >> (7 - (px & 7)) & 1;
+    const srcBit = ((src[px >> 3] ?? 0) >> (7 - (px & 7))) & 1;
     if (srcBit) {
       const dstPx = dstOffsetBits + px;
       const byteIdx = dstPx >> 3;
@@ -154,8 +163,10 @@ export function encodeJob(pages: PageData[], options: JobOptions = {}): Uint8Arr
 
     // twoColorTape media (e.g. DK-22251) requires two-color mode even for black-only jobs.
     // Auto-create an empty red plane when the tape demands it but caller didn't supply one.
-    const twoColor = page.redBitmap !== undefined || (media.twoColorTape === true);
-    const redBitmap = page.redBitmap ?? (media.twoColorTape ? createBitmap(bitmap.widthPx, bitmap.heightPx) : undefined);
+    const twoColor = page.redBitmap !== undefined || media.twoColorTape === true;
+    const redBitmap =
+      page.redBitmap ??
+      (media.twoColorTape ? createBitmap(bitmap.widthPx, bitmap.heightPx) : undefined);
 
     if (twoColor && redBitmap !== undefined) {
       if (bitmap.widthPx !== redBitmap.widthPx || bitmap.heightPx !== redBitmap.heightPx) {

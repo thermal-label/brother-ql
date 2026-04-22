@@ -50,7 +50,10 @@ export class BrotherQLPrinter {
     // Scale so the label is roughly square: largest integer scale where neither the tape
     // width (base.heightPx axis) nor the label length (base.widthPx axis) exceeds printAreaDots.
     const base = renderText(text, { scaleX: 1, scaleY: 1 });
-    const autoScale = Math.max(1, Math.floor(media.printAreaDots / Math.max(base.widthPx, base.heightPx)));
+    const autoScale = Math.max(
+      1,
+      Math.floor(media.printAreaDots / Math.max(base.widthPx, base.heightPx)),
+    );
     const effectiveScaleY = scaleY ?? autoScale;
     const effectiveScaleX = scaleX ?? autoScale;
     const rawBitmap = renderText(text, {
