@@ -18,6 +18,7 @@ export default defineConfig({
       { text: 'Web', link: '/web' },
       { text: 'Hardware', link: '/hardware' },
       { text: 'Core', link: '/core' },
+      { text: 'Protocol', link: '/protocol' },
     ],
     sidebar: [
       { text: 'Getting Started', link: '/getting-started' },
@@ -26,6 +27,7 @@ export default defineConfig({
       { text: 'Web', link: '/web' },
       { text: 'Hardware', link: '/hardware' },
       { text: 'Core', link: '/core' },
+      { text: 'Protocol', link: '/protocol' },
     ],
     socialLinks: [{ icon: 'github', link: 'https://github.com/thermal-label/brother-ql' }],
     search: { provider: 'local' },

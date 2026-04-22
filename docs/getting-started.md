@@ -89,3 +89,9 @@ This is a hardware toggle that cannot be changed by software. The driver will wa
 ### Bluetooth
 
 Bluetooth is explicitly **out of scope**. The QL-810W and QL-820NWB support Bluetooth connectivity, but it requires platform-specific pairing, a different protocol stack (SPP/RFCOMM), and significantly more complexity for uncertain benefit. Use USB or TCP (via WiFi/LAN) instead.
+
+---
+
+## Looking for a Python alternative?
+
+[brother_ql](https://github.com/pklaus/brother_ql) is a mature open-source Python tool for the same Brother QL printer family. If your stack is Python-based, it may be a better fit.
