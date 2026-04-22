@@ -1,0 +1,59 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  release:
+    name: Publish & Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v5
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'pnpm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify version matches tag
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          for pkg in packages/*/package.json; do
+            PKG_VERSION=$(node -p "JSON.parse(require('fs').readFileSync('$pkg','utf8')).version")
+            if [ "$PKG_VERSION" != "$TAG" ]; then
+              echo "❌ Version mismatch in $pkg: expected $TAG, got $PKG_VERSION"
+              exit 1
+            fi
+          done
+          echo "✅ All versions match tag $TAG"
+
+      - name: Build
+        run: pnpm build
+
+      - name: Test
+        run: pnpm test
+
+      - name: Publish
+        run: pnpm release
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          make_latest: true

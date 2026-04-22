@@ -1,0 +1,8 @@
+{
+  "extends": "@mbtech-nl/tsconfig/node",
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true
+  }
+}
