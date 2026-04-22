@@ -17,6 +17,11 @@ export class UsbTransport implements Transport {
     this.device = device;
     device.open();
     const iface = device.interface(0);
+    // On Linux the usblp kernel driver claims printer-class interfaces
+    // automatically — detach it before claiming with libusb.
+    if (process.platform === 'linux' && iface.isKernelDriverActive()) {
+      iface.detachKernelDriver();
+    }
     iface.claim();
     this.iface = iface;
 

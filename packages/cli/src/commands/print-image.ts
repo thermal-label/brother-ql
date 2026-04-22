@@ -35,4 +35,5 @@ export async function runPrintImage(file: string, options: PrintImageOptions): P
   });
 
   await printer.close();
+  console.log('Label printed.');
 }

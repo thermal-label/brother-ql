@@ -32,4 +32,5 @@ export async function runPrintText(text: string, options: PrintTextOptions): Pro
   });
 
   await printer.close();
+  console.log('Label printed.');
 }

@@ -83,4 +83,5 @@ export async function runPrintTwoColor(
   });
 
   await printer.close();
+  console.log('Label printed.');
 }
