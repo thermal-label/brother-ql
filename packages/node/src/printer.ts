@@ -11,13 +11,15 @@ import {
   type PrinterStatus,
   type LabelBitmap,
   type RawImageData,
+  type TextPrintOptions,
+  type ImagePrintOptions,
 } from '@thermal-label/brother-ql-core';
 import { rotateBitmap } from '@mbtech-nl/bitmap';
 import { UsbTransport, TcpTransport, type Transport } from './transport.js';
 import { parseStatus, STATUS_REQUEST } from './status.js';
 import { listPrinters } from './discovery.js';
 import { UnsupportedOperationError } from './errors.js';
-import { type OpenOptions, type TextPrintOptions, type ImagePrintOptions } from './types.js';
+import { type OpenOptions } from './types.js';
 
 const BROTHER_VID = 0x04f9;
 

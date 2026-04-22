@@ -4,7 +4,7 @@ export { listPrinters } from './discovery.js';
 export { UnsupportedOperationError, PrinterError } from './errors.js';
 
 export type { Transport } from './transport.js';
-export type { OpenOptions, PrinterInfo, TextPrintOptions, ImagePrintOptions } from './types.js';
+export type { OpenOptions, PrinterInfo } from './types.js';
 
 // Re-export core API so consumers only need one import
 export {
@@ -27,4 +27,6 @@ export type {
   LabelBitmap,
   RawImageData,
   MediaType,
+  TextPrintOptions,
+  ImagePrintOptions,
 } from '@thermal-label/brother-ql-core';

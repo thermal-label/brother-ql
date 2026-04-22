@@ -104,35 +104,35 @@
 > [§7](PLAN.md#L958)
 
 ### Setup
-- [ ] `packages/cli/package.json` — [§7.1](PLAN.md#L964)
-- [ ] `packages/cli/README.md` — [§7.1](PLAN.md#L964)
-- [ ] `packages/cli/tsconfig.json`
-- [ ] `packages/cli/vitest.config.ts`
-- [ ] `bin/brother-ql.js` — ESM shim — [§7.3](PLAN.md#L1039)
+- [x] `packages/cli/package.json` — [§7.1](PLAN.md#L964)
+- [x] `packages/cli/README.md` — [§7.1](PLAN.md#L964)
+- [x] `packages/cli/tsconfig.json`
+- [x] `packages/cli/vitest.config.ts`
+- [x] `bin/brother-ql.js` — ESM shim — [§7.3](PLAN.md#L1039)
 
 ### Source
-- [ ] Commander setup + `run()` entry point — [§7.2](PLAN.md#L995)
-- [ ] `brother-ql list` command — [§7.2](PLAN.md#L995)
-- [ ] `brother-ql status` command (`--host` flag) — [§7.2](PLAN.md#L995)
-- [ ] `brother-ql print text` command — [§7.2](PLAN.md#L995)
-- [ ] `brother-ql print image` command — [§7.2](PLAN.md#L995)
-- [ ] `brother-ql print two-color` command — [§7.2](PLAN.md#L995)
-- [ ] `src/index.ts` — public exports
+- [x] Commander setup + `run()` entry point — [§7.2](PLAN.md#L995)
+- [x] `brother-ql list` command — [§7.2](PLAN.md#L995)
+- [x] `brother-ql status` command (`--host` flag) — [§7.2](PLAN.md#L995)
+- [x] `brother-ql print text` command — [§7.2](PLAN.md#L995)
+- [x] `brother-ql print image` command — [§7.2](PLAN.md#L995)
+- [x] `brother-ql print two-color` command — [§7.2](PLAN.md#L995)
+- [x] `src/index.ts` — public exports
 
 ### Tests
-- [ ] `src/__tests__/commands/list.test.ts` — [§7.4](PLAN.md#L1049)
-- [ ] `src/__tests__/commands/status.test.ts` — [§7.4](PLAN.md#L1049)
-- [ ] `src/__tests__/commands/print-text.test.ts` — [§7.4](PLAN.md#L1049)
-- [ ] `src/__tests__/commands/print-image.test.ts` — [§7.4](PLAN.md#L1049)
-- [ ] `src/__tests__/commands/print-two-color.test.ts` — [§7.4](PLAN.md#L1049)
+- [x] `src/__tests__/commands/list.test.ts` — [§7.4](PLAN.md#L1049)
+- [x] `src/__tests__/commands/status.test.ts` — [§7.4](PLAN.md#L1049)
+- [x] `src/__tests__/commands/print-text.test.ts` — [§7.4](PLAN.md#L1049)
+- [x] `src/__tests__/commands/print-image.test.ts` — [§7.4](PLAN.md#L1049)
+- [x] `src/__tests__/commands/print-two-color.test.ts` — [§7.4](PLAN.md#L1049)
 
 ### Gate
-- [ ] `pnpm format`
-- [ ] `pnpm typecheck`
-- [ ] `pnpm lint`
-- [ ] `pnpm test`
-- [ ] `pnpm build`
-- [ ] `git commit -m "feat(cli): implement brother-ql CLI with list, status, and print commands"`
+- [x] `pnpm format`
+- [x] `pnpm typecheck`
+- [x] `pnpm lint`
+- [x] `pnpm test`
+- [x] `pnpm build`
+- [x] `git commit -m "feat(cli): implement brother-ql CLI with list, status, and print commands"`
 
 ---
 

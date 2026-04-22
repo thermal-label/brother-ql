@@ -51,6 +51,19 @@ export interface JobOptions {
   copies?: number;
 }
 
+export interface TextPrintOptions extends PageOptions {
+  invert?: boolean;
+  scaleX?: number;
+  scaleY?: number;
+}
+
+export interface ImagePrintOptions extends PageOptions {
+  threshold?: number;
+  dither?: boolean;
+  invert?: boolean;
+  rotate?: 0 | 90 | 180 | 270;
+}
+
 export interface PrinterStatus {
   ready: boolean;
   mediaWidthMm: number;
