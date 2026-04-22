@@ -34,6 +34,9 @@ jobs:
       - name: Format check
         run: pnpm prettier --check "packages/**/*.ts"
 
+      - name: Build
+        run: pnpm build
+
       - name: Test with coverage
         run: pnpm test:coverage
 
@@ -43,6 +46,3 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: unittests
           fail_ci_if_error: true
-
-      - name: Build
-        run: pnpm build
