@@ -88,15 +88,16 @@ printer based on the Print Information Command.
 
 **Continuous length tape** — the printer feeds and cuts to the specified length.
 
-| Label ID | Width | Print area dots | Left offset | Right offset | Bytes/row (720-pin) |
-|---|---|---|---|---|---|
-| 257 | 12mm | 106 | 585 | 29 | 90 |
-| 258 | 29mm | 306 | 408 | 6 | 90 |
-| 264 | 38mm | 413 | 295 | 12 | 90 |
-| 262 | 50mm | 554 | 154 | 12 | 90 |
-| 261 | 54mm | 590 | 130 | 0 | 90 |
-| 259 | 62mm | 696 | 12 | 12 | 90 |
-| 260 | 102mm | 1164 | 76 | 56 | 162 (QL-1050+ only) |
+| Label ID | Width | Print area dots | Left offset | Right offset | Bytes/row (720-pin) | Notes |
+|---|---|---|---|---|---|---|
+| 257 | 12mm | 106 | 585 | 29 | 90 | |
+| 258 | 29mm | 306 | 408 | 6 | 90 | |
+| 264 | 38mm | 413 | 295 | 12 | 90 | |
+| 262 | 50mm | 554 | 154 | 12 | 90 | |
+| 261 | 54mm | 590 | 130 | 0 | 90 | |
+| 259 | 62mm | 696 | 12 | 12 | 90 | DK-22205 (single-color) |
+| 251 | 62mm | 696 | 12 | 12 | 90 | DK-22251 (two-color, marked "251" on roll) — requires two-color mode |
+| 260 | 102mm | 1164 | 76 | 56 | 162 (QL-1050+ only) | |
 
 **Die-cut labels** — fixed size, printer feeds to next gap.
 
@@ -119,11 +120,16 @@ printer based on the Print Information Command.
 
 ### 2.4 Complete Print Job Structure
 
+> Verified by byte-comparison against Python `brother_ql` captures on QL-820NWBc
+> with DK-22251 tape. Several details differ from the official command reference.
+
 ```
+(0) RASTER MODE  ← sent BEFORE invalidate
+    0x1B 0x69 0x61 0x01
+
 (1) INVALIDATE
-    400 × 0x00
+    200 × 0x00   ← 200 bytes, not 400
     Flushes any partial data in the printer buffer.
-    Required at the start of every job.
 
 (2) INITIALIZE
     0x1B 0x40
@@ -133,11 +139,11 @@ printer based on the Print Information Command.
 
   CONTROL CODES (sent once per page):
 
-  a) Switch to raster mode (required on QL-800 series; implied on older models)
+  a) Switch to raster mode
      0x1B 0x69 0x61 0x01
 
-  b) Switch automatic status notification mode (optional, recommended)
-     0x1B 0x69 0x21 0x00   (disable auto-notify — poll manually instead)
+  b) Status request  ← triggers 32-byte response on IN; NOT status notification disable
+     0x1B 0x69 0x53
 
   c) Print information command
      0x1B 0x69 0x7A [10 bytes]  — see section 2.5
@@ -145,7 +151,7 @@ printer based on the Print Information Command.
   d) Various mode (auto-cut etc.)
      0x1B 0x69 0x4D [flags]     — see section 2.6
 
-  e) Cut every N labels (optional)
+  e) Cut every N labels
      0x1B 0x69 0x41 0x01        — cut after every label
 
   f) Expanded mode (cut at end flag etc.)
@@ -158,17 +164,19 @@ printer based on the Print Information Command.
      0x4D 0x02                   — enable TIFF compression
      (omit for uncompressed — always safe, slightly larger payload)
 
-  RASTER DATA (repeated for each row):
+  RASTER DATA (interleaved per row for two-color):
 
   Single-color row (black):
-    0x67 0x00 [90 or 162 bytes of pixel data]
+    0x67 0x00 0x5A [90 bytes of pixel data]   ← 3-byte header: cmd, plane, length
 
   Two-color row — black layer (QL-800 series only):
-    0x67 0x00 [90 bytes of black pixel data]
+    0x77 0x01 0x5A [90 bytes of black pixel data]
 
   Two-color row — red layer (QL-800 series only):
-    0x77 0x00 [90 bytes of red pixel data]
-    Note: command byte is 0x77 ('w'), not 0x67 ('g')
+    0x77 0x02 0x5A [90 bytes of red pixel data]
+
+  Two-color rows are INTERLEAVED: black row N, red row N, black row N+1, red row N+1, …
+  NOT batched (all-black then all-red).
 
   Empty row shorthand (TIFF compression mode only):
     0x5A
@@ -193,10 +201,13 @@ printer based on the Print Information Command.
 | 7 | Reserved | `0x00` |
 | 8–9 | Reserved | `0x00 0x00` |
 
-Example — 62mm continuous tape, 200 rows, first page:
+Example — 62mm continuous tape, 200 rows, first page (QL-820NWB):
 ```
-1B 69 7A  86 0A 3E 00 C8 00 00 00 00 00
+1B 69 7A  CE 0A 3E 00 C8 00 00 00 00 00
 ```
+
+`valid_flags = 0xCE` for all QL-800/810W/820NWB jobs (single-color and two-color).
+Older documentation shows `0x86`; that is incorrect for this model family.
 
 ### 2.6 Mode Flag Bytes
 
@@ -213,10 +224,15 @@ Typical value for auto-cut: `0x40`
 
 | Bit | Function |
 |---|---|
+| 0 | Two-color mode — **required for DK-22251 and any two-color job** |
 | 3 | Cut at end of job (1 = yes) |
 | 4 | High resolution (600dpi in feed direction) |
 
-Typical value for cut-at-end: `0x08`
+Typical value for single-color cut-at-end: `0x08`
+Typical value for two-color cut-at-end: `0x09`
+
+Bit 0 is enforced by the QL-820NWBc firmware: if DK-22251 tape is loaded and
+bit 0 is not set, the printer displays "wrong roll type" and refuses the job.
 
 ### 2.7 Status Response (32 bytes)
 
@@ -284,32 +300,44 @@ Also sent unsolicited when printing completes (if auto-notify enabled).
 ### 2.8 Two-Color Printing (QL-800 series only)
 
 Two-color printing uses DK-22251 labels (black + red on white).
-Two raster planes are sent: black and red. Each page's raster data
-interleaves both layers — **all black rows first, then all red rows**
-for each page.
+Two raster planes are interleaved row-by-row.
 
-Black row:  `0x67 0x00 [90 bytes]`
-Red row:    `0x77 0x00 [90 bytes]`
+Black row:  `0x77 0x01 0x5A [90 bytes]`
+Red row:    `0x77 0x02 0x5A [90 bytes]`
 
 Rules:
 - Both planes must have the same number of rows
 - A pixel must not be set in both layers simultaneously (black wins if violated)
-- Red layer is simply absent on non-two-color media — the printer ignores it
+- Rows are **interleaved per line**: black N, red N, black N+1, red N+1, …
+- Expanded mode **bit 0 must be set** (`0x09` instead of `0x08`)
+- DK-22251 tape requires two-color mode even for black-only jobs
+
+**DK-22251 tape and "wrong roll type":**
+
+The QL-820NWBc enforces two-color mode when DK-22251 tape is installed.
+Sending a single-color job (expanded mode bit 0 = 0, `0x67` row commands)
+results in "wrong roll type" on the printer display. Send two-color rows
+with expanded mode bit 0 set even when the red plane is all zeros.
+
+The driver handles this automatically when `media.twoColorTape === true`
+(media ID 251): it creates an empty red bitmap and sets bit 0.
 
 **Two-color print job example structure (single page):**
 
 ```
-400 × 0x00          invalidate
+1B 69 61 01         raster mode  ← FIRST
+200 × 0x00          invalidate   ← 200 bytes, not 400
 1B 40               initialize
-1B 69 61 01         raster mode
-1B 69 7A [10 bytes] print info (set two-color flag in valid flags byte)
+1B 69 61 01         raster mode (per-page)
+1B 69 53            status request (per-page)
+1B 69 7A CE 0A 3E 00 [rows LE] 00 00 00 00 00  print info (valid_flags=0xCE)
 1B 69 4D 40         auto-cut
-1B 69 4B 08         cut at end
+1B 69 41 01         cut each
+1B 69 4B 09         cut at end + two-color bit (bit 0 set)
 1B 69 64 23 00      3mm margin
 [for each row:]
-  67 00 [90 bytes]  black layer row
-[for each row:]
-  77 00 [90 bytes]  red layer row
+  77 01 5A [90 bytes]  black layer row
+  77 02 5A [90 bytes]  red layer row
 1A                  print with feeding (last page)
 ```
 

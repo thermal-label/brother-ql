@@ -67,8 +67,10 @@ describe('BrotherQLPrinter', () => {
     await printer.print([{ bitmap, media }]);
     expect(mockWrite).toHaveBeenCalledOnce();
     const written = mockWrite.mock.calls[0]![0] as Uint8Array;
-    expect(written[0]).toBe(0);
-    expect(written[399]).toBe(0);
+    // Starts with ESC i a 01 (raster mode), then 200-byte invalidate
+    expect(written[0]).toBe(0x1b);
+    expect(written[1]).toBe(0x69);
+    expect(written[2]).toBe(0x61);
     expect(written.at(-1)).toBe(0x1a);
   });
 

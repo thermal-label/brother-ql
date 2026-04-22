@@ -62,6 +62,17 @@ export const MEDIA: Record<number, MediaDescriptor> = {
     leftMarginPins: 12,
     rightMarginPins: 12,
   },
+  251: {
+    id: 251,
+    name: '62mm continuous two-color (DK-22251)',
+    type: 'continuous',
+    widthMm: 62,
+    lengthMm: 0,
+    printAreaDots: 696,
+    leftMarginPins: 12,
+    rightMarginPins: 12,
+    twoColorTape: true,
+  },
   260: {
     id: 260,
     name: '102mm continuous',

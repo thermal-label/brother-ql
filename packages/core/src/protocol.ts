@@ -1,8 +1,12 @@
-import { getRow } from '@mbtech-nl/bitmap';
+import { getRow, createBitmap } from '@mbtech-nl/bitmap';
 import { type MediaDescriptor, type PageData, type JobOptions, type PageOptions } from './types.js';
 
 export function buildInvalidate(): Uint8Array {
-  return new Uint8Array(400);
+  return new Uint8Array(200);
+}
+
+export function buildStatusRequest(): Uint8Array {
+  return new Uint8Array([0x1b, 0x69, 0x53]);
 }
 
 export function buildInitialize(): Uint8Array {
@@ -21,11 +25,13 @@ export function buildPrintInfo(
   media: MediaDescriptor,
   rowCount: number,
   pageIndex: number,
-  twoColor = false,
+  _twoColor = false,
 ): Uint8Array {
   const mediaType = media.type === 'continuous' ? 0x0a : 0x0b;
-  // Valid flags: bit1=mediaWidth, bit2=mediaType, bit6=recovery, plus two-color flag if needed
-  const validFlags = twoColor ? 0xce : 0x86;
+  // 0xCE is what Python brother_ql uses for QL-820NWB (two-color capable model) regardless of
+  // whether the job uses two colors. Single-color models (QL-700 etc.) use 0x8E instead.
+  // We always use 0xCE here; callers can override per-device if needed.
+  const validFlags = 0xce;
   const buf = new Uint8Array(13);
   buf[0] = 0x1b;
   buf[1] = 0x69;
@@ -48,8 +54,9 @@ export function buildVariousMode(autoCut: boolean): Uint8Array {
   return new Uint8Array([0x1b, 0x69, 0x4d, autoCut ? 0x40 : 0x00]);
 }
 
-export function buildExpandedMode(cutAtEnd: boolean, highRes: boolean): Uint8Array {
+export function buildExpandedMode(cutAtEnd: boolean, highRes: boolean, twoColor = false): Uint8Array {
   let flags = 0x00;
+  if (twoColor) flags |= 0x01;
   if (cutAtEnd) flags |= 0x08;
   if (highRes) flags |= 0x10;
   return new Uint8Array([0x1b, 0x69, 0x4b, flags]);
@@ -67,12 +74,24 @@ export function buildCompression(enabled: boolean): Uint8Array {
   return new Uint8Array([0x4d, enabled ? 0x02 : 0x00]);
 }
 
-export function buildRasterRow(rowBytes: Uint8Array, color: 'black' | 'red'): Uint8Array {
-  const cmd = color === 'red' ? 0x77 : 0x67;
-  const buf = new Uint8Array(2 + rowBytes.length);
-  buf[0] = cmd;
-  buf[1] = 0x00;
-  buf.set(rowBytes, 2);
+// Single-color: [0x67][0x00][len][data]
+// Two-color black: [0x77][0x01][len][data]  — interleaved per-row with red
+// Two-color red:   [0x77][0x02][len][data]
+export function buildRasterRow(
+  rowBytes: Uint8Array,
+  color: 'black' | 'red',
+  twoColor = false,
+): Uint8Array {
+  const buf = new Uint8Array(3 + rowBytes.length);
+  if (twoColor) {
+    buf[0] = 0x77;
+    buf[1] = color === 'black' ? 0x01 : 0x02;
+  } else {
+    buf[0] = 0x67;
+    buf[1] = 0x00;
+  }
+  buf[2] = rowBytes.length;
+  buf.set(rowBytes, 3);
   return buf;
 }
 
@@ -82,6 +101,17 @@ export function buildZeroRow(): Uint8Array {
 
 export function buildPrintCommand(isLastPage: boolean): Uint8Array {
   return new Uint8Array([isLastPage ? 0x1a : 0x0c]);
+}
+
+// Copy srcWidthPx bits from src (MSB-first packed) into dst at bit offset dstOffsetBits.
+function placeBits(src: Uint8Array, srcWidthPx: number, dst: Uint8Array, dstOffsetBits: number): void {
+  for (let px = 0; px < srcWidthPx; px++) {
+    const srcBit = (src[px >> 3] ?? 0) >> (7 - (px & 7)) & 1;
+    if (srcBit) {
+      const dstPx = dstOffsetBits + px;
+      dst[dstPx >> 3]! |= 1 << (7 - (dstPx & 7));
+    }
+  }
 }
 
 function concat(...arrays: Uint8Array[]): Uint8Array {
@@ -99,6 +129,9 @@ export function encodeJob(pages: PageData[], options: JobOptions = {}): Uint8Arr
   const copies = options.copies ?? 1;
   const chunks: Uint8Array[] = [];
 
+  // Python brother_ql sequence: raster-mode first, then 200-byte invalidate, then init, then
+  // raster-mode again (matches observed working sequence for QL-820NWB).
+  chunks.push(buildRasterMode());
   chunks.push(buildInvalidate());
   chunks.push(buildInitialize());
 
@@ -117,9 +150,12 @@ export function encodeJob(pages: PageData[], options: JobOptions = {}): Uint8Arr
     const highRes = opts.highResolution ?? false;
     const marginDots = opts.marginDots ?? 35;
     const compress = opts.compress ?? false;
-    const twoColor = page.redBitmap !== undefined;
+    const { bitmap, media } = page;
 
-    const { bitmap, redBitmap, media } = page;
+    // twoColorTape media (e.g. DK-22251) requires two-color mode even for black-only jobs.
+    // Auto-create an empty red plane when the tape demands it but caller didn't supply one.
+    const twoColor = page.redBitmap !== undefined || (media.twoColorTape === true);
+    const redBitmap = page.redBitmap ?? (media.twoColorTape ? createBitmap(bitmap.widthPx, bitmap.heightPx) : undefined);
 
     if (twoColor && redBitmap !== undefined) {
       if (bitmap.widthPx !== redBitmap.widthPx || bitmap.heightPx !== redBitmap.heightPx) {
@@ -130,34 +166,32 @@ export function encodeJob(pages: PageData[], options: JobOptions = {}): Uint8Arr
     const rowCount = bitmap.heightPx;
 
     chunks.push(buildRasterMode());
-    chunks.push(buildStatusNotification(false));
+    chunks.push(buildStatusRequest());
     chunks.push(buildPrintInfo(media, rowCount, i, twoColor));
     chunks.push(buildVariousMode(autoCut));
     chunks.push(buildCutEach(1));
-    chunks.push(buildExpandedMode(cutAtEnd, highRes));
+    chunks.push(buildExpandedMode(cutAtEnd, highRes, twoColor));
     chunks.push(buildMargin(marginDots));
     if (compress) chunks.push(buildCompression(true));
 
-    // getRow returns packed bytes for one row — length = ceil(widthPx / 8)
-    const rowWidth = bitmap.widthPx;
-    const rowByteLen = Math.ceil(rowWidth / 8);
+    // Each raster row must cover the full print head width (derived from media geometry).
+    // leftMarginPins + printAreaDots + rightMarginPins = head pin count (720 or 1296).
+    const totalPins = media.leftMarginPins + media.printAreaDots + media.rightMarginPins;
+    const rowByteLen = Math.ceil(totalPins / 8);
 
-    // Black rows
+    // Rows interleaved per raster line (matches Python brother_ql behaviour).
+    // Two-color: black row then red row for each line. Single-color: black only.
     for (let r = 0; r < rowCount; r++) {
-      const row = getRow(bitmap, r);
-      const rowBytes = new Uint8Array(rowByteLen);
-      rowBytes.set(row.slice(0, rowByteLen));
-      chunks.push(buildRasterRow(rowBytes, 'black'));
-    }
+      const blackSrc = getRow(bitmap, r);
+      const blackBytes = new Uint8Array(rowByteLen);
+      placeBits(blackSrc, bitmap.widthPx, blackBytes, media.leftMarginPins);
+      chunks.push(buildRasterRow(blackBytes, 'black', twoColor));
 
-    // Red rows (two-color only) — all after all black rows
-    if (twoColor && redBitmap !== undefined) {
-      const redRowByteLen = Math.ceil(redBitmap.widthPx / 8);
-      for (let r = 0; r < rowCount; r++) {
-        const row = getRow(redBitmap, r);
-        const rowBytes = new Uint8Array(redRowByteLen);
-        rowBytes.set(row.slice(0, redRowByteLen));
-        chunks.push(buildRasterRow(rowBytes, 'red'));
+      if (twoColor && redBitmap !== undefined) {
+        const redSrc = getRow(redBitmap, r);
+        const redBytes = new Uint8Array(rowByteLen);
+        placeBits(redSrc, redBitmap.widthPx, redBytes, media.leftMarginPins);
+        chunks.push(buildRasterRow(redBytes, 'red', twoColor));
       }
     }
 

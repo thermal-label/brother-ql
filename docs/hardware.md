@@ -62,15 +62,30 @@ The print head is fixed width. The label stock determines how many pins are acti
 
 ### Continuous length tape
 
-| Label ID | Width | Print area (dots) | Left margin | Right margin |
-| -------- | ----- | ----------------- | ----------- | ------------ |
-| 257      | 12mm  | 106               | 585         | 29           |
-| 258      | 29mm  | 306               | 408         | 6            |
-| 264      | 38mm  | 413               | 295         | 12           |
-| 262      | 50mm  | 554               | 154         | 12           |
-| 261      | 54mm  | 590               | 130         | 0            |
-| 259      | 62mm  | 696               | 12          | 12           |
-| 260      | 102mm | 1164              | 76          | 56           |
+| Label ID | Width | Print area (dots) | Left margin | Right margin | Notes                     |
+| -------- | ----- | ----------------- | ----------- | ------------ | ------------------------- |
+| 257      | 12mm  | 106               | 585         | 29           |                           |
+| 258      | 29mm  | 306               | 408         | 6            |                           |
+| 264      | 38mm  | 413               | 295         | 12           |                           |
+| 262      | 50mm  | 554               | 154         | 12           |                           |
+| 261      | 54mm  | 590               | 130         | 0            |                           |
+| 259      | 62mm  | 696               | 12          | 12           | DK-22205 (black on white) |
+| 251      | 62mm  | 696               | 12          | 12           | DK-22251 (black+red) — two-color tape, requires two-color mode |
+| 260      | 102mm | 1164              | 76          | 56           |                           |
+
+::: tip DK-22251 (media ID 251)
+The 62mm black+red two-color tape is marked **"251"** on the roll. It requires
+two-color print mode even for black-only jobs — use `--media 251`, not `--media 259`.
+The driver handles this automatically: it sets expanded mode bit 0 and sends an
+empty red plane when no red bitmap is supplied.
+:::
+
+::: info Roll markings vs media IDs
+The number printed on the roll is the last three digits of the DK product code
+(DK-22**251** → "251", DK-11**201** → "201"). This does **not** directly map to
+the media ID — for example, DK-11201 (29×90mm standard address labels, marked
+"201") uses media ID **271**.
+:::
 
 ### Die-cut labels
 

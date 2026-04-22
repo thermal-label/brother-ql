@@ -33,6 +33,7 @@ beforeEach(() => {
   mockInterface.mockReset().mockReturnValue({
     claim: mockClaim,
     releaseAsync: mockReleaseAsync,
+    isKernelDriverActive: vi.fn().mockReturnValue(false),
     endpoints: [
       { direction: 'out', transferAsync: mockOutTransfer },
       { direction: 'in', transferAsync: mockInTransfer },
@@ -87,6 +88,7 @@ describe('UsbTransport', () => {
     mockInterface.mockReturnValueOnce({
       claim: mockClaim,
       releaseAsync: mockReleaseAsync,
+      isKernelDriverActive: vi.fn().mockReturnValue(false),
       endpoints: [{ direction: 'in', transferAsync: mockInTransfer }],
     });
     const { UsbTransport } = await import('../transport.js');
@@ -97,6 +99,7 @@ describe('UsbTransport', () => {
     mockInterface.mockReturnValueOnce({
       claim: mockClaim,
       releaseAsync: mockReleaseAsync,
+      isKernelDriverActive: vi.fn().mockReturnValue(false),
       endpoints: [{ direction: 'out', transferAsync: mockOutTransfer }],
     });
     const { UsbTransport } = await import('../transport.js');

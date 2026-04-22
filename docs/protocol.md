@@ -124,12 +124,19 @@ than leftover USB noise.
 A complete job consists of a fixed preamble followed by one or more pages, each
 terminated by a print command. All values are hexadecimal.
 
+::: tip Verified against hardware
+The sequence below was verified by byte-comparing against live captures from the
+Python `brother_ql` library on a QL-820NWBc with DK-22251 tape. Several details
+differ from older documentation and from the official command reference.
+:::
+
 ```
-(1) INVALIDATE        — 400 × 0x00
+(0) RASTER MODE       — 1B 69 61 01          ← FIRST, before invalidate
+(1) INVALIDATE        — 200 × 0x00
 (2) INITIALIZE        — 1B 40
 (3) [for each page]
     a) RASTER MODE    — 1B 69 61 01
-    b) STATUS NOTIFY  — 1B 69 21 00
+    b) STATUS REQUEST — 1B 69 53             ← triggers 32-byte response on IN
     c) PRINT INFO     — 1B 69 7A [10 bytes]
     d) VARIOUS MODE   — 1B 69 4D [flags]
     e) CUT EACH       — 1B 69 41 01
@@ -139,26 +146,34 @@ terminated by a print command. All values are hexadecimal.
     h) PRINT COMMAND  — 0C (not last page) / 1A (last page)
 ```
 
-### (1) Invalidate — 400 × `0x00`
+### (0) Raster mode before invalidate — `1B 69 61 01`
+
+The working sequence observed from hardware sends raster mode **before** the
+200-byte invalidate, not after it. Sending raster mode after initialize (as
+some documentation suggests) does not trigger the same response from the
+QL-820NWB series firmware.
+
+### (1) Invalidate — 200 × `0x00`
 
 Clears any partial command the printer may have buffered from a previous
-interrupted job. 400 null bytes is the minimum; sending more is harmless.
+interrupted job. **200 null bytes**, not 400 — this is what the Python
+`brother_ql` library sends and what the printer expects.
 
 ### (2) Initialize — `1B 40`
 
-Resets the printer's internal state machine. Always send this after the
-invalidate block and before any mode or info commands.
+Resets the printer's internal state machine.
 
 ### (a) Raster mode — `1B 69 61 01`
 
-Switches the printer into raster graphics mode (`0x01`). Brother QL printers
-also support a template/P-touch mode (`0x00`), which is not used here.
+Sent again at the start of each page's control block.
 
-### (b) Status notification — `1B 69 21 00`
+### (b) Status request — `1B 69 53`
 
-`0x00` = do not send status automatically. With `0x01` the printer would send
-unsolicited status packets after each print — avoided here to keep the protocol
-synchronous.
+Sent per-page as part of the command stream. The printer responds with a
+32-byte status packet on the IN endpoint. The driver does not read this
+mid-job response; the printer continues processing subsequent commands
+regardless. This is distinct from `1B 69 21 00` (status notification
+disable), which is a different command.
 
 ### (c) Print information — `1B 69 7A [10 bytes]`
 
@@ -200,8 +215,16 @@ One flag byte:
 
 | Bit | Function                                |
 | --: | --------------------------------------- |
+|   0 | Two-color mode (required for DK-22251)  |
 |   3 | Cut at end of job                       |
 |   4 | High resolution (600 DPI feed direction) |
+
+**Bit 0 is critical for two-color tape.** The QL-820NWB series firmware checks
+this flag against the loaded media. If DK-22251 (black+red) tape is installed
+and bit 0 is not set, the printer displays "wrong roll type" and refuses to
+print — even if the raster data itself is valid. Set bit 0 whenever the job
+contains `0x77` (two-color) raster rows, or whenever the media descriptor has
+`twoColorTape: true`.
 
 ### (g) Margin — `1B 69 64 [n1] [n2]`
 
@@ -211,33 +234,39 @@ Setting `n1 = 0x00, n2 = 0x00` uses the printer's hardware minimum.
 
 ### Raster rows
 
-Each raster row is 92 bytes: a 2-byte command header followed by 90 bytes of
+Each raster row is 93 bytes: a 3-byte command header followed by 90 bytes of
 pixel data (720 dots, 1 bit per pixel, MSB first).
 
 **Single-color (black):**
 
 ```
-67 00 [90 bytes]
+67 00 5A [90 bytes]
 ```
+
+(`0x67` = row command, `0x00` = plane ID, `0x5A` = length 90)
 
 **Two-color black layer:**
 
 ```
-67 00 [90 bytes]
+77 01 5A [90 bytes]
 ```
 
 **Two-color red layer:**
 
 ```
-77 00 [90 bytes]
+77 02 5A [90 bytes]
 ```
 
-For two-color jobs, **all black rows come first, then all red rows** for the
-same page — the layers are not interleaved row-by-row.
+(`0x77` = two-color row command, `0x01`/`0x02` = plane ID)
 
-For labels narrower than 720 dots, the pixel data must still be 90 bytes. Pad
-unused dots with zeros. The print info command tells the printer how many dots
-are active; the printer clips the rest.
+For two-color jobs, rows are **interleaved per line**: black row N immediately
+followed by red row N, then black row N+1, red row N+1, and so on. The layers
+are not batched (all-black then all-red).
+
+For labels narrower than 720 dots, the pixel data must still be 90 bytes.
+Content is placed at `leftMarginPins` bit offset within the row; unused dots
+are zero. The Print Information command tells the printer the active dot count;
+the printer handles the margins internally.
 
 ### (h) Print command
 
@@ -273,15 +302,25 @@ timing issues over network paths where packet delivery is less predictable).
 ## Two-color encoding rules
 
 Two-color printing is only available on devices with the `twoColor` flag set in
-the device descriptor (QL-800, QL-810W, QL-820NWB).
+the device descriptor (QL-800, QL-810W, QL-820NWB, QL-820NWBc).
 
 - Both bitmaps must have identical dimensions.
 - A pixel must not be set in both layers simultaneously. Black takes priority
   if violated.
-- The valid flags byte in the Print Information command must have bit 0 set for
-  two-color jobs.
-- All black raster rows for a page are sent, then all red raster rows. The
-  printer composes them internally.
+- Expanded mode **bit 0 must be set** in the per-page command block.
+- Rows are interleaved: black row N, red row N, black row N+1, red row N+1, …
+
+### DK-22251 tape requires two-color mode
+
+The DK-22251 label (62mm black+red on white, marked "251" on the roll) is a
+two-color tape. When it is loaded, the printer **enforces** two-color mode and
+rejects single-color jobs with a "wrong roll type" error — even if you only
+intend to print black.
+
+Use `--media 251` (or media ID `251` in the API) to target this tape. The
+driver automatically sets expanded mode bit 0 and sends an empty red plane when
+no red bitmap is provided. The `valid_flags` byte in the Print Information
+command is `0xCE` for all QL-820NWB series jobs (single-color and two-color).
 
 ## TCP printing (port 9100)
 
@@ -321,19 +360,17 @@ in Chrome 89+ and Edge 89+. Firefox and Safari do not implement WebUSB.
 If you are implementing the protocol in another language or runtime:
 
 - [ ] Use `libusb` (or equivalent) and claim Interface 0 directly
-- [ ] Send exactly 400 zero bytes at the start (invalidate)
-- [ ] Send `1B 40` (initialize) immediately after
-- [ ] Set raster mode with `1B 69 61 01` before any page data
-- [ ] Include the Print Information command with correct media type, width,
-      and total row count
-- [ ] For two-color jobs: set bit 0 in the valid flags byte and check device
-      descriptor for `twoColor: true`
-- [ ] Raster rows must be full-width (90 data bytes) regardless of label width
+- [ ] Send `1B 69 61 01` (raster mode) **first**, then 200 zero bytes (invalidate), then `1B 40` (initialize)
+- [ ] Per page: raster mode → `1B 69 53` (status request) → print info → various mode → cut each → expanded mode → margin → rows → print command
+- [ ] Include the Print Information command with correct media type, width, and total row count
+- [ ] Use `valid_flags = 0xCE` for all QL-820NWB/800/810W jobs
+- [ ] Raster rows are 93 bytes: 3-byte header + 90 bytes data
+- [ ] Single-color row header: `67 00 5A`; two-color black: `77 01 5A`; two-color red: `77 02 5A`
+- [ ] Two-color rows are interleaved per line (black N, red N, black N+1, red N+1, …)
+- [ ] Set expanded mode **bit 0** for all two-color jobs
+- [ ] DK-22251 tape: must use two-color mode even for black-only jobs, or the printer returns "wrong roll type"
+- [ ] Raster rows must be full-width (90 data bytes) regardless of label width — place content at `leftMarginPins` bit offset
 - [ ] End the last page with `0x1A`, not `0x0C`
-- [ ] Bitmaps are in print orientation: rows across the 720-dot print head
-      width, columns along the feed direction
-- [ ] For two-color: send all black rows first, then all red rows (not
-      interleaved)
-- [ ] Query status with `1B 69 53` and read 32 bytes before printing to
-      confirm media width/type matches expectations
+- [ ] Bitmaps are in print orientation: rows across the 720-dot print head width, columns along the feed direction
+- [ ] Query status with `1B 69 53` and read 32 bytes before printing to confirm media matches
 - [ ] Detect Editor Lite PIDs (`0x20aa`, `0x20ab`) and warn the user

@@ -39,8 +39,10 @@ describe('WebBrotherQLPrinter', () => {
     await printer.print([{ bitmap, media: media62mm }]);
     expect(mock.spies.transferOut).toHaveBeenCalled();
     const bytes = mock.spies.transferOut.mock.calls[0]?.[1] as Uint8Array;
-    // Job starts with 400 zero bytes (invalidate)
-    expect(bytes.slice(0, 4)).toEqual(new Uint8Array([0, 0, 0, 0]));
+    // Job starts with ESC i a 01 (raster mode) then 200-byte invalidate
+    expect(bytes[0]).toBe(0x1b);
+    expect(bytes[1]).toBe(0x69);
+    expect(bytes[2]).toBe(0x61);
     // Ends with 0x1A (print last page)
     expect(bytes.at(-1)).toBe(0x1a);
   });

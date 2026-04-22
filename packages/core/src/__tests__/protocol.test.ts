@@ -18,9 +18,9 @@ import { type PageData } from '../types.js';
 import { MEDIA } from '../media.js';
 
 describe('buildInvalidate', () => {
-  it('returns exactly 400 zero bytes', () => {
+  it('returns exactly 200 zero bytes', () => {
     const buf = buildInvalidate();
-    expect(buf.length).toBe(400);
+    expect(buf.length).toBe(200);
     expect(buf.every(b => b === 0)).toBe(true);
   });
 });
@@ -32,19 +32,29 @@ describe('buildInitialize', () => {
 });
 
 describe('buildRasterRow', () => {
-  it('black row: first byte 0x67, second 0x00, correct payload length', () => {
+  it('single-color black: [0x67][0x00][len][data]', () => {
     const payload = new Uint8Array(90).fill(0xaa);
     const row = buildRasterRow(payload, 'black');
     expect(row[0]).toBe(0x67);
     expect(row[1]).toBe(0x00);
-    expect(row.length).toBe(92);
+    expect(row[2]).toBe(90);
+    expect(row.length).toBe(93);
   });
 
-  it('red row: first byte 0x77, second 0x00', () => {
+  it('two-color black: [0x77][0x01][len][data]', () => {
     const payload = new Uint8Array(90);
-    const row = buildRasterRow(payload, 'red');
+    const row = buildRasterRow(payload, 'black', true);
     expect(row[0]).toBe(0x77);
-    expect(row[1]).toBe(0x00);
+    expect(row[1]).toBe(0x01);
+    expect(row[2]).toBe(90);
+  });
+
+  it('two-color red: [0x77][0x02][len][data]', () => {
+    const payload = new Uint8Array(90);
+    const row = buildRasterRow(payload, 'red', true);
+    expect(row[0]).toBe(0x77);
+    expect(row[1]).toBe(0x02);
+    expect(row[2]).toBe(90);
   });
 });
 
@@ -89,17 +99,21 @@ describe('encodeJob', () => {
     return { bitmap, media: media62 };
   }
 
-  it('single page: starts with 400 zeros, ends with 0x1A', () => {
-    const page = makePage(720, 50);
+  it('single page: contains ESC i a + 200 zero invalidate, ends with 0x1A', () => {
+    const page = makePage(696, 50);
     const buf = encodeJob([page]);
-    // First 400 bytes are zeros (invalidate)
-    for (let i = 0; i < 400; i++) expect(buf[i]).toBe(0);
+    // Starts with ESC i a 01 (raster mode, 4 bytes) then 200 zero invalidate bytes
+    expect(buf[0]).toBe(0x1b);
+    expect(buf[1]).toBe(0x69);
+    expect(buf[2]).toBe(0x61);
+    expect(buf[3]).toBe(0x01);
+    for (let i = 4; i < 204; i++) expect(buf[i]).toBe(0);
     expect(buf.at(-1)).toBe(0x1a);
   });
 
   it('two-page job: second page has control codes, ends with 0x1A', () => {
-    const page1 = makePage(720, 10);
-    const page2 = makePage(720, 10);
+    const page1 = makePage(696, 10);
+    const page2 = makePage(696, 10);
     const buf = encodeJob([page1, page2]);
     expect(buf.at(-1)).toBe(0x1a);
     // 0x0C should appear as the inter-page print command somewhere before the last byte
@@ -110,19 +124,24 @@ describe('encodeJob', () => {
     expect(printCmds.length).toBeGreaterThan(0);
   });
 
-  it('two-color job: black rows use 0x67, red rows use 0x77', () => {
-    const bitmap = createBitmap(720, 5);
-    const redBitmap = createBitmap(720, 5);
+  it('two-color job: black rows [0x77,0x01,len], red rows [0x77,0x02,len], interleaved', () => {
+    const bitmap = createBitmap(696, 5);
+    const redBitmap = createBitmap(696, 5);
     const page: PageData = { bitmap, redBitmap, media: media62 };
     const buf = encodeJob([page]);
-    const blackRows = [];
-    const redRows = [];
-    for (let i = 0; i < buf.length - 1; i++) {
-      if (buf[i] === 0x67 && buf[i + 1] === 0x00) blackRows.push(i);
-      if (buf[i] === 0x77 && buf[i + 1] === 0x00) redRows.push(i);
+    const rowLen = 90;
+    const blackRows: number[] = [];
+    const redRows: number[] = [];
+    for (let i = 0; i < buf.length - 2; i++) {
+      if (buf[i] === 0x77 && buf[i + 1] === 0x01 && buf[i + 2] === rowLen) blackRows.push(i);
+      if (buf[i] === 0x77 && buf[i + 1] === 0x02 && buf[i + 2] === rowLen) redRows.push(i);
     }
     expect(blackRows.length).toBe(5);
     expect(redRows.length).toBe(5);
+    // Verify interleaving: each black row is immediately followed by a red row (93 bytes apart)
+    for (let r = 0; r < 5; r++) {
+      expect(redRows[r]! - blackRows[r]!).toBe(93); // 3 header + 90 data
+    }
   });
 
   it('two-color job: throws if red bitmap dimensions mismatch', () => {
@@ -140,7 +159,7 @@ describe('encodeJob', () => {
   });
 
   it('compress option includes compression command [0x4D, 0x02]', () => {
-    const page: PageData = { ...makePage(720, 5), options: { compress: true } };
+    const page: PageData = { ...makePage(696, 5), options: { compress: true } };
     const buf = encodeJob([page]);
     let found = false;
     for (let i = 0; i < buf.length - 1; i++) {
@@ -188,17 +207,20 @@ describe('buildExpandedMode', () => {
     expect((buildExpandedMode(false, true)[3] ?? 0) & 0x10).toBe(0x10);
   });
 
+  it('twoColor=true sets bit 0', () => {
+    expect((buildExpandedMode(false, false, true)[3] ?? 0) & 0x01).toBe(0x01);
+  });
+
   it('both false returns 0x00 flags', () => {
     expect(buildExpandedMode(false, false)[3]).toBe(0x00);
   });
 });
 
 describe('buildPrintInfo twoColor flag', () => {
-  it('twoColor=true sets different valid flags byte', () => {
+  it('always uses 0xCE valid flags (Python brother_ql behaviour for two-color capable models)', () => {
     const media = MEDIA[259]!;
-    const without = buildPrintInfo(media, 100, 0, false);
-    const with2c = buildPrintInfo(media, 100, 0, true);
-    expect(with2c[3]).not.toBe(without[3]);
+    const buf = buildPrintInfo(media, 100, 0);
+    expect(buf[3]).toBe(0xce);
   });
 });
 

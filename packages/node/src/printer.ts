@@ -47,10 +47,16 @@ export class BrotherQLPrinter {
 
   async printText(text: string, media: MediaDescriptor, options?: TextPrintOptions): Promise<void> {
     const { invert, scaleX, scaleY, ...pageOptions } = options ?? {};
+    // Scale so the label is roughly square: largest integer scale where neither the tape
+    // width (base.heightPx axis) nor the label length (base.widthPx axis) exceeds printAreaDots.
+    const base = renderText(text, { scaleX: 1, scaleY: 1 });
+    const autoScale = Math.max(1, Math.floor(media.printAreaDots / Math.max(base.widthPx, base.heightPx)));
+    const effectiveScaleY = scaleY ?? autoScale;
+    const effectiveScaleX = scaleX ?? autoScale;
     const rawBitmap = renderText(text, {
       ...(invert !== undefined ? { invert } : {}),
-      scaleX: scaleX ?? 1,
-      scaleY: scaleY ?? 1,
+      scaleX: effectiveScaleX,
+      scaleY: effectiveScaleY,
     });
     // Rotate to print orientation: label is fed along the height axis
     const bitmap = rotateBitmap(rawBitmap, 90);

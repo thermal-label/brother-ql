@@ -30,6 +30,8 @@ export interface MediaDescriptor {
   leftMarginPins: number;
   rightMarginPins: number;
   dieCutMaskedAreaDots?: number;
+  /** True for DK-22251 and similar two-color tapes — printer rejects single-color jobs */
+  twoColorTape?: boolean;
 }
 
 export interface PageData {
