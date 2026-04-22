@@ -66,36 +66,36 @@
 > [§6](PLAN.md#L814) · [Constraints §13](PLAN.md#L1631)
 
 ### Setup
-- [ ] `packages/node/package.json` — [§6.1](PLAN.md#L820)
-- [ ] `packages/node/README.md` — [§6.1](PLAN.md#L820)
-- [ ] `packages/node/tsconfig.json`
-- [ ] `packages/node/vitest.config.ts`
+- [x] `packages/node/package.json` — [§6.1](PLAN.md#L820)
+- [x] `packages/node/README.md` — [§6.1](PLAN.md#L820)
+- [x] `packages/node/tsconfig.json`
+- [x] `packages/node/vitest.config.ts`
 
 ### Source
-- [ ] `UsbTransport` — [§6.2](PLAN.md#L853)
-- [ ] `TcpTransport` — [§6.2](PLAN.md#L853)
-- [ ] `BrotherQLPrinter` class — [§6.3](PLAN.md#L873)
-- [ ] `listPrinters`, `openPrinter`, `openPrinterTcp` — [§6.3](PLAN.md#L873)
-- [ ] Editor Lite detection in `listPrinters` — [§6.4](PLAN.md#L928)
-- [ ] `src/index.ts` — public exports
+- [x] `UsbTransport` — [§6.2](PLAN.md#L853)
+- [x] `TcpTransport` — [§6.2](PLAN.md#L853)
+- [x] `BrotherQLPrinter` class — [§6.3](PLAN.md#L873)
+- [x] `listPrinters`, `openPrinter`, `openPrinterTcp` — [§6.3](PLAN.md#L873)
+- [x] Editor Lite detection in `listPrinters` — [§6.4](PLAN.md#L928)
+- [x] `src/index.ts` — public exports
 
 ### Tests
-- [ ] `src/__tests__/usb-transport.test.ts` — [§6.5](PLAN.md#L938)
-- [ ] `src/__tests__/tcp-transport.test.ts` — [§6.5](PLAN.md#L938)
-- [ ] `src/__tests__/printer.test.ts` — [§6.5](PLAN.md#L938)
-- [ ] `src/__tests__/discovery.test.ts` — [§6.5](PLAN.md#L938)
-- [ ] `src/__tests__/integration/print-text.test.ts` (stub, `BROTHER_INTEGRATION=1`) — [§6.5](PLAN.md#L938)
-- [ ] `src/__tests__/integration/print-image.test.ts` (stub) — [§6.5](PLAN.md#L938)
-- [ ] `src/__tests__/integration/print-two-color.test.ts` (stub, QL-820NWB) — [§6.5](PLAN.md#L938)
-- [ ] `src/__tests__/integration/tcp.test.ts` (stub, `BROTHER_TCP_HOST`) — [§6.5](PLAN.md#L938)
+- [x] `src/__tests__/usb-transport.test.ts` — [§6.5](PLAN.md#L938)
+- [x] `src/__tests__/tcp-transport.test.ts` — [§6.5](PLAN.md#L938)
+- [x] `src/__tests__/printer.test.ts` — [§6.5](PLAN.md#L938)
+- [x] `src/__tests__/discovery.test.ts` — [§6.5](PLAN.md#L938)
+- [x] `src/__tests__/integration/print-text.test.ts` (stub, `BROTHER_INTEGRATION=1`) — [§6.5](PLAN.md#L938)
+- [x] `src/__tests__/integration/print-image.test.ts` (stub) — [§6.5](PLAN.md#L938)
+- [x] `src/__tests__/integration/print-two-color.test.ts` (stub, QL-820NWB) — [§6.5](PLAN.md#L938)
+- [x] `src/__tests__/integration/tcp.test.ts` (stub, `BROTHER_TCP_HOST`) — [§6.5](PLAN.md#L938)
 
 ### Gate
-- [ ] `pnpm format`
-- [ ] `pnpm typecheck`
-- [ ] `pnpm lint`
-- [ ] `pnpm test`
-- [ ] `pnpm build`
-- [ ] `git commit -m "feat(node): implement USB and TCP transports, BrotherQLPrinter, and discovery"`
+- [x] `pnpm format`
+- [x] `pnpm typecheck`
+- [x] `pnpm lint`
+- [x] `pnpm test`
+- [x] `pnpm build`
+- [x] `git commit -m "feat(node): implement USB and TCP transports, BrotherQLPrinter, and discovery"`
 
 ---
 

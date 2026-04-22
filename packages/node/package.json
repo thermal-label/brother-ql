@@ -1,0 +1,76 @@
+{
+  "name": "@thermal-label/brother-ql-node",
+  "version": "0.0.0",
+  "description": "Node.js USB and TCP driver for Brother QL label printers",
+  "keywords": [
+    "brother",
+    "brother-ql",
+    "label-printer",
+    "thermal-label",
+    "usb",
+    "tcp",
+    "node"
+  ],
+  "type": "module",
+  "author": "Mannes Brak",
+  "license": "MIT",
+  "homepage": "https://thermal-label.github.io/brother-ql/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/thermal-label/brother-ql.git",
+    "directory": "packages/node"
+  },
+  "bugs": {
+    "url": "https://github.com/thermal-label/brother-ql/issues"
+  },
+  "funding": [
+    {
+      "type": "github",
+      "url": "https://github.com/sponsors/mannes"
+    },
+    {
+      "type": "ko-fi",
+      "url": "https://ko-fi.com/mannes"
+    }
+  ],
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@mbtech-nl/bitmap": "^0.1.0",
+    "@thermal-label/brother-ql-core": "workspace:*",
+    "usb": "^2.0.0"
+  },
+  "optionalDependencies": {
+    "@napi-rs/canvas": "^0.1.0"
+  },
+  "devDependencies": {
+    "@mbtech-nl/tsconfig": "^1.0.0",
+    "@types/node": "^22.0.0",
+    "@vitest/coverage-v8": "^2.1.9",
+    "typescript": "~5.5.0",
+    "vitest": "^2.0.0"
+  }
+}
