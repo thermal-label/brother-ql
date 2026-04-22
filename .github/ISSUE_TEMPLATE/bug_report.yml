@@ -1,0 +1,88 @@
+name: Bug report
+description: Something isn't working as expected.
+title: "Bug: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what_happened
+    attributes:
+      label: What happened?
+      description: What did you expect, and what actually happened instead?
+      placeholder: "e.g. openPrinter() throws LIBUSB_ERROR_ACCESS on first call but works after reconnecting…"
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal reproduction
+      description: The smallest piece of code that triggers the bug. Omit if it's a CLI-only issue.
+      render: typescript
+      placeholder: |
+        import { openPrinter, findMedia } from "@thermal-label/brother-ql-node";
+        const printer = await openPrinter();
+        await printer.printText("test", findMedia(259)!);
+
+  - type: dropdown
+    id: packages
+    attributes:
+      label: Affected package(s)
+      multiple: true
+      options:
+        - "@thermal-label/brother-ql-node"
+        - "@thermal-label/brother-ql-cli"
+        - "@thermal-label/brother-ql-web"
+        - "@thermal-label/brother-ql-core"
+    validations:
+      required: true
+
+  - type: input
+    id: pkg_version
+    attributes:
+      label: Package version
+      placeholder: "e.g. 0.3.1"
+    validations:
+      required: true
+
+  - type: input
+    id: node_version
+    attributes:
+      label: Node version
+      placeholder: "e.g. v24.0.0  (run: node -v)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Linux
+        - macOS
+        - Windows
+      multiple: false
+    validations:
+      required: true
+
+  - type: input
+    id: printer
+    attributes:
+      label: Printer model and USB PID
+      description: "Find PID with `lsusb | grep -i brother` or Device Manager on Windows."
+      placeholder: "e.g. QL-820NWB (0x20A7)"
+
+  - type: dropdown
+    id: connection
+    attributes:
+      label: Connection type
+      options:
+        - USB
+        - TCP (network)
+        - WebUSB (browser)
+
+  - type: textarea
+    id: error
+    attributes:
+      label: Error output
+      description: Full error message, stack trace, or terminal output.
+      render: shell

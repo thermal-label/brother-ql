@@ -1,0 +1,67 @@
+name: New device support
+description: Request support for a Brother QL printer not currently on the compatibility list.
+title: "New device: [Device name] ([PID])"
+labels: ["hardware", "new-device"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        All Brother QL printers share vendor ID `0x04F9`. If your device shows up under that
+        VID but isn't on the [hardware list](https://thermal-label.github.io/brother-ql/hardware),
+        open this issue.
+
+  - type: input
+    id: model
+    attributes:
+      label: Device model
+      placeholder: "e.g. QL-820NWBc"
+    validations:
+      required: true
+
+  - type: input
+    id: pid
+    attributes:
+      label: USB PID
+      description: "Find it with `lsusb | grep -i brother` (Linux/macOS) or Device Manager (Windows)."
+      placeholder: "e.g. 0x209d"
+    validations:
+      required: true
+
+  - type: textarea
+    id: lsusb
+    attributes:
+      label: "`lsusb` output"
+      description: "Paste the relevant line from `lsusb | grep -i brother`."
+      render: shell
+      placeholder: "Bus 003 Device 044: ID 04f9:209d Brother Industries, Ltd QL-820NWB Label Printer"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: tried
+    attributes:
+      label: Did you try running `brother-ql list`?
+      options:
+        - "Yes — device appeared in the list"
+        - "Yes — device did not appear"
+        - "No"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: capabilities
+    attributes:
+      label: Known capabilities (tick what applies)
+      options:
+        - label: "Two-color printing (black + red)"
+        - label: "Network connectivity (WiFi or LAN)"
+        - label: "Bluetooth"
+        - label: "Auto-cut"
+        - label: "Editor Lite mode (green LED)"
+        - label: "Wide format (≥ 4 inch / 102mm labels)"
+
+  - type: input
+    id: product_page
+    attributes:
+      label: Product page or purchase link
+      placeholder: "https://…"

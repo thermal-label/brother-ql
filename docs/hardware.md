@@ -26,7 +26,28 @@ All devices share Vendor ID `0x04F9` (Brother Industries Ltd.) and use the same 
 | QL-1110NWB | `0x20A9` | 1296      | —         | WiFi + LAN | 🟡 Expected |
 | QL-1115NWB | `0x20AC` | 1296      | —         | WiFi + LAN | 🟡 Expected |
 
-> Have a device marked 🟡 Expected? Test it and [open a hardware verification issue](https://github.com/thermal-label/brother-ql/issues/new?template=hardware_verification.yml) — we'll mark it verified and add you to the contributors list.
+<div class="hw-cta">
+  <div class="hw-cta-header">
+    <span class="hw-cta-icon">🔌</span>
+    <div class="hw-cta-text">
+      <strong>Got one of the 16 untested devices?</strong>
+      <span>A two-minute test helps everyone who buys one of these printers.</span>
+    </div>
+  </div>
+  <div class="hw-cta-steps">
+    <span>Run these two commands and report what happens:</span>
+    <div class="hw-cta-cmds">
+      <code>brother-ql list</code>
+      <span class="hw-cta-arrow">→</span>
+      <code>brother-ql print text "test" --media 259</code>
+    </div>
+  </div>
+  <div class="hw-cta-actions">
+    <a class="hw-chip hw-chip-works" href="https://github.com/thermal-label/brother-ql/issues/new?template=hardware_verification.yml&title=Verified%3A+%5BDevice+name%5D&labels=hardware%2Cverified" target="_blank" rel="noopener">✅ It works</a>
+    <a class="hw-chip hw-chip-partial" href="https://github.com/thermal-label/brother-ql/issues/new?template=hardware_verification.yml&title=Partial%3A+%5BDevice+name%5D&labels=hardware%2Cpartial" target="_blank" rel="noopener">⚠️ Partially works</a>
+    <a class="hw-chip hw-chip-broken" href="https://github.com/thermal-label/brother-ql/issues/new?template=hardware_verification.yml&title=Broken%3A+%5BDevice+name%5D&labels=hardware%2Cbroken" target="_blank" rel="noopener">❌ Doesn't work</a>
+  </div>
+</div>
 
 ## Print head geometry
 
