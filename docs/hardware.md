@@ -7,6 +7,7 @@ All devices share Vendor ID `0x04F9` (Brother Industries Ltd.) and use the same 
 | Device     | USB PID  | Head pins | Two-color | Network    | Status      |
 | ---------- | -------- | --------- | --------- | ---------- | ----------- |
 | QL-820NWB  | `0x20A7` | 720       | ✅        | WiFi + LAN | ✅ Verified |
+| QL-820NWBc | `0x209D` | 720       | ✅        | WiFi + LAN | ✅ Verified |
 | QL-800     | `0x209B` | 720       | ✅        | —          | 🟡 Expected |
 | QL-810W    | `0x209C` | 720       | ✅        | WiFi       | 🟡 Expected |
 | QL-700     | `0x2042` | 720       | —         | —          | 🟡 Expected |

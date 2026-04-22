@@ -9,6 +9,13 @@ describe('findDevice', () => {
     expect(dev!.twoColor).toBe(true);
   });
 
+  it('returns correct descriptor for QL-820NWBc', () => {
+    const dev = findDevice(0x04f9, 0x209d);
+    expect(dev).toBeDefined();
+    expect(dev!.name).toBe('QL-820NWBc');
+    expect(dev!.twoColor).toBe(true);
+  });
+
   it('returns correct descriptor for QL-500', () => {
     const dev = findDevice(0x04f9, 0x2013);
     expect(dev).toBeDefined();
