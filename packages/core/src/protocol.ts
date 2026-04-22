@@ -25,7 +25,6 @@ export function buildPrintInfo(
   media: MediaDescriptor,
   rowCount: number,
   pageIndex: number,
-  _twoColor = false,
 ): Uint8Array {
   const mediaType = media.type === 'continuous' ? 0x0a : 0x0b;
   // 0xCE is what Python brother_ql uses for QL-820NWB (two-color capable model) regardless of
@@ -109,7 +108,8 @@ function placeBits(src: Uint8Array, srcWidthPx: number, dst: Uint8Array, dstOffs
     const srcBit = (src[px >> 3] ?? 0) >> (7 - (px & 7)) & 1;
     if (srcBit) {
       const dstPx = dstOffsetBits + px;
-      dst[dstPx >> 3]! |= 1 << (7 - (dstPx & 7));
+      const byteIdx = dstPx >> 3;
+      if (byteIdx < dst.length) dst[byteIdx] = (dst[byteIdx] ?? 0) | (1 << (7 - (dstPx & 7)));
     }
   }
 }
@@ -167,7 +167,7 @@ export function encodeJob(pages: PageData[], options: JobOptions = {}): Uint8Arr
 
     chunks.push(buildRasterMode());
     chunks.push(buildStatusRequest());
-    chunks.push(buildPrintInfo(media, rowCount, i, twoColor));
+    chunks.push(buildPrintInfo(media, rowCount, i));
     chunks.push(buildVariousMode(autoCut));
     chunks.push(buildCutEach(1));
     chunks.push(buildExpandedMode(cutAtEnd, highRes, twoColor));
