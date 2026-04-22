@@ -34,30 +34,30 @@
 > [§5](PLAN.md#L510) · [Devices §1](PLAN.md#L16) · [Protocol §2](PLAN.md#L59) · [Constraints §13](PLAN.md#L1631)
 
 ### Setup
-- [ ] `packages/core/package.json` — [§5.1](PLAN.md#L517)
-- [ ] `packages/core/README.md` — [§5.1](PLAN.md#L517)
-- [ ] `packages/core/tsconfig.json`
-- [ ] `packages/core/vitest.config.ts`
+- [x] `packages/core/package.json` — [§5.1](PLAN.md#L517)
+- [x] `packages/core/README.md` — [§5.1](PLAN.md#L517)
+- [x] `packages/core/tsconfig.json`
+- [x] `packages/core/vitest.config.ts`
 
 ### Source
-- [ ] `src/types.ts` — all shared types and interfaces — [§5.2](PLAN.md#L552)
-- [ ] `src/devices.ts` — full device registry — [§5.3](PLAN.md#L636)
-- [ ] `src/media.ts` — full media registry (continuous + die-cut) — [§2.3](PLAN.md#L87)
-- [ ] `src/protocol.ts` — all encoder functions — [§5.4](PLAN.md#L754)
-- [ ] `src/index.ts` — public re-exports — [§5.2](PLAN.md#L552)
+- [x] `src/types.ts` — all shared types and interfaces — [§5.2](PLAN.md#L552)
+- [x] `src/devices.ts` — full device registry — [§5.3](PLAN.md#L636)
+- [x] `src/media.ts` — full media registry (continuous + die-cut) — [§2.3](PLAN.md#L87)
+- [x] `src/protocol.ts` — all encoder functions — [§5.4](PLAN.md#L754)
+- [x] `src/index.ts` — public re-exports — [§5.2](PLAN.md#L552)
 
 ### Tests
-- [ ] `src/__tests__/protocol.test.ts` — [§5.5](PLAN.md#L784)
-- [ ] `src/__tests__/devices.test.ts` — [§5.5](PLAN.md#L784)
-- [ ] `src/__tests__/media.test.ts` — [§5.5](PLAN.md#L784)
+- [x] `src/__tests__/protocol.test.ts` — [§5.5](PLAN.md#L784)
+- [x] `src/__tests__/devices.test.ts` — [§5.5](PLAN.md#L784)
+- [x] `src/__tests__/media.test.ts` — [§5.5](PLAN.md#L784)
 
 ### Gate
-- [ ] `pnpm format`
-- [ ] `pnpm typecheck`
-- [ ] `pnpm lint`
-- [ ] `pnpm test`
-- [ ] `pnpm build`
-- [ ] `git commit -m "feat(core): implement protocol encoder, device registry, and media registry"`
+- [x] `pnpm format`
+- [x] `pnpm typecheck`
+- [x] `pnpm lint`
+- [x] `pnpm test`
+- [x] `pnpm build`
+- [x] `git commit -m "feat(core): implement protocol encoder, device registry, and media registry"`
 
 ---
 

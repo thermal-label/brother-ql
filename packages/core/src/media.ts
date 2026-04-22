@@ -1,0 +1,36 @@
+import { type MediaDescriptor, type MediaType } from './types.js';
+
+export const MEDIA: Record<number, MediaDescriptor> = {
+  // Continuous length tape
+  257: { id: 257, name: '12mm continuous', type: 'continuous', widthMm: 12, lengthMm: 0, printAreaDots: 106, leftMarginPins: 585, rightMarginPins: 29 },
+  258: { id: 258, name: '29mm continuous', type: 'continuous', widthMm: 29, lengthMm: 0, printAreaDots: 306, leftMarginPins: 408, rightMarginPins: 6 },
+  264: { id: 264, name: '38mm continuous', type: 'continuous', widthMm: 38, lengthMm: 0, printAreaDots: 413, leftMarginPins: 295, rightMarginPins: 12 },
+  262: { id: 262, name: '50mm continuous', type: 'continuous', widthMm: 50, lengthMm: 0, printAreaDots: 554, leftMarginPins: 154, rightMarginPins: 12 },
+  261: { id: 261, name: '54mm continuous', type: 'continuous', widthMm: 54, lengthMm: 0, printAreaDots: 590, leftMarginPins: 130, rightMarginPins: 0 },
+  259: { id: 259, name: '62mm continuous', type: 'continuous', widthMm: 62, lengthMm: 0, printAreaDots: 696, leftMarginPins: 12, rightMarginPins: 12 },
+  260: { id: 260, name: '102mm continuous', type: 'continuous', widthMm: 102, lengthMm: 0, printAreaDots: 1164, leftMarginPins: 76, rightMarginPins: 56 },
+
+  // Die-cut labels
+  269: { id: 269, name: '17x54mm die-cut', type: 'die-cut', widthMm: 17, lengthMm: 54, printAreaDots: 165, leftMarginPins: 0, rightMarginPins: 0, dieCutMaskedAreaDots: 566 },
+  270: { id: 270, name: '17x87mm die-cut', type: 'die-cut', widthMm: 17, lengthMm: 87, printAreaDots: 165, leftMarginPins: 0, rightMarginPins: 0, dieCutMaskedAreaDots: 956 },
+  370: { id: 370, name: '23x23mm die-cut', type: 'die-cut', widthMm: 23, lengthMm: 23, printAreaDots: 236, leftMarginPins: 0, rightMarginPins: 0, dieCutMaskedAreaDots: 202 },
+  271: { id: 271, name: '29x90mm die-cut', type: 'die-cut', widthMm: 29, lengthMm: 90, printAreaDots: 306, leftMarginPins: 0, rightMarginPins: 0, dieCutMaskedAreaDots: 991 },
+  272: { id: 272, name: '38x90mm die-cut', type: 'die-cut', widthMm: 38, lengthMm: 90, printAreaDots: 413, leftMarginPins: 0, rightMarginPins: 0, dieCutMaskedAreaDots: 991 },
+  367: { id: 367, name: '39x48mm die-cut', type: 'die-cut', widthMm: 39, lengthMm: 48, printAreaDots: 425, leftMarginPins: 0, rightMarginPins: 0, dieCutMaskedAreaDots: 495 },
+  374: { id: 374, name: '52x29mm die-cut', type: 'die-cut', widthMm: 52, lengthMm: 29, printAreaDots: 578, leftMarginPins: 0, rightMarginPins: 0, dieCutMaskedAreaDots: 271 },
+  274: { id: 274, name: '62x29mm die-cut', type: 'die-cut', widthMm: 62, lengthMm: 29, printAreaDots: 696, leftMarginPins: 0, rightMarginPins: 0, dieCutMaskedAreaDots: 271 },
+  275: { id: 275, name: '62x100mm die-cut', type: 'die-cut', widthMm: 62, lengthMm: 100, printAreaDots: 696, leftMarginPins: 0, rightMarginPins: 0, dieCutMaskedAreaDots: 1109 },
+  365: { id: 365, name: '102x51mm die-cut', type: 'die-cut', widthMm: 102, lengthMm: 51, printAreaDots: 1164, leftMarginPins: 0, rightMarginPins: 0, dieCutMaskedAreaDots: 526 },
+  366: { id: 366, name: '102x152mm die-cut', type: 'die-cut', widthMm: 102, lengthMm: 152, printAreaDots: 1164, leftMarginPins: 0, rightMarginPins: 0, dieCutMaskedAreaDots: 1660 },
+  362: { id: 362, name: '12mm round die-cut', type: 'die-cut', widthMm: 12, lengthMm: 12, printAreaDots: 94, leftMarginPins: 0, rightMarginPins: 0, dieCutMaskedAreaDots: 94 },
+  363: { id: 363, name: '24mm round die-cut', type: 'die-cut', widthMm: 24, lengthMm: 24, printAreaDots: 236, leftMarginPins: 0, rightMarginPins: 0, dieCutMaskedAreaDots: 236 },
+  273: { id: 273, name: '58mm round die-cut', type: 'die-cut', widthMm: 58, lengthMm: 58, printAreaDots: 618, leftMarginPins: 0, rightMarginPins: 0, dieCutMaskedAreaDots: 618 },
+};
+
+export function findMedia(id: number): MediaDescriptor | undefined {
+  return MEDIA[id];
+}
+
+export function findMediaByWidth(widthMm: number, type: MediaType): MediaDescriptor[] {
+  return Object.values(MEDIA).filter((m) => m.widthMm === widthMm && m.type === type);
+}
