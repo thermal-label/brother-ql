@@ -73,4 +73,33 @@ describe('UsbTransport', () => {
     expect(mockReleaseAsync).toHaveBeenCalledOnce();
     expect(mockClose).toHaveBeenCalledOnce();
   });
+
+  it('read returns empty array when transferAsync returns null', async () => {
+    mockInTransfer.mockResolvedValueOnce(null);
+    const { UsbTransport } = await import('../transport.js');
+    const transport = await UsbTransport.open(0x04f9, 0x20a7);
+    const result = await transport.read(32);
+    expect(result).toHaveLength(0);
+    await transport.close();
+  });
+
+  it('throws when USB device has no OUT endpoint', async () => {
+    mockInterface.mockReturnValueOnce({
+      claim: mockClaim,
+      releaseAsync: mockReleaseAsync,
+      endpoints: [{ direction: 'in', transferAsync: mockInTransfer }],
+    });
+    const { UsbTransport } = await import('../transport.js');
+    expect(() => UsbTransport.open(0x04f9, 0x20a7)).toThrow('no bulk OUT endpoint');
+  });
+
+  it('throws when USB device has no IN endpoint', async () => {
+    mockInterface.mockReturnValueOnce({
+      claim: mockClaim,
+      releaseAsync: mockReleaseAsync,
+      endpoints: [{ direction: 'out', transferAsync: mockOutTransfer }],
+    });
+    const { UsbTransport } = await import('../transport.js');
+    expect(() => UsbTransport.open(0x04f9, 0x20a7)).toThrow('no bulk IN endpoint');
+  });
 });

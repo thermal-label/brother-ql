@@ -45,11 +45,7 @@ export class BrotherQLPrinter {
     await this._transport.write(data);
   }
 
-  async printText(
-    text: string,
-    media: MediaDescriptor,
-    options?: TextPrintOptions,
-  ): Promise<void> {
+  async printText(text: string, media: MediaDescriptor, options?: TextPrintOptions): Promise<void> {
     const { invert, scaleX, scaleY, ...pageOptions } = options ?? {};
     const rawBitmap = renderText(text, {
       ...(invert !== undefined ? { invert } : {}),
@@ -134,7 +130,7 @@ export async function openPrinter(options?: OpenOptions): Promise<BrotherQLPrint
   const printers = listPrinters();
   if (printers.length === 0) throw new Error('No Brother QL printers found');
   const info = printers[0];
-  if (!info) throw new Error('No Brother QL printers found');;
+  if (!info) throw new Error('No Brother QL printers found');
   const transport = await UsbTransport.open(info.device.vid, info.device.pid);
   return new BrotherQLPrinter(transport, info.device, 'usb');
 }
@@ -151,9 +147,7 @@ export async function openPrinterTcp(host: string, port = 9100): Promise<Brother
   const mediaWidthMm = status[10] ?? 0;
   // Try to find a matching device by network capability
   const { DEVICES } = await import('@thermal-label/brother-ql-core');
-  const networkDevice = Object.values(DEVICES).find(
-    (d) => d.network !== 'none',
-  );
+  const networkDevice = Object.values(DEVICES).find(d => d.network !== 'none');
   const device = networkDevice ?? DEVICES.QL_820NWB;
 
   void mediaWidthMm; // may be used for smarter detection in future

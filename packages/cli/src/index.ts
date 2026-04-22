@@ -8,15 +8,14 @@ import { runPrintTwoColor } from './commands/print-two-color.js';
 export function run(): void {
   const program = new Command();
 
-  program
-    .name('brother-ql')
-    .description('Brother QL label printer driver CLI')
-    .version('0.0.0');
+  program.name('brother-ql').description('Brother QL label printer driver CLI').version('0.0.0');
 
   program
     .command('list')
     .description('list connected printers')
-    .action(() => { runList(); });
+    .action(() => {
+      runList();
+    });
 
   program
     .command('status')
@@ -39,7 +38,9 @@ export function run(): void {
     .option('--host <ip>', 'use TCP transport')
     .option('--serial <sn>', 'target printer by serial number')
     .action((text: string, options: Record<string, unknown>) => {
-      runPrintText(text, options as unknown as Parameters<typeof runPrintText>[1]).catch(handleError);
+      runPrintText(text, options as unknown as Parameters<typeof runPrintText>[1]).catch(
+        handleError,
+      );
     });
 
   print
@@ -54,7 +55,9 @@ export function run(): void {
     .option('--host <ip>', 'use TCP transport')
     .option('--serial <sn>', 'target printer by serial number')
     .action((file: string, options: Record<string, unknown>) => {
-      runPrintImage(file, options as unknown as Parameters<typeof runPrintImage>[1]).catch(handleError);
+      runPrintImage(file, options as unknown as Parameters<typeof runPrintImage>[1]).catch(
+        handleError,
+      );
     });
 
   print

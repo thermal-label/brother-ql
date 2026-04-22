@@ -199,10 +199,10 @@
 
 ## Step 7 — Final
 
-- [ ] All PROGRESS.md checkboxes ticked
-- [ ] `pnpm format`
-- [ ] `pnpm typecheck`
-- [ ] `pnpm lint`
-- [ ] `pnpm test:coverage`
-- [ ] `pnpm build`
-- [ ] `pnpm docs:build`
+- [x] All PROGRESS.md checkboxes ticked
+- [x] `pnpm format`
+- [x] `pnpm typecheck`
+- [x] `pnpm lint`
+- [x] `pnpm test:coverage`
+- [x] `pnpm build`
+- [x] `pnpm docs:build`

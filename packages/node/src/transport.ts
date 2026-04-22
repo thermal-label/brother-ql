@@ -20,12 +20,8 @@ export class UsbTransport implements Transport {
     iface.claim();
     this.iface = iface;
 
-    const outEp = iface.endpoints.find(
-      (e): e is usb.OutEndpoint => e.direction === 'out',
-    );
-    const inEp = iface.endpoints.find(
-      (e): e is usb.InEndpoint => e.direction === 'in',
-    );
+    const outEp = iface.endpoints.find((e): e is usb.OutEndpoint => e.direction === 'out');
+    const inEp = iface.endpoints.find((e): e is usb.InEndpoint => e.direction === 'in');
 
     if (!outEp) throw new Error('USB device has no bulk OUT endpoint');
     if (!inEp) throw new Error('USB device has no bulk IN endpoint');
@@ -35,10 +31,13 @@ export class UsbTransport implements Transport {
   }
 
   static open(vid: number, pid: number): Promise<UsbTransport> {
-    const device = usb.getDeviceList().find(
-      (d) => d.deviceDescriptor.idVendor === vid && d.deviceDescriptor.idProduct === pid,
-    );
-    if (!device) return Promise.reject(new Error(`USB device ${vid.toString(16)}:${pid.toString(16)} not found`));
+    const device = usb
+      .getDeviceList()
+      .find(d => d.deviceDescriptor.idVendor === vid && d.deviceDescriptor.idProduct === pid);
+    if (!device)
+      return Promise.reject(
+        new Error(`USB device ${vid.toString(16)}:${pid.toString(16)} not found`),
+      );
     return Promise.resolve(new UsbTransport(device));
   }
 
@@ -102,7 +101,7 @@ export class TcpTransport implements Transport {
 
   async write(data: Uint8Array): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.socket.write(Buffer.from(data), (err) => {
+      this.socket.write(Buffer.from(data), err => {
         if (err) reject(err);
         else resolve();
       });
@@ -118,15 +117,17 @@ export class TcpTransport implements Transport {
       if (remainder.length > 0) this.chunks.push(Buffer.from(remainder));
       return new Uint8Array(result);
     }
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       this.resolveRead = resolve;
       this.needed = byteCount;
     });
   }
 
   async close(): Promise<void> {
-    return new Promise((resolve) => {
-      this.socket.end(() => { resolve(); });
+    return new Promise(resolve => {
+      this.socket.end(() => {
+        resolve();
+      });
     });
   }
 }

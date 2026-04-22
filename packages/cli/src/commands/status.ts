@@ -2,9 +2,7 @@ import chalk from 'chalk';
 import { openPrinter, openPrinterTcp } from '@thermal-label/brother-ql-node';
 
 export async function runStatus(options: { host?: string }): Promise<void> {
-  const printer = options.host
-    ? await openPrinterTcp(options.host)
-    : await openPrinter();
+  const printer = options.host ? await openPrinterTcp(options.host) : await openPrinter();
 
   const status = await printer.getStatus();
   await printer.close();
@@ -22,6 +20,8 @@ export async function runStatus(options: { host?: string }): Promise<void> {
   }
 
   if (status.editorLiteMode) {
-    console.log(chalk.yellow('  ⚠ Editor Lite mode detected. Hold the Editor Lite button to disable.'));
+    console.log(
+      chalk.yellow('  ⚠ Editor Lite mode detected. Hold the Editor Lite button to disable.'),
+    );
   }
 }

@@ -4,11 +4,11 @@ WebUSB browser driver for Brother QL label printers.
 
 ## Browser Support
 
-| Browser | Support |
-|---|---|
-| Chrome / Edge | ✅ |
-| Firefox | ❌ |
-| Safari | ❌ |
+| Browser       | Support |
+| ------------- | ------- |
+| Chrome / Edge | ✅      |
+| Firefox       | ❌      |
+| Safari        | ❌      |
 
 Requires a [secure context](https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts) (`https://` or `localhost`).
 
@@ -58,16 +58,16 @@ Wraps an already-obtained `USBDevice`. The caller is responsible for opening and
 
 ### `WebBrotherQLPrinter`
 
-| Method | Description |
-|---|---|
-| `print(pages, options?)` | Send a pre-encoded job |
-| `printText(text, media, options?)` | Render and print a text label |
-| `printImage(imageData, media, options?)` | Print from `ImageData` |
-| `printImageURL(url, media, options?)` | Fetch URL and print |
-| `printTwoColor(black, red, media, options?)` | Two-color label (QL-800 series) |
-| `getStatus()` | Query printer status |
-| `isConnected()` | Returns `true` if the USB device is open |
-| `disconnect()` | Release interface and close device |
+| Method                                       | Description                              |
+| -------------------------------------------- | ---------------------------------------- |
+| `print(pages, options?)`                     | Send a pre-encoded job                   |
+| `printText(text, media, options?)`           | Render and print a text label            |
+| `printImage(imageData, media, options?)`     | Print from `ImageData`                   |
+| `printImageURL(url, media, options?)`        | Fetch URL and print                      |
+| `printTwoColor(black, red, media, options?)` | Two-color label (QL-800 series)          |
+| `getStatus()`                                | Query printer status                     |
+| `isConnected()`                              | Returns `true` if the USB device is open |
+| `disconnect()`                               | Release interface and close device       |
 
 ## Requirements
 

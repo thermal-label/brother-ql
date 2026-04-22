@@ -42,15 +42,15 @@ brother-ql print text "Network" --media 259 --host 192.168.1.100
 
 ### `print text` options
 
-| Flag | Description |
-|---|---|
+| Flag               | Description                                         |
+| ------------------ | --------------------------------------------------- |
 | `-m, --media <id>` | Media ID (required, e.g. `259` for 62mm continuous) |
-| `--invert` | White text on black background |
-| `--scale-x <n>` | Horizontal pixel scale (default 1) |
-| `--scale-y <n>` | Vertical pixel scale (default 1) |
-| `--no-cut` | Disable auto-cut |
-| `--host <ip>` | Use TCP transport instead of USB |
-| `--serial <sn>` | Target printer by serial number |
+| `--invert`         | White text on black background                      |
+| `--scale-x <n>`    | Horizontal pixel scale (default 1)                  |
+| `--scale-y <n>`    | Vertical pixel scale (default 1)                    |
+| `--no-cut`         | Disable auto-cut                                    |
+| `--host <ip>`      | Use TCP transport instead of USB                    |
+| `--serial <sn>`    | Target printer by serial number                     |
 
 ## Print image
 
@@ -65,16 +65,16 @@ Requires `@napi-rs/canvas` for PNG/JPEG decoding (installed automatically with t
 
 ### `print image` options
 
-| Flag | Description |
-|---|---|
-| `-m, --media <id>` | Media ID (required) |
-| `--threshold <0-255>` | B&W threshold (default 128) |
-| `--dither` | Floyd-Steinberg dithering |
-| `--invert` | Invert black and white |
-| `--rotate <0\|90\|180\|270>` | Rotate image before printing |
-| `--no-cut` | Disable auto-cut |
-| `--host <ip>` | Use TCP transport |
-| `--serial <sn>` | Target printer by serial number |
+| Flag                         | Description                     |
+| ---------------------------- | ------------------------------- |
+| `-m, --media <id>`           | Media ID (required)             |
+| `--threshold <0-255>`        | B&W threshold (default 128)     |
+| `--dither`                   | Floyd-Steinberg dithering       |
+| `--invert`                   | Invert black and white          |
+| `--rotate <0\|90\|180\|270>` | Rotate image before printing    |
+| `--no-cut`                   | Disable auto-cut                |
+| `--host <ip>`                | Use TCP transport               |
+| `--serial <sn>`              | Target printer by serial number |
 
 ## Print two-color label
 
@@ -89,27 +89,27 @@ Provide two separate image files: one for the black layer, one for the red layer
 
 ### `print two-color` options
 
-| Flag | Description |
-|---|---|
-| `-m, --media <id>` | Media ID (required) |
-| `--threshold <0-255>` | B&W threshold applied to both layers |
-| `--dither` | Floyd-Steinberg dithering on both layers |
-| `--invert` | Invert both layers |
-| `--no-cut` | Disable auto-cut |
-| `--host <ip>` | Use TCP transport |
-| `--serial <sn>` | Target printer by serial number |
+| Flag                  | Description                              |
+| --------------------- | ---------------------------------------- |
+| `-m, --media <id>`    | Media ID (required)                      |
+| `--threshold <0-255>` | B&W threshold applied to both layers     |
+| `--dither`            | Floyd-Steinberg dithering on both layers |
+| `--invert`            | Invert both layers                       |
+| `--no-cut`            | Disable auto-cut                         |
+| `--host <ip>`         | Use TCP transport                        |
+| `--serial <sn>`       | Target printer by serial number          |
 
 ## Common media IDs
 
-| ID | Width | Type |
-|---|---|---|
-| 257 | 12mm | Continuous |
-| 258 | 29mm | Continuous |
-| 264 | 38mm | Continuous |
-| 262 | 50mm | Continuous |
-| 261 | 54mm | Continuous |
-| 259 | 62mm | Continuous |
-| 271 | 29×90mm | Die-cut |
-| 275 | 62×100mm | Die-cut |
+| ID  | Width    | Type       |
+| --- | -------- | ---------- |
+| 257 | 12mm     | Continuous |
+| 258 | 29mm     | Continuous |
+| 264 | 38mm     | Continuous |
+| 262 | 50mm     | Continuous |
+| 261 | 54mm     | Continuous |
+| 259 | 62mm     | Continuous |
+| 271 | 29×90mm  | Die-cut    |
+| 275 | 62×100mm | Die-cut    |
 
 See the full list on the [Hardware page](/hardware).

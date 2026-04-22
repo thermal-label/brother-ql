@@ -13,7 +13,10 @@ interface PrintTextOptions {
 export async function runPrintText(text: string, options: PrintTextOptions): Promise<void> {
   const mediaId = Number.parseInt(options.media, 10);
   const media = findMedia(mediaId);
-  if (!media) throw new Error(`Unknown media ID: ${options.media}. Run 'brother-ql list' to discover printers.`);
+  if (!media)
+    throw new Error(
+      `Unknown media ID: ${options.media}. Run 'brother-ql list' to discover printers.`,
+    );
 
   const printer = options.host
     ? await openPrinterTcp(options.host)

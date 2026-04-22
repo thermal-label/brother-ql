@@ -2,7 +2,14 @@
   "name": "@thermal-label/brother-ql-core",
   "version": "0.0.0",
   "description": "Protocol encoding, device registry, and media registry for Brother QL label printers",
-  "keywords": ["brother", "brother-ql", "label-printer", "thermal-label", "usb", "protocol"],
+  "keywords": [
+    "brother",
+    "brother-ql",
+    "label-printer",
+    "thermal-label",
+    "usb",
+    "protocol"
+  ],
   "type": "module",
   "author": "Mannes Brak",
   "license": "MIT",
@@ -16,12 +23,26 @@
     "url": "https://github.com/thermal-label/brother-ql/issues"
   },
   "funding": [
-    { "type": "github", "url": "https://github.com/sponsors/mannes" },
-    { "type": "ko-fi", "url": "https://ko-fi.com/mannes" }
+    {
+      "type": "github",
+      "url": "https://github.com/sponsors/mannes"
+    },
+    {
+      "type": "ko-fi",
+      "url": "https://ko-fi.com/mannes"
+    }
   ],
-  "files": ["dist", "src", "README.md"],
-  "engines": { "node": ">=24.0.0" },
-  "publishConfig": { "access": "public" },
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "sideEffects": false,
   "main": "./dist/index.js",
   "types": "./src/index.ts",

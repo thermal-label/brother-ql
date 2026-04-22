@@ -7,6 +7,11 @@ import {
   buildRasterRow,
   buildPrintCommand,
   buildPrintInfo,
+  buildZeroRow,
+  buildCompression,
+  buildStatusNotification,
+  buildVariousMode,
+  buildExpandedMode,
   encodeJob,
 } from '../protocol.js';
 import { type PageData } from '../types.js';
@@ -16,7 +21,7 @@ describe('buildInvalidate', () => {
   it('returns exactly 400 zero bytes', () => {
     const buf = buildInvalidate();
     expect(buf.length).toBe(400);
-    expect(buf.every((b) => b === 0)).toBe(true);
+    expect(buf.every(b => b === 0)).toBe(true);
   });
 });
 
@@ -67,6 +72,12 @@ describe('buildPrintInfo', () => {
     const media = MEDIA[259]!;
     const buf = buildPrintInfo(media, 100, 3);
     expect(buf[9]).toBe(3);
+  });
+
+  it('die-cut media sets mediaType byte to 0x0b', () => {
+    const media = MEDIA[271]!; // 29x90mm die-cut
+    const buf = buildPrintInfo(media, 100, 0);
+    expect(buf[4]).toBe(0x0b);
   });
 });
 
@@ -125,13 +136,84 @@ describe('encodeJob', () => {
     const page = makePage(720, 2);
     const buf1 = encodeJob([page]);
     const buf2 = encodeJob([page], { copies: 2 });
-    // With 2 copies we should have more bytes
     expect(buf2.length).toBeGreaterThan(buf1.length);
+  });
+
+  it('compress option includes compression command [0x4D, 0x02]', () => {
+    const page: PageData = { ...makePage(720, 5), options: { compress: true } };
+    const buf = encodeJob([page]);
+    let found = false;
+    for (let i = 0; i < buf.length - 1; i++) {
+      if (buf[i] === 0x4d && buf[i + 1] === 0x02) {
+        found = true;
+        break;
+      }
+    }
+    expect(found).toBe(true);
   });
 });
 
 describe('buildRasterMode', () => {
   it('returns correct bytes', () => {
     expect(Array.from(buildRasterMode())).toEqual([0x1b, 0x69, 0x61, 0x01]);
+  });
+});
+
+describe('buildStatusNotification', () => {
+  it('disabled returns [0x1B, 0x69, 0x21, 0x00]', () => {
+    expect(Array.from(buildStatusNotification(false))).toEqual([0x1b, 0x69, 0x21, 0x00]);
+  });
+
+  it('enabled returns [0x1B, 0x69, 0x21, 0x01]', () => {
+    expect(Array.from(buildStatusNotification(true))).toEqual([0x1b, 0x69, 0x21, 0x01]);
+  });
+});
+
+describe('buildVariousMode', () => {
+  it('autoCut=true returns 0x40 flag', () => {
+    expect(buildVariousMode(true)[3]).toBe(0x40);
+  });
+
+  it('autoCut=false returns 0x00 flag', () => {
+    expect(buildVariousMode(false)[3]).toBe(0x00);
+  });
+});
+
+describe('buildExpandedMode', () => {
+  it('cutAtEnd=true sets bit 3', () => {
+    expect((buildExpandedMode(true, false)[3] ?? 0) & 0x08).toBe(0x08);
+  });
+
+  it('highRes=true sets bit 4', () => {
+    expect((buildExpandedMode(false, true)[3] ?? 0) & 0x10).toBe(0x10);
+  });
+
+  it('both false returns 0x00 flags', () => {
+    expect(buildExpandedMode(false, false)[3]).toBe(0x00);
+  });
+});
+
+describe('buildPrintInfo twoColor flag', () => {
+  it('twoColor=true sets different valid flags byte', () => {
+    const media = MEDIA[259]!;
+    const without = buildPrintInfo(media, 100, 0, false);
+    const with2c = buildPrintInfo(media, 100, 0, true);
+    expect(with2c[3]).not.toBe(without[3]);
+  });
+});
+
+describe('buildZeroRow', () => {
+  it('returns [0x5A]', () => {
+    expect(Array.from(buildZeroRow())).toEqual([0x5a]);
+  });
+});
+
+describe('buildCompression', () => {
+  it('enabled returns [0x4D, 0x02]', () => {
+    expect(Array.from(buildCompression(true))).toEqual([0x4d, 0x02]);
+  });
+
+  it('disabled returns [0x4D, 0x00]', () => {
+    expect(Array.from(buildCompression(false))).toEqual([0x4d, 0x00]);
   });
 });

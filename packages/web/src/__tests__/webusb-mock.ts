@@ -27,7 +27,9 @@ export function createMockUSBDevice(overrides?: {
     selectConfiguration: vi.fn().mockImplementation(() => Promise.resolve()),
     claimInterface: vi.fn().mockImplementation(() => Promise.resolve()),
     releaseInterface: vi.fn().mockImplementation(() => Promise.resolve()),
-    transferOut: vi.fn().mockImplementation(() => Promise.resolve({ bytesWritten: 0, status: 'ok' })),
+    transferOut: vi
+      .fn()
+      .mockImplementation(() => Promise.resolve({ bytesWritten: 0, status: 'ok' })),
     transferIn: vi.fn().mockImplementation(() =>
       Promise.resolve({
         status: 'ok',
@@ -37,15 +39,23 @@ export function createMockUSBDevice(overrides?: {
   };
 
   let opened = false;
-  spies.open.mockImplementation(() => { opened = true; return Promise.resolve(); });
-  spies.close.mockImplementation(() => { opened = false; return Promise.resolve(); });
+  spies.open.mockImplementation(() => {
+    opened = true;
+    return Promise.resolve();
+  });
+  spies.close.mockImplementation(() => {
+    opened = false;
+    return Promise.resolve();
+  });
 
   const device = {
     vendorId: overrides?.vendorId ?? 0x04f9,
     productId: overrides?.productId ?? 0x20a7,
     serialNumber: overrides?.serialNumber,
     configuration: { interfaces: [{ interfaceNumber: 0, claimed: false }] },
-    get opened() { return opened; },
+    get opened() {
+      return opened;
+    },
     open: spies.open,
     close: spies.close,
     selectConfiguration: spies.selectConfiguration,

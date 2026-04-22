@@ -7,7 +7,9 @@ export function runList(): void {
   if (printers.length === 0) {
     console.log(chalk.yellow('No Brother QL printers found.'));
     console.log(
-      chalk.dim('If a printer is connected, it may be in Editor Lite mode. Hold the Editor Lite button to disable it.'),
+      chalk.dim(
+        'If a printer is connected, it may be in Editor Lite mode. Hold the Editor Lite button to disable it.',
+      ),
     );
     return;
   }

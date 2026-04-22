@@ -5,6 +5,8 @@ export default defineConfig({
     environment: 'jsdom',
     coverage: {
       provider: 'v8',
+      include: ['src/**/*.ts'],
+      exclude: ['src/index.ts', 'src/**/*.d.ts', 'src/**/*.test.ts', 'src/__tests__/**'],
       thresholds: {
         lines: 90,
         functions: 90,

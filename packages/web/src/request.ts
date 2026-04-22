@@ -6,7 +6,7 @@ export interface RequestOptions {
 }
 
 function defaultFilters(): USBDeviceFilter[] {
-  return Object.values(DEVICES).map((d) => ({ vendorId: d.vid, productId: d.pid }));
+  return Object.values(DEVICES).map(d => ({ vendorId: d.vid, productId: d.pid }));
 }
 
 export async function requestPrinter(options?: RequestOptions): Promise<WebBrotherQLPrinter> {

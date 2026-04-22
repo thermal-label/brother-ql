@@ -47,9 +47,9 @@ features:
 
 This project is part of the [thermal-label](https://github.com/thermal-label) ecosystem:
 
-| Package | Description |
-|---|---|
-| `@thermal-label/brother-ql-node` | Node.js USB and TCP driver |
-| `@thermal-label/brother-ql-web` | Browser WebUSB driver |
-| `@thermal-label/brother-ql-cli` | CLI tool (`brother-ql`) |
+| Package                          | Description                           |
+| -------------------------------- | ------------------------------------- |
+| `@thermal-label/brother-ql-node` | Node.js USB and TCP driver            |
+| `@thermal-label/brother-ql-web`  | Browser WebUSB driver                 |
+| `@thermal-label/brother-ql-cli`  | CLI tool (`brother-ql`)               |
 | `@thermal-label/brother-ql-core` | Protocol encoding and device registry |

@@ -1,4 +1,9 @@
-import { openPrinter, openPrinterTcp, findMedia, renderImage } from '@thermal-label/brother-ql-node';
+import {
+  openPrinter,
+  openPrinterTcp,
+  findMedia,
+  renderImage,
+} from '@thermal-label/brother-ql-node';
 import { rotateBitmap } from '@mbtech-nl/bitmap';
 import { readFile } from 'node:fs/promises';
 
@@ -28,15 +33,15 @@ export async function runPrintTwoColor(
     ...(options.invert ? { invert: true } : {}),
   };
 
-  const [blackBuf, redBuf] = await Promise.all([
-    readFile(blackFile),
-    readFile(redFile),
-  ]);
+  const [blackBuf, redBuf] = await Promise.all([readFile(blackFile), readFile(redFile)]);
 
   // Decode via @napi-rs/canvas if available, otherwise error
   interface CanvasMod {
     loadImage: (src: Buffer) => Promise<{ width: number; height: number }>;
-    createCanvas: (w: number, h: number) => {
+    createCanvas: (
+      w: number,
+      h: number,
+    ) => {
       getContext: (type: '2d') => {
         drawImage: (img: unknown, x: number, y: number) => void;
         getImageData: (x: number, y: number, w: number, h: number) => { data: Uint8ClampedArray };
@@ -47,7 +52,9 @@ export async function runPrintTwoColor(
   const canvasSpecifier = '@napi-rs/canvas';
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const canvasMod: CanvasMod = await import(canvasSpecifier).catch(() => {
-    throw new Error('Image decoding requires @napi-rs/canvas. Install it: pnpm add @napi-rs/canvas');
+    throw new Error(
+      'Image decoding requires @napi-rs/canvas. Install it: pnpm add @napi-rs/canvas',
+    );
   });
   const { loadImage, createCanvas } = canvasMod;
 

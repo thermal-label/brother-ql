@@ -4,35 +4,35 @@
 
 All devices share Vendor ID `0x04F9` (Brother Industries Ltd.) and use the same raster command protocol over USB Printer Class or TCP port 9100.
 
-| Device | USB PID | Head pins | Two-color | Network | Status |
-|---|---|---|---|---|---|
-| QL-820NWB | `0x20A7` | 720 | ✅ | WiFi + LAN | ✅ Verified |
-| QL-800 | `0x209B` | 720 | ✅ | — | 🟡 Expected |
-| QL-810W | `0x209C` | 720 | ✅ | WiFi | 🟡 Expected |
-| QL-700 | `0x2042` | 720 | — | — | 🟡 Expected |
-| QL-710W | `0x2044` | 720 | — | WiFi | 🟡 Expected |
-| QL-720NW | `0x2045` | 720 | — | LAN | 🟡 Expected |
-| QL-600 | `0x2100` | 720 | — | — | 🟡 Expected |
-| QL-580N | `0x201B` | 720 | — | LAN | 🟡 Expected |
-| QL-570 | `0x2019` | 720 | — | — | 🟡 Expected |
-| QL-560 | `0x2018` | 720 | — | — | 🟡 Expected |
-| QL-550 | `0x2016` | 720 | — | — | 🟡 Expected |
-| QL-500 | `0x2013` | 720 | — | — | 🟡 Expected |
-| QL-650TD | `0x201C` | 720 | — | — | 🟡 Expected |
-| QL-1050 | `0x2027` | 1296 | — | — | 🟡 Expected |
-| QL-1060N | `0x2028` | 1296 | — | LAN | 🟡 Expected |
-| QL-1100 | `0x20A8` | 1296 | — | — | 🟡 Expected |
-| QL-1110NWB | `0x20A9` | 1296 | — | WiFi + LAN | 🟡 Expected |
-| QL-1115NWB | `0x20AC` | 1296 | — | WiFi + LAN | 🟡 Expected |
+| Device     | USB PID  | Head pins | Two-color | Network    | Status      |
+| ---------- | -------- | --------- | --------- | ---------- | ----------- |
+| QL-820NWB  | `0x20A7` | 720       | ✅        | WiFi + LAN | ✅ Verified |
+| QL-800     | `0x209B` | 720       | ✅        | —          | 🟡 Expected |
+| QL-810W    | `0x209C` | 720       | ✅        | WiFi       | 🟡 Expected |
+| QL-700     | `0x2042` | 720       | —         | —          | 🟡 Expected |
+| QL-710W    | `0x2044` | 720       | —         | WiFi       | 🟡 Expected |
+| QL-720NW   | `0x2045` | 720       | —         | LAN        | 🟡 Expected |
+| QL-600     | `0x2100` | 720       | —         | —          | 🟡 Expected |
+| QL-580N    | `0x201B` | 720       | —         | LAN        | 🟡 Expected |
+| QL-570     | `0x2019` | 720       | —         | —          | 🟡 Expected |
+| QL-560     | `0x2018` | 720       | —         | —          | 🟡 Expected |
+| QL-550     | `0x2016` | 720       | —         | —          | 🟡 Expected |
+| QL-500     | `0x2013` | 720       | —         | —          | 🟡 Expected |
+| QL-650TD   | `0x201C` | 720       | —         | —          | 🟡 Expected |
+| QL-1050    | `0x2027` | 1296      | —         | —          | 🟡 Expected |
+| QL-1060N   | `0x2028` | 1296      | —         | LAN        | 🟡 Expected |
+| QL-1100    | `0x20A8` | 1296      | —         | —          | 🟡 Expected |
+| QL-1110NWB | `0x20A9` | 1296      | —         | WiFi + LAN | 🟡 Expected |
+| QL-1115NWB | `0x20AC` | 1296      | —         | WiFi + LAN | 🟡 Expected |
 
 > Have a device marked 🟡 Expected? Test it and [open a hardware verification issue](https://github.com/thermal-label/brother-ql/issues/new?template=hardware_verification.yml) — we'll mark it verified and add you to the contributors list.
 
 ## Print head geometry
 
-| Model family | Total pins | Bytes per raster row |
-|---|---|---|
-| QL-500 through QL-820NWB | 720 | 90 |
-| QL-1050, QL-1060N, QL-1100, QL-1110NWB, QL-1115NWB | 1296 | 162 |
+| Model family                                       | Total pins | Bytes per raster row |
+| -------------------------------------------------- | ---------- | -------------------- |
+| QL-500 through QL-820NWB                           | 720        | 90                   |
+| QL-1050, QL-1060N, QL-1100, QL-1110NWB, QL-1115NWB | 1296       | 162                  |
 
 The print head is fixed width. The label stock determines how many pins are active — the host always sends full-width rows (90 or 162 bytes). Margins are handled by the printer based on the Print Information Command.
 
@@ -41,33 +41,33 @@ The print head is fixed width. The label stock determines how many pins are acti
 ### Continuous length tape
 
 | Label ID | Width | Print area (dots) | Left margin | Right margin |
-|---|---|---|---|---|
-| 257 | 12mm | 106 | 585 | 29 |
-| 258 | 29mm | 306 | 408 | 6 |
-| 264 | 38mm | 413 | 295 | 12 |
-| 262 | 50mm | 554 | 154 | 12 |
-| 261 | 54mm | 590 | 130 | 0 |
-| 259 | 62mm | 696 | 12 | 12 |
-| 260 | 102mm | 1164 | 76 | 56 |
+| -------- | ----- | ----------------- | ----------- | ------------ |
+| 257      | 12mm  | 106               | 585         | 29           |
+| 258      | 29mm  | 306               | 408         | 6            |
+| 264      | 38mm  | 413               | 295         | 12           |
+| 262      | 50mm  | 554               | 154         | 12           |
+| 261      | 54mm  | 590               | 130         | 0            |
+| 259      | 62mm  | 696               | 12          | 12           |
+| 260      | 102mm | 1164              | 76          | 56           |
 
 ### Die-cut labels
 
-| Label ID | Size | Print area (W×H dots) |
-|---|---|---|
-| 269 | 17×54mm | 165×566 |
-| 270 | 17×87mm | 165×956 |
-| 370 | 23×23mm | 236×202 |
-| 271 | 29×90mm | 306×991 |
-| 272 | 38×90mm | 413×991 |
-| 367 | 39×48mm | 425×495 |
-| 374 | 52×29mm | 578×271 |
-| 274 | 62×29mm | 696×271 |
-| 275 | 62×100mm | 696×1109 |
-| 365 | 102×51mm | 1164×526 |
-| 366 | 102×152mm | 1164×1660 |
-| 362 | 12mm Ø | 94×94 |
-| 363 | 24mm Ø | 236×236 |
-| 273 | 58mm Ø | 618×618 |
+| Label ID | Size      | Print area (W×H dots) |
+| -------- | --------- | --------------------- |
+| 269      | 17×54mm   | 165×566               |
+| 270      | 17×87mm   | 165×956               |
+| 370      | 23×23mm   | 236×202               |
+| 271      | 29×90mm   | 306×991               |
+| 272      | 38×90mm   | 413×991               |
+| 367      | 39×48mm   | 425×495               |
+| 374      | 52×29mm   | 578×271               |
+| 274      | 62×29mm   | 696×271               |
+| 275      | 62×100mm  | 696×1109              |
+| 365      | 102×51mm  | 1164×526              |
+| 366      | 102×152mm | 1164×1660             |
+| 362      | 12mm Ø    | 94×94                 |
+| 363      | 24mm Ø    | 236×236               |
+| 273      | 58mm Ø    | 618×618               |
 
 ## Editor Lite mode
 
@@ -81,7 +81,7 @@ The driver detects Editor Lite mode in `listPrinters()` by checking for known ma
 
 These are printer class PIDs' paired mass storage alternatives. They should never appear in printer selection — the physical device is the same hardware in a different USB mode.
 
-| PID | Device |
-|---|---|
-| `0x20AA` | QL-1100 (mass storage) |
+| PID      | Device                    |
+| -------- | ------------------------- |
+| `0x20AA` | QL-1100 (mass storage)    |
 | `0x20AB` | QL-1110NWB (mass storage) |

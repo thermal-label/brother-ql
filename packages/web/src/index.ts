@@ -14,5 +14,14 @@ export type {
   MediaType,
 } from '@thermal-label/brother-ql-core';
 
-export { DEVICES, MEDIA, findDevice, findMedia, findMediaByWidth, renderText, renderImage, rotateBitmap } from '@thermal-label/brother-ql-core';
+export {
+  DEVICES,
+  MEDIA,
+  findDevice,
+  findMedia,
+  findMediaByWidth,
+  renderText,
+  renderImage,
+  rotateBitmap,
+} from '@thermal-label/brother-ql-core';
 export type { LabelBitmap, RawImageData } from '@thermal-label/brother-ql-core';

@@ -63,7 +63,7 @@ describe('Media registry invariants', () => {
   });
 
   it('all IDs are unique', () => {
-    const ids = Object.values(MEDIA).map((m) => m.id);
+    const ids = Object.values(MEDIA).map(m => m.id);
     const unique = new Set(ids);
     expect(unique.size).toBe(ids.length);
   });

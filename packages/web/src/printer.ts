@@ -64,7 +64,11 @@ export class WebBrotherQLPrinter {
     await this.print([page]);
   }
 
-  async printImage(imageData: ImageData, media: MediaDescriptor, options?: ImagePrintOptions): Promise<void> {
+  async printImage(
+    imageData: ImageData,
+    media: MediaDescriptor,
+    options?: ImagePrintOptions,
+  ): Promise<void> {
     const { threshold, dither, invert, rotate, ...pageOptions } = options ?? {};
     const rawImage = {
       width: imageData.width,
@@ -77,7 +81,8 @@ export class WebBrotherQLPrinter {
       ...(invert ? { invert: true } : {}),
     });
     const rotationAngle = rotate ?? 0;
-    const bitmap = rotationAngle === 0 ? rotateBitmap(rawBitmap, 90) : rotateBitmap(rawBitmap, rotationAngle);
+    const bitmap =
+      rotationAngle === 0 ? rotateBitmap(rawBitmap, 90) : rotateBitmap(rawBitmap, rotationAngle);
     const page: PageData = {
       bitmap,
       media,
@@ -86,7 +91,11 @@ export class WebBrotherQLPrinter {
     await this.print([page]);
   }
 
-  async printImageURL(url: string, media: MediaDescriptor, options?: ImagePrintOptions): Promise<void> {
+  async printImageURL(
+    url: string,
+    media: MediaDescriptor,
+    options?: ImagePrintOptions,
+  ): Promise<void> {
     const response = await fetch(url);
     const blob = await response.blob();
     const bmp = await createImageBitmap(blob);
@@ -135,7 +144,9 @@ export class WebBrotherQLPrinter {
 export async function openWebDevice(device: USBDevice): Promise<WebBrotherQLPrinter> {
   const descriptor = findDevice(BROTHER_VID, device.productId);
   if (!descriptor) {
-    throw new Error(`Unsupported device: VID=${BROTHER_VID.toString(16)} PID=${device.productId.toString(16)}`);
+    throw new Error(
+      `Unsupported device: VID=${BROTHER_VID.toString(16)} PID=${device.productId.toString(16)}`,
+    );
   }
   await device.open();
   await device.selectConfiguration(CONFIGURATION_VALUE);

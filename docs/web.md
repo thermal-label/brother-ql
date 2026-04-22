@@ -2,12 +2,12 @@
 
 ## Browser support
 
-| Browser | Support |
-|---|---|
-| Chrome 61+ | ✅ |
-| Edge 79+ | ✅ |
-| Firefox | ❌ No WebUSB |
-| Safari | ❌ No WebUSB |
+| Browser    | Support      |
+| ---------- | ------------ |
+| Chrome 61+ | ✅           |
+| Edge 79+   | ✅           |
+| Firefox    | ❌ No WebUSB |
+| Safari     | ❌ No WebUSB |
 
 Requires a [secure context](https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts): `https://` or `localhost`. WebUSB is not available in iframes without the `allowusb` permission.
 
@@ -119,16 +119,16 @@ if (device) {
 
 ## API summary
 
-| Export | Description |
-|---|---|
-| `requestPrinter(options?)` | Show USB picker and open printer |
-| `fromUSBDevice(device)` | Wrap an existing USBDevice |
-| `WebBrotherQLPrinter` | Printer class |
-| `findMedia(id)` | Look up media by numeric ID |
-| `renderText(text, options?)` | Render 1bpp text bitmap (from core) |
+| Export                       | Description                          |
+| ---------------------------- | ------------------------------------ |
+| `requestPrinter(options?)`   | Show USB picker and open printer     |
+| `fromUSBDevice(device)`      | Wrap an existing USBDevice           |
+| `WebBrotherQLPrinter`        | Printer class                        |
+| `findMedia(id)`              | Look up media by numeric ID          |
+| `renderText(text, options?)` | Render 1bpp text bitmap (from core)  |
 | `renderImage(raw, options?)` | Render 1bpp image bitmap (from core) |
-| `rotateBitmap(bitmap, deg)` | Rotate bitmap (from core) |
-| `DEVICES` | Device descriptor registry |
-| `MEDIA` | Media descriptor registry |
+| `rotateBitmap(bitmap, deg)`  | Rotate bitmap (from core)            |
+| `DEVICES`                    | Device descriptor registry           |
+| `MEDIA`                      | Media descriptor registry            |
 
 See the live demo at [/demo](/demo) — connect a real printer to print directly from the browser.

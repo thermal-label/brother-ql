@@ -11,7 +11,8 @@ import { join } from 'node:path';
 describe('Integration: print image', () => {
   it.skipIf(!process.env.BROTHER_INTEGRATION)('prints an image label via USB', async () => {
     const { openPrinter, MEDIA } = await import('../../index.js');
-    const imagePath = process.env.BROTHER_INTEGRATION_IMAGE ?? join(import.meta.dirname, 'test.png');
+    const imagePath =
+      process.env.BROTHER_INTEGRATION_IMAGE ?? join(import.meta.dirname, 'test.png');
     const printer = await openPrinter();
     const media = MEDIA[259];
     if (!media) throw new Error('Media 259 not found');

@@ -4,20 +4,20 @@ The `@thermal-label/brother-ql-core` package is a zero-dependency protocol encod
 
 ## Core API
 
-| Export | Description |
-|---|---|
-| `encodeJob(pages, options?)` | Encode a complete print job to bytes |
-| `DEVICES` | Full device descriptor registry |
-| `MEDIA` | Full media descriptor registry |
-| `findDevice(vid, pid)` | Look up device by USB VID/PID |
-| `findMedia(id)` | Look up media by numeric ID |
-| `findMediaByWidth(mm, type)` | Look up media by width |
-| `isMassStorageMode(pid)` | Returns true for Editor Lite PIDs |
-| `parseStatus(bytes)` | Parse 32-byte status response |
-| `STATUS_REQUEST` | Status request byte sequence |
-| `renderText(text, options?)` | Render 1bpp text bitmap (from `@mbtech-nl/bitmap`) |
+| Export                       | Description                                         |
+| ---------------------------- | --------------------------------------------------- |
+| `encodeJob(pages, options?)` | Encode a complete print job to bytes                |
+| `DEVICES`                    | Full device descriptor registry                     |
+| `MEDIA`                      | Full media descriptor registry                      |
+| `findDevice(vid, pid)`       | Look up device by USB VID/PID                       |
+| `findMedia(id)`              | Look up media by numeric ID                         |
+| `findMediaByWidth(mm, type)` | Look up media by width                              |
+| `isMassStorageMode(pid)`     | Returns true for Editor Lite PIDs                   |
+| `parseStatus(bytes)`         | Parse 32-byte status response                       |
+| `STATUS_REQUEST`             | Status request byte sequence                        |
+| `renderText(text, options?)` | Render 1bpp text bitmap (from `@mbtech-nl/bitmap`)  |
 | `renderImage(raw, options?)` | Render 1bpp image bitmap (from `@mbtech-nl/bitmap`) |
-| `rotateBitmap(bitmap, deg)` | Rotate bitmap (from `@mbtech-nl/bitmap`) |
+| `rotateBitmap(bitmap, deg)`  | Rotate bitmap (from `@mbtech-nl/bitmap`)            |
 
 ## Print job structure
 
@@ -42,16 +42,19 @@ A complete print job has this structure:
 ### Raster rows
 
 **Single color (black):**
+
 ```
 0x67 0x00 [90 bytes]
 ```
 
 **Two-color black layer:**
+
 ```
 0x67 0x00 [90 bytes]
 ```
 
 **Two-color red layer:**
+
 ```
 0x77 0x00 [90 bytes]
 ```
@@ -62,76 +65,76 @@ For two-color jobs, **all black rows come first, then all red rows** for each pa
 
 13 bytes total: 3-byte command prefix + 10 parameter bytes.
 
-| Byte | Field | Notes |
-|---|---|---|
-| 0 | Valid flags | Bit 1=width, bit 2=type, bit 3=quality, bit 6=recovery |
-| 1 | Media type | `0x0A` = continuous, `0x0B` = die-cut |
-| 2 | Media width (mm) | e.g. `0x3E` = 62mm |
-| 3 | Media length (mm) | `0x00` = continuous |
-| 4–5 | Row count | Total raster rows, little-endian |
-| 6 | Page index | 0-indexed |
-| 7–9 | Reserved | `0x00` |
+| Byte | Field             | Notes                                                  |
+| ---- | ----------------- | ------------------------------------------------------ |
+| 0    | Valid flags       | Bit 1=width, bit 2=type, bit 3=quality, bit 6=recovery |
+| 1    | Media type        | `0x0A` = continuous, `0x0B` = die-cut                  |
+| 2    | Media width (mm)  | e.g. `0x3E` = 62mm                                     |
+| 3    | Media length (mm) | `0x00` = continuous                                    |
+| 4–5  | Row count         | Total raster rows, little-endian                       |
+| 6    | Page index        | 0-indexed                                              |
+| 7–9  | Reserved          | `0x00`                                                 |
 
 ### Mode flag bytes
 
 **Various mode (0x1B 0x69 0x4D):**
 
-| Bit | Function |
-|---|---|
-| 6 | Auto-cut (1 = enabled) |
-| 3 | Mirror printing |
+| Bit | Function               |
+| --- | ---------------------- |
+| 6   | Auto-cut (1 = enabled) |
+| 3   | Mirror printing        |
 
 **Expanded mode (0x1B 0x69 0x4B):**
 
-| Bit | Function |
-|---|---|
-| 3 | Cut at end of job |
-| 4 | High resolution (600dpi feed direction) |
+| Bit | Function                                |
+| --- | --------------------------------------- |
+| 3   | Cut at end of job                       |
+| 4   | High resolution (600dpi feed direction) |
 
 ## Status response (32 bytes)
 
 Sent in response to `0x1B 0x69 0x53` (STATUS_REQUEST).
 
-| Offset | Field | Notes |
-|---|---|---|
-| 0 | `0x80` | Print head mark |
-| 1 | `0x20` | Size (always 32) |
-| 2 | `0x42` | `'B'` — Brother |
-| 3 | `0x30` | `'0'` — QL series |
-| 4–5 | Model code | |
-| 6 | `0x30` | Country code |
-| 8 | Error info 1 | See below |
-| 9 | Error info 2 | See below |
-| 10 | Media width (mm) | |
-| 11 | Media type | `0x0A` continuous, `0x0B` die-cut |
-| 14 | Status type | `0x00` reply, `0x02` error |
-| 16 | Phase type | |
-| 17–18 | Phase number | |
+| Offset | Field            | Notes                             |
+| ------ | ---------------- | --------------------------------- |
+| 0      | `0x80`           | Print head mark                   |
+| 1      | `0x20`           | Size (always 32)                  |
+| 2      | `0x42`           | `'B'` — Brother                   |
+| 3      | `0x30`           | `'0'` — QL series                 |
+| 4–5    | Model code       |                                   |
+| 6      | `0x30`           | Country code                      |
+| 8      | Error info 1     | See below                         |
+| 9      | Error info 2     | See below                         |
+| 10     | Media width (mm) |                                   |
+| 11     | Media type       | `0x0A` continuous, `0x0B` die-cut |
+| 14     | Status type      | `0x00` reply, `0x02` error        |
+| 16     | Phase type       |                                   |
+| 17–18  | Phase number     |                                   |
 
 ### Error info 1 (byte 8)
 
-| Bit | Error |
-|---|---|
-| 0 | No media |
-| 1 | End of media |
-| 2 | Cutter jam |
-| 3 | Weak battery |
-| 4 | Printer in use |
-| 6 | High voltage adapter |
-| 7 | Fan motor error |
+| Bit | Error                |
+| --- | -------------------- |
+| 0   | No media             |
+| 1   | End of media         |
+| 2   | Cutter jam           |
+| 3   | Weak battery         |
+| 4   | Printer in use       |
+| 6   | High voltage adapter |
+| 7   | Fan motor error      |
 
 ### Error info 2 (byte 9)
 
-| Bit | Error |
-|---|---|
-| 0 | Replace media |
-| 1 | Expansion buffer full |
-| 2 | Transmission error |
-| 3 | Communication buffer full |
-| 4 | Cover open |
-| 5 | Cancel key |
-| 6 | Media cannot be fed |
-| 7 | System error |
+| Bit | Error                     |
+| --- | ------------------------- |
+| 0   | Replace media             |
+| 1   | Expansion buffer full     |
+| 2   | Transmission error        |
+| 3   | Communication buffer full |
+| 4   | Cover open                |
+| 5   | Cancel key                |
+| 6   | Media cannot be fed       |
+| 7   | System error              |
 
 ## Two-color encoding rules
 

@@ -242,7 +242,7 @@ export const DEVICES = {
 } as const satisfies Record<string, DeviceDescriptor>;
 
 export function findDevice(vid: number, pid: number): DeviceDescriptor | undefined {
-  return Object.values(DEVICES).find((d) => d.vid === vid && d.pid === pid);
+  return Object.values(DEVICES).find(d => d.vid === vid && d.pid === pid);
 }
 
 export function isMassStorageMode(pid: number): boolean {

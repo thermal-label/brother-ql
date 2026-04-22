@@ -61,23 +61,23 @@ const printer = await openPrinterTcp('192.168.1.100', 9100);
 
 ```ts
 await printer.printText('Hello', media, {
-  invert: false,   // white text on black
-  scaleX: 1,       // integer horizontal scale
-  scaleY: 2,       // integer vertical scale
-  autoCut: true,   // auto-cut after label
+  invert: false, // white text on black
+  scaleX: 1, // integer horizontal scale
+  scaleY: 2, // integer vertical scale
+  autoCut: true, // auto-cut after label
 });
 ```
 
 ### `printText` options
 
-| Option | Type | Default | Description |
-|---|---|---|---|
-| `invert` | `boolean` | `false` | White text on black background |
-| `scaleX` | `number` | `1` | Horizontal pixel scale |
-| `scaleY` | `number` | `1` | Vertical pixel scale |
-| `autoCut` | `boolean` | `true` | Cut after label |
-| `cutAtEnd` | `boolean` | `true` | Cut at end of job |
-| `marginDots` | `number` | `35` | Feed margin in dots (35 = 3mm) |
+| Option       | Type      | Default | Description                    |
+| ------------ | --------- | ------- | ------------------------------ |
+| `invert`     | `boolean` | `false` | White text on black background |
+| `scaleX`     | `number`  | `1`     | Horizontal pixel scale         |
+| `scaleY`     | `number`  | `1`     | Vertical pixel scale           |
+| `autoCut`    | `boolean` | `true`  | Cut after label                |
+| `cutAtEnd`   | `boolean` | `true`  | Cut at end of job              |
+| `marginDots` | `number`  | `35`    | Feed margin in dots (35 = 3mm) |
 
 ## Print images
 
@@ -87,21 +87,21 @@ await printer.printImage('/path/to/label.png', media);
 
 // From a Buffer (requires @napi-rs/canvas for PNG/JPEG decode)
 await printer.printImage(imageBuffer, media, {
-  threshold: 128,  // B&W threshold
-  dither: true,    // Floyd-Steinberg dithering
+  threshold: 128, // B&W threshold
+  dither: true, // Floyd-Steinberg dithering
   invert: false,
 });
 ```
 
 ### `printImage` options
 
-| Option | Type | Default | Description |
-|---|---|---|---|
-| `threshold` | `number` | `128` | B&W threshold (0–255) |
-| `dither` | `boolean` | `false` | Floyd-Steinberg dithering |
-| `invert` | `boolean` | `false` | Invert black/white |
-| `rotate` | `0\|90\|180\|270` | `0` | Rotate before rendering |
-| `autoCut` | `boolean` | `true` | Cut after label |
+| Option      | Type              | Default | Description               |
+| ----------- | ----------------- | ------- | ------------------------- |
+| `threshold` | `number`          | `128`   | B&W threshold (0–255)     |
+| `dither`    | `boolean`         | `false` | Floyd-Steinberg dithering |
+| `invert`    | `boolean`         | `false` | Invert black/white        |
+| `rotate`    | `0\|90\|180\|270` | `0`     | Rotate before rendering   |
+| `autoCut`   | `boolean`         | `true`  | Cut after label           |
 
 ## Two-color printing
 
@@ -150,16 +150,16 @@ if (status.errors.length > 0) {
 
 ## API summary
 
-| Export | Description |
-|---|---|
-| `openPrinter(options?)` | Open USB printer |
-| `openPrinterTcp(host, port?)` | Open TCP printer |
-| `listPrinters()` | List connected USB printers |
-| `BrotherQLPrinter` | Printer class |
-| `findMedia(id)` | Look up media by numeric ID |
-| `findMediaByWidth(mm, type)` | Look up media by width |
-| `DEVICES` | Device descriptor registry |
-| `MEDIA` | Media descriptor registry |
-| `renderText(text, options?)` | Render 1bpp text bitmap |
-| `renderImage(raw, options?)` | Render 1bpp image bitmap |
-| `rotateBitmap(bitmap, deg)` | Rotate bitmap 90/180/270° |
+| Export                        | Description                 |
+| ----------------------------- | --------------------------- |
+| `openPrinter(options?)`       | Open USB printer            |
+| `openPrinterTcp(host, port?)` | Open TCP printer            |
+| `listPrinters()`              | List connected USB printers |
+| `BrotherQLPrinter`            | Printer class               |
+| `findMedia(id)`               | Look up media by numeric ID |
+| `findMediaByWidth(mm, type)`  | Look up media by width      |
+| `DEVICES`                     | Device descriptor registry  |
+| `MEDIA`                       | Media descriptor registry   |
+| `renderText(text, options?)`  | Render 1bpp text bitmap     |
+| `renderImage(raw, options?)`  | Render 1bpp image bitmap    |
+| `rotateBitmap(bitmap, deg)`   | Rotate bitmap 90/180/270°   |

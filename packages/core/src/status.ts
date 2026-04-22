@@ -22,23 +22,18 @@ const ERROR_INFO_2: Record<number, string> = {
 };
 
 export function parseStatus(bytes: Uint8Array): PrinterStatus {
-  if (bytes.length < 32) throw new Error(`Status response too short: ${bytes.length.toString()} bytes`);
+  if (bytes.length < 32)
+    throw new Error(`Status response too short: ${bytes.length.toString()} bytes`);
 
   const errors: string[] = [];
   const errInfo1 = bytes[8] ?? 0;
   const errInfo2 = bytes[9] ?? 0;
 
-  for (let bit = 0; bit < 8; bit++) {
-    if (errInfo1 & (1 << bit)) {
-      const msg = ERROR_INFO_1[bit];
-      if (msg) errors.push(msg);
-    }
+  for (const [bitStr, msg] of Object.entries(ERROR_INFO_1)) {
+    if (errInfo1 & (1 << Number(bitStr))) errors.push(msg);
   }
-  for (let bit = 0; bit < 8; bit++) {
-    if (errInfo2 & (1 << bit)) {
-      const msg = ERROR_INFO_2[bit];
-      if (msg) errors.push(msg);
-    }
+  for (const [bitStr, msg] of Object.entries(ERROR_INFO_2)) {
+    if (errInfo2 & (1 << Number(bitStr))) errors.push(msg);
   }
 
   const mediaWidthMm = bytes[10] ?? 0;

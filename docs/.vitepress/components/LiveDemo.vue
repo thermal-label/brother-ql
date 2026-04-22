@@ -1,9 +1,15 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
-import { renderText, renderImage, findMedia, MEDIA, rotateBitmap } from '@thermal-label/brother-ql-web';
+import {
+  renderText,
+  renderImage,
+  findMedia,
+  MEDIA,
+  rotateBitmap,
+} from '@thermal-label/brother-ql-web';
 
 // Media selector
-const mediaOptions = Object.values(MEDIA).filter((m) => m.type === 'continuous');
+const mediaOptions = Object.values(MEDIA).filter(m => m.type === 'continuous');
 const selectedMediaId = ref<number>(259);
 const media = computed(() => findMedia(selectedMediaId.value) ?? mediaOptions[0]!);
 
@@ -35,7 +41,10 @@ onMounted(() => {
   isWebUSBAvailable.value = typeof navigator !== 'undefined' && 'usb' in navigator;
 });
 
-function renderBitmapToCanvas(canvas: HTMLCanvasElement, bitmap: ReturnType<typeof renderText>): void {
+function renderBitmapToCanvas(
+  canvas: HTMLCanvasElement,
+  bitmap: ReturnType<typeof renderText>,
+): void {
   const scale = 2;
   const { widthPx, heightPx, data } = bitmap;
   canvas.width = widthPx * scale;
@@ -65,7 +74,10 @@ function renderBitmapToCanvas(canvas: HTMLCanvasElement, bitmap: ReturnType<type
 
 function updateSinglePreview(): void {
   if (!singleCanvas.value) return;
-  const bitmap = rotateBitmap(renderText(singleText.value, { invert: singleInvert.value, scaleX: 1, scaleY: 1 }), 90);
+  const bitmap = rotateBitmap(
+    renderText(singleText.value, { invert: singleInvert.value, scaleX: 1, scaleY: 1 }),
+    90,
+  );
   renderBitmapToCanvas(singleCanvas.value, bitmap);
 }
 
@@ -112,13 +124,27 @@ function updateTwoColorPreview(): void {
   cctx.globalCompositeOperation = 'source-over';
 }
 
-watch([singleText, singleInvert, selectedMediaId], () => { updateSinglePreview(); }, { immediate: false });
-watch([blackText, redText, selectedMediaId], () => { updateTwoColorPreview(); }, { immediate: false });
-watch(activeTab, (tab) => {
+watch(
+  [singleText, singleInvert, selectedMediaId],
+  () => {
+    updateSinglePreview();
+  },
+  { immediate: false },
+);
+watch(
+  [blackText, redText, selectedMediaId],
+  () => {
+    updateTwoColorPreview();
+  },
+  { immediate: false },
+);
+watch(activeTab, tab => {
   if (tab === 'single') setTimeout(updateSinglePreview, 0);
   else setTimeout(updateTwoColorPreview, 0);
 });
-onMounted(() => { updateSinglePreview(); });
+onMounted(() => {
+  updateSinglePreview();
+});
 
 async function connect(): Promise<void> {
   try {
@@ -151,11 +177,18 @@ async function printLabel(): Promise<void> {
           const bitIdx = 7 - (i % 8);
           const bit = (bmp.data[byteIdx]! >> bitIdx) & 1;
           const v = bit === 1 ? 0 : 255;
-          arr[i * 4] = v; arr[i * 4 + 1] = v; arr[i * 4 + 2] = v; arr[i * 4 + 3] = 255;
+          arr[i * 4] = v;
+          arr[i * 4 + 1] = v;
+          arr[i * 4 + 2] = v;
+          arr[i * 4 + 3] = 255;
         }
         return new ImageData(arr, bmp.widthPx, bmp.heightPx);
       };
-      await printer.value.printTwoColor(toImageData(blackText.value), toImageData(redText.value), media.value);
+      await printer.value.printTwoColor(
+        toImageData(blackText.value),
+        toImageData(redText.value),
+        media.value,
+      );
     }
     statusMessage.value = 'Printed!';
   } catch (err) {
@@ -177,8 +210,12 @@ async function printLabel(): Promise<void> {
       </label>
 
       <div class="tabs">
-        <button :class="{ active: activeTab === 'single' }" @click="activeTab = 'single'">Single color</button>
-        <button :class="{ active: activeTab === 'two-color' }" @click="activeTab = 'two-color'">Two-color</button>
+        <button :class="{ active: activeTab === 'single' }" @click="activeTab = 'single'">
+          Single color
+        </button>
+        <button :class="{ active: activeTab === 'two-color' }" @click="activeTab = 'two-color'">
+          Two-color
+        </button>
       </div>
     </div>
 
@@ -311,7 +348,8 @@ async function printLabel(): Promise<void> {
   font-size: 0.9rem;
   color: var(--vp-c-text-2);
 }
-.browser-note, .editor-lite-note {
+.browser-note,
+.editor-lite-note {
   font-size: 0.85rem;
   color: var(--vp-c-text-2);
 }
