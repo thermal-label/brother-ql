@@ -1,0 +1,12 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPointStrategy": "packages",
+  "entryPoints": [
+    "packages/core",
+    "packages/node",
+    "packages/cli",
+    "packages/web"
+  ],
+  "out": "docs/api",
+  "plugin": ["typedoc-plugin-markdown"]
+}

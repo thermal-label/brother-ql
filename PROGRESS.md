@@ -141,29 +141,29 @@
 > [§8](PLAN.md#L1060) · [Constraints §13](PLAN.md#L1631)
 
 ### Setup
-- [ ] `packages/web/package.json` — [§8.1](PLAN.md#L1065)
-- [ ] `packages/web/README.md` — [§8.1](PLAN.md#L1065)
-- [ ] `packages/web/tsconfig.json` (extends `@mbtech-nl/tsconfig/browser`)
-- [ ] `packages/web/vitest.config.ts`
+- [x] `packages/web/package.json` — [§8.1](PLAN.md#L1065)
+- [x] `packages/web/README.md` — [§8.1](PLAN.md#L1065)
+- [x] `packages/web/tsconfig.json` (extends `@mbtech-nl/tsconfig/browser`)
+- [x] `packages/web/vitest.config.ts`
 
 ### Source
-- [ ] `requestPrinter`, `fromUSBDevice` — [§8.2](PLAN.md#L1095)
-- [ ] `WebBrotherQLPrinter` class — [§8.2](PLAN.md#L1095)
-- [ ] WebUSB type shims (`src/types/webusb.d.ts`) — [§8.3](PLAN.md#L1125)
-- [ ] `src/index.ts` — public exports
+- [x] `requestPrinter`, `fromUSBDevice` — [§8.2](PLAN.md#L1095)
+- [x] `WebBrotherQLPrinter` class — [§8.2](PLAN.md#L1095)
+- [x] WebUSB type shims (`src/types/webusb.d.ts`) — [§8.3](PLAN.md#L1125)
+- [x] `src/index.ts` — public exports
 
 ### Tests
-- [ ] `src/__tests__/webusb-mock.ts` — fake `USBDevice` with transfer spies — [§8.5](PLAN.md#L1138)
-- [ ] `src/__tests__/printer.test.ts` — [§8.5](PLAN.md#L1138)
-- [ ] `src/__tests__/request.test.ts` — [§8.5](PLAN.md#L1138)
+- [x] `src/__tests__/webusb-mock.ts` — fake `USBDevice` with transfer spies — [§8.5](PLAN.md#L1138)
+- [x] `src/__tests__/printer.test.ts` — [§8.5](PLAN.md#L1138)
+- [x] `src/__tests__/request.test.ts` — [§8.5](PLAN.md#L1138)
 
 ### Gate
-- [ ] `pnpm format`
-- [ ] `pnpm typecheck`
-- [ ] `pnpm lint`
-- [ ] `pnpm test`
-- [ ] `pnpm build`
-- [ ] `git commit -m "feat(web): implement WebBrotherQLPrinter with WebUSB and two-color support"`
+- [x] `pnpm format`
+- [x] `pnpm typecheck`
+- [x] `pnpm lint`
+- [x] `pnpm test`
+- [x] `pnpm build`
+- [x] `git commit -m "feat(web): implement WebBrotherQLPrinter with WebUSB and two-color support"`
 
 ---
 
@@ -172,28 +172,28 @@
 > [§9](PLAN.md#L1149) · [Site structure §9.1](PLAN.md#L1153) · [LiveDemo §9.2](PLAN.md#L1215) · [VitePress config §9.3](PLAN.md#L1237)
 
 ### VitePress setup
-- [ ] `docs/.vitepress/config.ts` — [§9.3](PLAN.md#L1237)
-- [ ] `docs/.vitepress/theme/index.ts` — registers `LiveDemo` globally
-- [ ] `docs/.vitepress/components/LiveDemo.vue` — single + two-color tabs, media selector, live bitmap preview — [§9.2](PLAN.md#L1215)
+- [x] `docs/.vitepress/config.ts` — [§9.3](PLAN.md#L1237)
+- [x] `docs/.vitepress/theme/index.ts` — registers `LiveDemo` globally
+- [x] `docs/.vitepress/components/LiveDemo.vue` — single + two-color tabs, media selector, live bitmap preview — [§9.2](PLAN.md#L1215)
 
 ### Pages
-- [ ] `docs/index.md` — hero, features, ecosystem links, hardware + core refs — [§9.1](PLAN.md#L1153)
-- [ ] `docs/getting-started.md` — Node.js, CLI, Web quickstarts; Linux udev; Editor Lite; Bluetooth out-of-scope — [§9.1](PLAN.md#L1153)
-- [ ] `docs/node.md` — USB, TCP, text, images, two-color, multi-printer, status, API table — [§9.1](PLAN.md#L1153)
-- [ ] `docs/cli.md` — all commands with examples and flags tables — [§9.1](PLAN.md#L1153)
-- [ ] `docs/web.md` — browser support, quick start, React example, two-color, API table — [§9.1](PLAN.md#L1153)
-- [ ] `docs/hardware.md` — device table with CTA, media reference, print head geometry, Editor Lite, mass storage PIDs — [§9.1](PLAN.md#L1153) · [§1](PLAN.md#L16) · [§2.3](PLAN.md#L87)
-- [ ] `docs/core.md` — protocol reference, two-color encoding, status response, TIFF, porting checklist — [§9.1](PLAN.md#L1153) · [§2](PLAN.md#L59)
-- [ ] `docs/demo.md` — renders `<LiveDemo />` — [§9.1](PLAN.md#L1153)
+- [x] `docs/index.md` — hero, features, ecosystem links, hardware + core refs — [§9.1](PLAN.md#L1153)
+- [x] `docs/getting-started.md` — Node.js, CLI, Web quickstarts; Linux udev; Editor Lite; Bluetooth out-of-scope — [§9.1](PLAN.md#L1153)
+- [x] `docs/node.md` — USB, TCP, text, images, two-color, multi-printer, status, API table — [§9.1](PLAN.md#L1153)
+- [x] `docs/cli.md` — all commands with examples and flags tables — [§9.1](PLAN.md#L1153)
+- [x] `docs/web.md` — browser support, quick start, React example, two-color, API table — [§9.1](PLAN.md#L1153)
+- [x] `docs/hardware.md` — device table with CTA, media reference, print head geometry, Editor Lite, mass storage PIDs — [§9.1](PLAN.md#L1153) · [§1](PLAN.md#L16) · [§2.3](PLAN.md#L87)
+- [x] `docs/core.md` — protocol reference, two-color encoding, status response, TIFF, porting checklist — [§9.1](PLAN.md#L1153) · [§2](PLAN.md#L59)
+- [x] `docs/demo.md` — renders `<LiveDemo />` — [§9.1](PLAN.md#L1153)
 
 ### API reference
-- [ ] `pnpm docs:api` generates `docs/api/` without errors
+- [x] `pnpm docs:api` generates `docs/api/` without errors
 
 ### Gate
-- [ ] `pnpm format`
-- [ ] `pnpm lint`
-- [ ] `pnpm docs:build` completes without errors
-- [ ] `git commit -m "docs: write complete documentation site and LiveDemo"`
+- [x] `pnpm format`
+- [x] `pnpm lint`
+- [x] `pnpm docs:build` completes without errors
+- [x] `git commit -m "docs: write complete documentation site and LiveDemo"`
 
 ---
 

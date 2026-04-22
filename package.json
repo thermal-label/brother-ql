@@ -13,7 +13,7 @@
     "typecheck": "pnpm -r run typecheck",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
-    "docs:api": "typedoc --plugin typedoc-plugin-markdown --out docs/api packages/*/src/index.ts",
+    "docs:api": "typedoc",
     "changeset": "changeset",
     "version": "changeset version",
     "release": "changeset publish"
@@ -25,7 +25,7 @@
     "@mbtech-nl/tsconfig": "^1.0.0",
     "eslint": "^9.0.0",
     "prettier": "^3.0.0",
-    "typedoc": "^0.26.0",
+    "typedoc": "^0.28.0",
     "typedoc-plugin-markdown": "^4.0.0",
     "typescript": "~5.5.0",
     "vitepress": "^1.0.0",
