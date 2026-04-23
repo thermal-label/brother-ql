@@ -15,23 +15,6 @@ The last three digits of the DK code appear on the physical roll as the "roll ma
 (e.g., DK-22**251** → "251"). This does **not** correspond to the media ID used in the
 raster protocol.
 
-## Physical pin layout (top view, pins in device)
-
-![Pin layout](/pins/pin-layout.svg)
-
-```
-④  ③
-    ②
-    ①
-    ⓪
-    ⑤
-```
-
-- Pins 3, 2, 1, 0, 5 form a vertical column.
-- Pin 4 is offset to the left, level with pin 3.
-- **0 = no projection** (switch not pressed) — **1 = projection present** (switch pressed).
-- SW number = binary value of `[SW5][SW4][SW3][SW2][SW1][SW0]`.
-
 ## Complete switch table
 
 Bits column is `[SW5][SW4][SW3][SW2][SW1][SW0]` — the binary value equals the SW number.
@@ -102,6 +85,23 @@ Bits column is `[SW5][SW4][SW3][SW2][SW1][SW0]` — the binary value equals the 
 | 61 | — | ![](/pins/sw-61.svg) | Not to be used | — | — | — | | `111101` |
 | 62 | — | ![](/pins/sw-62.svg) | Not to be used | — | — | — | | `111110` |
 | 63 | — | ![](/pins/sw-63.svg) | Reserved | — | — | — | | `111111` |
+
+## Physical pin layout (top view, pins in device)
+
+![Pin layout](/pins/pin-layout.svg)
+
+```
+④  ③
+    ②
+    ①
+    ⓪
+    ⑤
+```
+
+- Pins 3, 2, 1, 0, 5 form a vertical column.
+- Pin 4 is offset to the left, level with pin 3.
+- **0 = no projection** (switch not pressed) — **1 = projection present** (switch pressed).
+- SW number = binary value of `[SW5][SW4][SW3][SW2][SW1][SW0]`.
 
 ## 3D printable spools for testing
 
