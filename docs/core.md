@@ -85,18 +85,12 @@ interface LabelBitmap {
 ### Encode a print job
 
 ```typescript
-import {
-  encodeJob,
-  findMedia,
-  renderText,
-  rotateBitmap,
-  flipHorizontal,
-} from '@thermal-label/brother-ql-core';
+import { encodeJob, findMedia, renderText, rotateBitmap } from '@thermal-label/brother-ql-core';
 
 const media = findMedia(259)!; // 62mm DK-22205
 
 const rawBitmap = renderText('Hello QL', { scaleX: 10, scaleY: 10 });
-const bitmap = flipHorizontal(rotateBitmap(rawBitmap, 270));
+const bitmap = rotateBitmap(rawBitmap, 270);
 
 const bytes = encodeJob([{ bitmap, media }]);
 // bytes is a Uint8Array ready to write to the printer endpoint

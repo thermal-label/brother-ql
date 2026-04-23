@@ -246,20 +246,36 @@ Also sent unsolicited when printing completes (if auto-notify enabled).
 | 2 | `0x42` | `'B'` — Brother code |
 | 3 | `0x30` | `'0'` — series code (QL series) |
 | 4–5 | varies | Model code |
-| 6 | `0x30` | `'0'` — country code |
+| 6 | varies | Country code |
 | 7 | `0x00` | Reserved |
 | 8 | error flags | Error info 1 — see below |
 | 9 | error flags | Error info 2 — see below |
 | 10 | mm | Media width |
 | 11 | type | Media type (`0x0A` continuous, `0x0B` die-cut) |
-| 12 | `0x00` | Reserved |
-| 13 | `0x00` | Reserved |
-| 14 | mode | Status type — see below |
-| 15 | `0x00` | Reserved |
-| 16 | type | Phase type |
-| 17–18 | number | Phase number |
-| 19 | notify | Notification number |
-| 20–31 | `0x00` | Reserved |
+| 12–13 | `0x00` | Reserved |
+| 14 | varies | Undocumented media type code (non-zero in practice — **not** status type) |
+| 15 | varies | Mode |
+| 16 | `0x00` | Reserved |
+| 17 | mm | Media length (`0x00` for continuous; label length in mm for die-cut) |
+| 18 | type | Status type — see below |
+| 19 | type | Phase type |
+| 20–21 | number | Phase number (big-endian) |
+| 22 | notify | Notification number |
+| 23–31 | `0x00` | Reserved |
+
+> **Bug discovered and fixed (2026-04-23):** The official documentation and several third-party
+> references incorrectly place status type at byte **14**, phase type at byte **16**, and phase
+> number at bytes **17–18**. Live capture from a QL-820NWBc with DK-22251 and DK-11201 rolls
+> showed byte 14 carries a non-zero media type code (`0x23` for DK-22251, `0x01` for DK-11201),
+> not a status type. Byte 17 is the media length in mm (confirmed: `0x5A`=90 for the
+> 29×90mm DK-11201 die-cut label). The correct byte map above was cross-referenced against
+> the Python `brother_ql` library's `RESP_BYTE_NAMES` array. `parseStatus` was updated
+> accordingly and `PrinterStatus` now includes `mediaLengthMm`.
+
+> **getStatus() timing fix:** `UsbTransport.read()` calls `transferAsync` which resolves
+> immediately with 0 bytes if the printer has not yet queued its response. The printer
+> takes ~300ms to respond to a standalone status request. `getStatus()` now retries up
+> to 10 times with 150ms gaps rather than reading once and returning empty bytes.
 
 **Error info 1 (byte 8):**
 

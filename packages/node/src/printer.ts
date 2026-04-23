@@ -14,7 +14,7 @@ import {
   type TextPrintOptions,
   type ImagePrintOptions,
 } from '@thermal-label/brother-ql-core';
-import { rotateBitmap, flipHorizontal } from '@mbtech-nl/bitmap';
+import { rotateBitmap } from '@mbtech-nl/bitmap';
 import { UsbTransport, TcpTransport, type Transport } from './transport.js';
 import { parseStatus, STATUS_REQUEST } from './status.js';
 import { listPrinters } from './discovery.js';
@@ -36,8 +36,14 @@ export class BrotherQLPrinter {
 
   async getStatus(): Promise<PrinterStatus> {
     await this._transport.write(STATUS_REQUEST);
-    const bytes = await this._transport.read(32);
-    return parseStatus(bytes);
+    // The USB IN endpoint (transferAsync) resolves immediately with 0 bytes if
+    // the printer hasn't queued its response yet. Retry until we have 32 bytes.
+    for (let attempt = 0; attempt < 10; attempt++) {
+      await new Promise<void>(r => setTimeout(r, 150));
+      const bytes = await this._transport.read(32);
+      if (bytes.length >= 32) return parseStatus(bytes);
+    }
+    throw new Error('Printer did not respond to status request within 1.5s');
   }
 
   async print(pages: PageData[], options?: JobOptions): Promise<void> {
@@ -61,7 +67,7 @@ export class BrotherQLPrinter {
       scaleX: effectiveScaleX,
       scaleY: effectiveScaleY,
     });
-    const bitmap = flipHorizontal(rotateBitmap(rawBitmap, 270));
+    const bitmap = rotateBitmap(rawBitmap, 270);
     const page: PageData = {
       bitmap,
       media,
@@ -90,7 +96,7 @@ export class BrotherQLPrinter {
       ...(invert !== undefined ? { invert } : {}),
       ...(rotate !== undefined ? { rotate } : {}),
     });
-    const bitmap = flipHorizontal(rotateBitmap(rawBitmap, 270));
+    const bitmap = rotateBitmap(rawBitmap, 270);
     const page: PageData = {
       bitmap,
       media,

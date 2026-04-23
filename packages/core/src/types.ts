@@ -69,6 +69,7 @@ export interface ImagePrintOptions extends PageOptions {
 export interface PrinterStatus {
   ready: boolean;
   mediaWidthMm: number;
+  mediaLengthMm: number;
   mediaType: MediaType | null;
   errors: string[];
   editorLiteMode: boolean;

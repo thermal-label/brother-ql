@@ -6,6 +6,7 @@ function makeStatusBytes(
     errInfo1: number;
     errInfo2: number;
     mediaWidthMm: number;
+    mediaLengthMm: number;
     mediaTypeByte: number;
     statusType: number;
   }>,
@@ -19,7 +20,8 @@ function makeStatusBytes(
   bytes[9] = overrides?.errInfo2 ?? 0;
   bytes[10] = overrides?.mediaWidthMm ?? 62;
   bytes[11] = overrides?.mediaTypeByte ?? 0x0a;
-  bytes[14] = overrides?.statusType ?? 0x00;
+  bytes[17] = overrides?.mediaLengthMm ?? 0;
+  bytes[18] = overrides?.statusType ?? 0x00;
   return bytes;
 }
 
@@ -38,6 +40,13 @@ describe('parseStatus', () => {
     const status = parseStatus(makeStatusBytes({ mediaWidthMm: 62, mediaTypeByte: 0x0a }));
     expect(status.mediaWidthMm).toBe(62);
     expect(status.mediaType).toBe('continuous');
+  });
+
+  it('parses media length from byte 17 (0 for continuous, mm for die-cut)', () => {
+    const cont = parseStatus(makeStatusBytes({ mediaLengthMm: 0 }));
+    expect(cont.mediaLengthMm).toBe(0);
+    const diecut = parseStatus(makeStatusBytes({ mediaTypeByte: 0x0b, mediaLengthMm: 90 }));
+    expect(diecut.mediaLengthMm).toBe(90);
   });
 
   it('parses die-cut media type', () => {

@@ -75,21 +75,22 @@ Send these 3 bytes to the OUT endpoint:
 
 The printer replies with exactly 32 bytes on the IN endpoint:
 
-| Offset | Field            | Notes                             |
-| -----: | ---------------- | --------------------------------- |
-|      0 | `0x80`           | Print head mark                   |
-|      1 | `0x20`           | Size — always 32                  |
-|      2 | `0x42`           | ASCII `'B'` — Brother             |
-|      3 | `0x30`           | ASCII `'0'` — QL series           |
-|    4–5 | Model code       |                                   |
-|      6 | `0x30`           | Country code                      |
-|      8 | Error info 1     | See bit table below               |
-|      9 | Error info 2     | See bit table below               |
-|     10 | Media width (mm) | e.g. `0x3E` = 62 mm               |
-|     11 | Media type       | `0x0A` continuous, `0x0B` die-cut |
-|     14 | Status type      | `0x00` reply, `0x02` error        |
-|     16 | Phase type       |                                   |
-|  17–18 | Phase number     | Big-endian                        |
+| Offset | Field             | Notes                                                 |
+| -----: | ----------------- | ----------------------------------------------------- |
+|      0 | `0x80`            | Print head mark                                       |
+|      1 | `0x20`            | Size — always 32                                      |
+|      2 | `0x42`            | ASCII `'B'` — Brother                                 |
+|      3 | `0x30`            | ASCII `'0'` — QL series                               |
+|    4–5 | Model code        |                                                       |
+|      6 | Country code      |                                                       |
+|      8 | Error info 1      | See bit table below                                   |
+|      9 | Error info 2      | See bit table below                                   |
+|     10 | Media width (mm)  | e.g. `0x3E` = 62 mm                                   |
+|     11 | Media type        | `0x0A` continuous, `0x0B` die-cut                     |
+|     17 | Media length (mm) | `0x00` for continuous; label length in mm for die-cut |
+|     18 | Status type       | `0x00` reply, `0x02` error                            |
+|     19 | Phase type        |                                                       |
+|  20–21 | Phase number      | Big-endian                                            |
 
 Byte 0 (`0x80`) is the fastest way to confirm you got a valid response rather
 than leftover USB noise.

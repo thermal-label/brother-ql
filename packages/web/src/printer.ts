@@ -13,7 +13,6 @@ import {
   renderImage,
   renderText,
   rotateBitmap,
-  flipHorizontal,
   STATUS_REQUEST,
 } from '@thermal-label/brother-ql-core';
 
@@ -61,7 +60,7 @@ export class WebBrotherQLPrinter {
       scaleX: scaleX ?? autoScale,
       scaleY: scaleY ?? autoScale,
     });
-    const bitmap = flipHorizontal(rotateBitmap(rawBitmap, 270));
+    const bitmap = rotateBitmap(rawBitmap, 270);
     const page: PageData = {
       bitmap,
       media,
@@ -88,9 +87,7 @@ export class WebBrotherQLPrinter {
     });
     const rotationAngle = rotate ?? 0;
     const bitmap =
-      rotationAngle === 0
-        ? flipHorizontal(rotateBitmap(rawBitmap, 270))
-        : rotateBitmap(rawBitmap, rotationAngle);
+      rotationAngle === 0 ? rotateBitmap(rawBitmap, 270) : rotateBitmap(rawBitmap, rotationAngle);
     const page: PageData = {
       bitmap,
       media,
@@ -132,8 +129,8 @@ export class WebBrotherQLPrinter {
       height: img.height,
       data: new Uint8Array(img.data.buffer),
     });
-    const blackBitmap = flipHorizontal(rotateBitmap(renderImage(toRaw(blackImageData)), 270));
-    const redBitmap = flipHorizontal(rotateBitmap(renderImage(toRaw(redImageData)), 270));
+    const blackBitmap = rotateBitmap(renderImage(toRaw(blackImageData)), 270);
+    const redBitmap = rotateBitmap(renderImage(toRaw(redImageData)), 270);
     const page: PageData = {
       bitmap: blackBitmap,
       redBitmap,

@@ -38,17 +38,21 @@ export function parseStatus(bytes: Uint8Array): PrinterStatus {
 
   const mediaWidthMm = bytes[10] ?? 0;
   const mediaTypeByte = bytes[11] ?? 0;
+  const mediaLengthMm = bytes[17] ?? 0;
 
   let mediaType: MediaType | null = null;
   if (mediaTypeByte === 0x0a) mediaType = 'continuous';
   else if (mediaTypeByte === 0x0b) mediaType = 'die-cut';
 
-  const statusType = bytes[14] ?? 0;
+  // Status type is at byte 18, not 14. Byte 14 is an undocumented media-type
+  // code that carries non-zero values and is not the status type field.
+  const statusType = bytes[18] ?? 0;
   const ready = errors.length === 0 && statusType !== 0x02;
 
   return {
     ready,
     mediaWidthMm,
+    mediaLengthMm,
     mediaType,
     errors,
     editorLiteMode: false,
