@@ -25,9 +25,13 @@ export function parseStatus(bytes: Uint8Array): PrinterStatus {
   if (bytes.length < 32)
     throw new Error(`Status response too short: ${bytes.length.toString()} bytes`);
 
+  // noUncheckedIndexedAccess forces `?? 0` fallbacks that are unreachable after
+  // the length check above. DataView avoids the issue: getUint8 returns number.
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+
   const errors: string[] = [];
-  const errInfo1 = bytes[8] ?? 0;
-  const errInfo2 = bytes[9] ?? 0;
+  const errInfo1 = view.getUint8(8);
+  const errInfo2 = view.getUint8(9);
 
   for (const [bitStr, msg] of Object.entries(ERROR_INFO_1)) {
     if (errInfo1 & (1 << Number(bitStr))) errors.push(msg);
@@ -36,9 +40,9 @@ export function parseStatus(bytes: Uint8Array): PrinterStatus {
     if (errInfo2 & (1 << Number(bitStr))) errors.push(msg);
   }
 
-  const mediaWidthMm = bytes[10] ?? 0;
-  const mediaTypeByte = bytes[11] ?? 0;
-  const mediaLengthMm = bytes[17] ?? 0;
+  const mediaWidthMm = view.getUint8(10);
+  const mediaTypeByte = view.getUint8(11);
+  const mediaLengthMm = view.getUint8(17);
 
   let mediaType: MediaType | null = null;
   if (mediaTypeByte === 0x0a) mediaType = 'continuous';
@@ -46,7 +50,7 @@ export function parseStatus(bytes: Uint8Array): PrinterStatus {
 
   // Status type is at byte 18, not 14. Byte 14 is an undocumented media-type
   // code that carries non-zero values and is not the status type field.
-  const statusType = bytes[18] ?? 0;
+  const statusType = view.getUint8(18);
   const ready = errors.length === 0 && statusType !== 0x02;
 
   return {
