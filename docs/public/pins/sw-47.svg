@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="22" height="58" viewBox="0 0 11 29" role="img">
+  <title>SW 47 pin pattern</title>
+  <circle cx="2.5" cy="2.5" r="2.2" fill="none" stroke="#999" stroke-width="0.7"/>
+  <circle cx="8.5" cy="2.5" r="2.2" fill="#444" stroke="#444" stroke-width="0.5"/>
+  <circle cx="8.5" cy="8.5" r="2.2" fill="#444" stroke="#444" stroke-width="0.5"/>
+  <circle cx="8.5" cy="14.5" r="2.2" fill="#444" stroke="#444" stroke-width="0.5"/>
+  <circle cx="8.5" cy="20.5" r="2.2" fill="#444" stroke="#444" stroke-width="0.5"/>
+  <circle cx="8.5" cy="26.5" r="2.2" fill="#444" stroke="#444" stroke-width="0.5"/>
+</svg>

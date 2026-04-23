@@ -60,51 +60,7 @@ The print head is fixed width. The label stock determines how many pins are acti
 
 ## Label media
 
-### Continuous length tape
-
-| Label ID | Width | DK code  | Print area (dots) | Left margin | Right margin | Notes                              |
-| -------- | ----- | -------- | ----------------- | ----------- | ------------ | ---------------------------------- |
-| 257      | 12mm  | —        | 106               | 585         | 29           |                                    |
-| 258      | 29mm  | DK-22210 | 306               | 408         | 6            |                                    |
-| 264      | 38mm  | DK-22225 | 413               | 295         | 12           |                                    |
-| 262      | 50mm  | DK-22246 | 554               | 154         | 12           |                                    |
-| 261      | 54mm  | DK-22214 | 590               | 130         | 0            |                                    |
-| 259      | 62mm  | DK-22205 | 696               | 12          | 12           | black on white                     |
-| 251      | 62mm  | DK-22251 | 696               | 12          | 12           | black+red, requires two-color mode |
-| 260      | 102mm | DK-22243 | 1164              | 76          | 56           |                                    |
-
-::: tip DK-22251 (media ID 251)
-The 62mm black+red two-color tape is marked **"251"** on the roll. It requires
-two-color print mode even for black-only jobs — use `--media 251`, not `--media 259`.
-The driver handles this automatically: it sets expanded mode bit 0 and sends an
-empty red plane when no red bitmap is supplied.
-:::
-
-::: info Roll markings vs media IDs
-The number printed on the roll is the last three digits of the DK product code
-(DK-22**251** → "251", DK-11**201** → "201"). This does **not** directly map to
-the media ID — for example, DK-11201 (29×90mm standard address labels, marked
-"201") uses media ID **271**.
-:::
-
-### Die-cut labels
-
-| Label ID | Size      | DK code  | Print area (W×H dots) |
-| -------- | --------- | -------- | --------------------- |
-| 269      | 17×54mm   | DK-11204 | 165×566               |
-| 270      | 17×87mm   | DK-11203 | 165×956               |
-| 370      | 23×23mm   | —        | 236×202               |
-| 271      | 29×90mm   | DK-11201 | 306×991               |
-| 272      | 38×90mm   | DK-11218 | 413×991               |
-| 367      | 39×48mm   | DK-11219 | 425×495               |
-| 374      | 52×29mm   | —        | 578×271               |
-| 274      | 62×29mm   | DK-11209 | 696×271               |
-| 275      | 62×100mm  | DK-11202 | 696×1109              |
-| 365      | 102×51mm  | DK-11240 | 1164×526              |
-| 366      | 102×152mm | DK-11241 | 1164×1660             |
-| 362      | 12mm Ø    | —        | 94×94                 |
-| 363      | 24mm Ø    | DK-11221 | 236×236               |
-| 273      | 58mm Ø    | DK-11207 | 618×618               |
+See [Media](/media) for the full label and roll reference, including media IDs, DK codes, print area dimensions, and CAS switch pin patterns.
 
 ## Editor Lite mode
 
