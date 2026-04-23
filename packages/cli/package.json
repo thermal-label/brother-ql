@@ -1,6 +1,6 @@
 {
   "name": "@thermal-label/brother-ql-cli",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "CLI for Brother QL label printers",
   "keywords": [
     "brother",
