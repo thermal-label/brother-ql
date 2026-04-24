@@ -40,6 +40,9 @@ export default defineConfig({
         '@thermal-label/brother-ql-web': fileURLToPath(
           new URL('../../packages/web/src/index.ts', import.meta.url),
         ),
+        '@thermal-label/brother-ql-core': fileURLToPath(
+          new URL('../../packages/core/src/index.ts', import.meta.url),
+        ),
       },
     },
   },

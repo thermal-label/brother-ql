@@ -1,3 +1,11 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion --
+ *   Uint8Array indexed reads are typed `number | undefined` under
+ *   `noUncheckedIndexedAccess`, but every index in this file is bounded
+ *   by `src.length` (a multiple of 4) or `Math.min(a.length, b.length)`.
+ *   The `!` assertions collapse the unreachable `undefined` branches so
+ *   branch coverage doesn't count them. See also `non-nullable-type-
+ *   assertion-style` which rules out the alternative `as number` form.
+ */
 import { renderImage, type LabelBitmap, type RawImageData } from '@mbtech-nl/bitmap';
 
 export interface TwoColorResult {
@@ -25,10 +33,10 @@ function extractRedPixels(image: RawImageData): RawImageData {
   const src = image.data;
   const dst = new Uint8Array(src.length);
   for (let i = 0; i < src.length; i += 4) {
-    const r = src[i] ?? 0;
-    const g = src[i + 1] ?? 0;
-    const b = src[i + 2] ?? 0;
-    const a = src[i + 3] ?? 0;
+    const r = src[i]!;
+    const g = src[i + 1]!;
+    const b = src[i + 2]!;
+    const a = src[i + 3]!;
     if (isRedish(r, g, b, a)) {
       dst[i] = r;
       dst[i + 1] = g;
@@ -43,10 +51,10 @@ function extractNonRedPixels(image: RawImageData): RawImageData {
   const src = image.data;
   const dst = new Uint8Array(src.length);
   for (let i = 0; i < src.length; i += 4) {
-    const r = src[i] ?? 0;
-    const g = src[i + 1] ?? 0;
-    const b = src[i + 2] ?? 0;
-    const a = src[i + 3] ?? 0;
+    const r = src[i]!;
+    const g = src[i + 1]!;
+    const b = src[i + 2]!;
+    const a = src[i + 3]!;
     if (!isRedish(r, g, b, a)) {
       dst[i] = r;
       dst[i + 1] = g;
@@ -66,7 +74,7 @@ function resolveOverlap(black: LabelBitmap, red: LabelBitmap): void {
   const redData = red.data;
   const len = Math.min(blackData.length, redData.length);
   for (let i = 0; i < len; i++) {
-    redData[i] = (redData[i] ?? 0) & ~(blackData[i] ?? 0);
+    redData[i] = redData[i]! & ~blackData[i]!;
   }
 }
 

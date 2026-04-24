@@ -32,14 +32,31 @@ function fakeTransport(): {
   };
 }
 
-function makeUsbDevice(idVendor: number, idProduct: number, iSerialNumber = 0): unknown {
+function makeUsbDevice(
+  idVendor: number,
+  idProduct: number,
+  serialNumber?: string,
+): {
+  deviceDescriptor: { idVendor: number; idProduct: number; iSerialNumber: number };
+  busNumber: number;
+  deviceAddress: number;
+  open: ReturnType<typeof vi.fn>;
+  close: ReturnType<typeof vi.fn>;
+  getStringDescriptor: ReturnType<typeof vi.fn>;
+} {
   return {
-    deviceDescriptor: { idVendor, idProduct, iSerialNumber },
+    deviceDescriptor: {
+      idVendor,
+      idProduct,
+      iSerialNumber: serialNumber ? 3 : 0,
+    },
     busNumber: 1,
     deviceAddress: 2,
     open: vi.fn(),
     close: vi.fn(),
-    getStringDescriptor: vi.fn(),
+    getStringDescriptor: vi.fn((_idx: number, cb: (err: null, value?: string) => void) => {
+      cb(null, serialNumber);
+    }),
   };
 }
 
@@ -75,10 +92,35 @@ describe('BrotherQLDiscovery', () => {
       expect(await discovery.listPrinters()).toHaveLength(0);
     });
 
+    it('excludes Brother-VID devices with unknown PIDs', async () => {
+      // Brother VID but not in the DEVICES registry and not a mass-storage PID
+      vi.mocked(usb.getDeviceList).mockReturnValueOnce([makeUsbDevice(0x04f9, 0x9999) as never]);
+      expect(await discovery.listPrinters()).toHaveLength(0);
+      expect(warnSpy).not.toHaveBeenCalled();
+    });
+
     it('excludes mass-storage PIDs and warns', async () => {
       vi.mocked(usb.getDeviceList).mockReturnValueOnce([makeUsbDevice(0x04f9, 0x20aa) as never]);
       expect(await discovery.listPrinters()).toHaveLength(0);
       expect(warnSpy).toHaveBeenCalledOnce();
+    });
+
+    it('reads the serial number when iSerialNumber is set', async () => {
+      vi.mocked(usb.getDeviceList).mockReturnValueOnce([
+        makeUsbDevice(0x04f9, 0x20a7, 'SN123') as never,
+      ]);
+      const [printer] = await discovery.listPrinters();
+      expect(printer?.serialNumber).toBe('SN123');
+    });
+
+    it('swallows serial-read errors and leaves serialNumber undefined', async () => {
+      const device = makeUsbDevice(0x04f9, 0x20a7, 'ignored');
+      device.getStringDescriptor.mockImplementation((_idx: number, cb: (err: Error) => void) => {
+        cb(new Error('descriptor read failed'));
+      });
+      vi.mocked(usb.getDeviceList).mockReturnValueOnce([device as never]);
+      const [printer] = await discovery.listPrinters();
+      expect(printer?.serialNumber).toBeUndefined();
     });
   });
 
@@ -90,6 +132,29 @@ describe('BrotherQLDiscovery', () => {
       const printer = await discovery.openPrinter();
       expect(printer.device.pid).toBe(0x20a7);
       expect(usbOpen).toHaveBeenCalledWith(0x04f9, 0x20a7);
+    });
+
+    it('filters by VID/PID when multiple devices are attached', async () => {
+      vi.mocked(usb.getDeviceList).mockReturnValueOnce([
+        makeUsbDevice(0x04f9, 0x20a7) as never,
+        makeUsbDevice(0x04f9, 0x209b) as never,
+      ]);
+      usbOpen.mockResolvedValue(fakeTransport());
+
+      const printer = await discovery.openPrinter({ vid: 0x04f9, pid: 0x209b });
+      expect(printer.device.pid).toBe(0x209b);
+      expect(usbOpen).toHaveBeenCalledWith(0x04f9, 0x209b);
+    });
+
+    it('filters by serialNumber when multiple devices share a PID', async () => {
+      vi.mocked(usb.getDeviceList).mockReturnValueOnce([
+        makeUsbDevice(0x04f9, 0x20a7, 'SN-A') as never,
+        makeUsbDevice(0x04f9, 0x20a7, 'SN-TARGET') as never,
+      ]);
+      usbOpen.mockResolvedValue(fakeTransport());
+
+      const printer = await discovery.openPrinter({ serialNumber: 'SN-TARGET' });
+      expect(printer.device.pid).toBe(0x20a7);
     });
 
     it('throws when no matching device is attached', async () => {

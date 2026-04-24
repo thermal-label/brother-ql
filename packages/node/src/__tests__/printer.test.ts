@@ -63,6 +63,7 @@ describe('BrotherQLPrinter', () => {
     expect(printer.model).toBe('QL-820NWB');
     expect(printer.device).toBe(DEVICES.QL_820NWB);
     expect(printer.transportType).toBe('usb');
+    expect(printer.connected).toBe(true);
   });
 
   it('print() throws MediaNotSpecifiedError without media or status', async () => {
@@ -76,6 +77,18 @@ describe('BrotherQLPrinter', () => {
     const printer = new BrotherQLPrinter(DEVICES.QL_820NWB, transport, 'usb');
     await printer.print(solidRgba(64, 64), MEDIA[259]);
     expect(written.length).toBeGreaterThan(0);
+  });
+
+  it('print() uses detected media from a prior getStatus when media is omitted', async () => {
+    const bytes = new Uint8Array(32);
+    bytes[10] = 62;
+    bytes[11] = 0x0a;
+    const { transport, written } = makeTransport(bytes);
+    const printer = new BrotherQLPrinter(DEVICES.QL_820NWB, transport, 'usb');
+    await printer.getStatus();
+    const before = written.length;
+    await printer.print(solidRgba(64, 64));
+    expect(written.length).toBe(before + 1);
   });
 
   it('print() splits two-colour bitmap when media.colorCapable is true', async () => {
@@ -112,6 +125,18 @@ describe('BrotherQLPrinter', () => {
     expect(preview.media.id).toBe(259);
   });
 
+  it('createPreview() reuses detected media from a prior getStatus', async () => {
+    const bytes = new Uint8Array(32);
+    bytes[10] = 62;
+    bytes[11] = 0x0a;
+    const { transport } = makeTransport(bytes);
+    const printer = new BrotherQLPrinter(DEVICES.QL_820NWB, transport, 'usb');
+    await printer.getStatus();
+    const preview = await printer.createPreview(solidRgba(64, 64));
+    expect(preview.assumed).toBe(false);
+    expect(preview.media.id).toBe(259);
+  });
+
   it('getStatus() polls until 32 bytes arrive and returns BrotherQLStatus', async () => {
     const bytes = new Uint8Array(32);
     bytes[10] = 62;
@@ -134,4 +159,19 @@ describe('BrotherQLPrinter', () => {
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(transport.close)).toHaveBeenCalled();
   });
+
+  it('getStatus() throws when the printer never queues a response', async () => {
+    // transport.read always returns 0 bytes — mirrors the USB path where
+    // the printer hasn't responded yet.
+    const transport: Transport = {
+      get connected() {
+        return true;
+      },
+      write: vi.fn(() => Promise.resolve()),
+      read: vi.fn(() => Promise.resolve(new Uint8Array(0))),
+      close: vi.fn(() => Promise.resolve()),
+    };
+    const printer = new BrotherQLPrinter(DEVICES.QL_820NWB, transport, 'usb');
+    await expect(printer.getStatus()).rejects.toThrow(/did not respond to status request/);
+  }, 10_000);
 });

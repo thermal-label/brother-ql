@@ -31,9 +31,7 @@ export interface BrotherQLOpenOptions extends OpenOptions {
 
 const BROTHER_VID = 0x04f9;
 
-async function readSerialNumber(device: usb.Device): Promise<string | undefined> {
-  const idx = device.deviceDescriptor.iSerialNumber;
-  if (!idx) return undefined;
+async function readSerialNumber(device: usb.Device, idx: number): Promise<string | undefined> {
   return new Promise(resolve => {
     device.getStringDescriptor(idx, (err, value) => {
       resolve(err ? undefined : value);
@@ -70,7 +68,7 @@ async function enumerateUsbDevices(): Promise<
     if (desc.iSerialNumber) {
       device.open();
       try {
-        serialNumber = await readSerialNumber(device);
+        serialNumber = await readSerialNumber(device, desc.iSerialNumber);
       } finally {
         device.close();
       }
@@ -114,6 +112,7 @@ export class BrotherQLDiscovery implements PrinterDiscovery {
       const descriptor = Object.values(DEVICES).find(d =>
         (d.transports as readonly string[]).includes('serial'),
       );
+      /* v8 ignore next -- DEVICES always has QL_820NWB with 'serial' in transports */
       if (!descriptor) throw new Error('No serial-capable Brother QL descriptor found.');
       return new BrotherQLPrinter(descriptor, transport, 'serial');
     }
@@ -121,6 +120,7 @@ export class BrotherQLDiscovery implements PrinterDiscovery {
     if (options.host !== undefined) {
       const transport = await TcpTransport.connect(options.host, options.port);
       const descriptor = Object.values(DEVICES).find(d => d.network !== 'none');
+      /* v8 ignore next -- DEVICES always has network-capable entries */
       if (!descriptor) throw new Error('No network-capable Brother QL descriptor found.');
       return new BrotherQLPrinter(descriptor, transport, 'tcp');
     }
