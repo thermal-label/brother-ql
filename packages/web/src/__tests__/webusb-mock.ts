@@ -1,69 +1,80 @@
 import { vi } from 'vitest';
 
-export interface MockUSBDeviceSpies {
-  open: ReturnType<typeof vi.fn>;
-  close: ReturnType<typeof vi.fn>;
-  selectConfiguration: ReturnType<typeof vi.fn>;
-  claimInterface: ReturnType<typeof vi.fn>;
-  releaseInterface: ReturnType<typeof vi.fn>;
-  transferOut: ReturnType<typeof vi.fn>;
-  transferIn: ReturnType<typeof vi.fn>;
-}
-
-export interface MockUSBDevice {
-  device: USBDevice;
-  spies: MockUSBDeviceSpies;
+export interface MockUSBDevice extends USBDevice {
+  __transfers: { endpointNumber: number; data: Uint8Array }[];
+  __statusBytes: Uint8Array;
 }
 
 export function createMockUSBDevice(overrides?: {
   vendorId?: number;
   productId?: number;
-  serialNumber?: string;
   statusBytes?: Uint8Array;
 }): MockUSBDevice {
-  const spies: MockUSBDeviceSpies = {
-    open: vi.fn().mockImplementation(() => Promise.resolve()),
-    close: vi.fn().mockImplementation(() => Promise.resolve()),
-    selectConfiguration: vi.fn().mockImplementation(() => Promise.resolve()),
-    claimInterface: vi.fn().mockImplementation(() => Promise.resolve()),
-    releaseInterface: vi.fn().mockImplementation(() => Promise.resolve()),
-    transferOut: vi
-      .fn()
-      .mockImplementation(() => Promise.resolve({ bytesWritten: 0, status: 'ok' })),
-    transferIn: vi.fn().mockImplementation(() =>
-      Promise.resolve({
-        status: 'ok',
-        data: new DataView((overrides?.statusBytes ?? new Uint8Array(32)).buffer),
-      }),
-    ),
+  const transfers: { endpointNumber: number; data: Uint8Array }[] = [];
+  let opened = false;
+
+  const endpoints = [
+    { endpointNumber: 2, direction: 'out' },
+    { endpointNumber: 1, direction: 'in' },
+  ] as unknown as USBEndpoint[];
+
+  const configuration: USBConfiguration = {
+    configurationValue: 1,
+    configurationName: null,
+    interfaces: [
+      {
+        interfaceNumber: 0,
+        alternate: {
+          alternateSetting: 0,
+          interfaceClass: 7,
+          interfaceSubclass: 1,
+          interfaceProtocol: 2,
+          interfaceName: null,
+          endpoints,
+        },
+        alternates: [],
+        claimed: false,
+      },
+    ],
   };
 
-  let opened = false;
-  spies.open.mockImplementation(() => {
-    opened = true;
-    return Promise.resolve();
-  });
-  spies.close.mockImplementation(() => {
-    opened = false;
-    return Promise.resolve();
-  });
+  const statusBytes = overrides?.statusBytes ?? new Uint8Array(32);
 
   const device = {
     vendorId: overrides?.vendorId ?? 0x04f9,
     productId: overrides?.productId ?? 0x20a7,
-    serialNumber: overrides?.serialNumber,
-    configuration: { interfaces: [{ interfaceNumber: 0, claimed: false }] },
+    serialNumber: undefined,
     get opened() {
       return opened;
     },
-    open: spies.open,
-    close: spies.close,
-    selectConfiguration: spies.selectConfiguration,
-    claimInterface: spies.claimInterface,
-    releaseInterface: spies.releaseInterface,
-    transferOut: spies.transferOut,
-    transferIn: spies.transferIn,
-  } as unknown as USBDevice;
+    configuration,
+    open: vi.fn(() => {
+      opened = true;
+      return Promise.resolve();
+    }),
+    close: vi.fn(() => {
+      opened = false;
+      return Promise.resolve();
+    }),
+    selectConfiguration: vi.fn(() => Promise.resolve()),
+    claimInterface: vi.fn(() => Promise.resolve()),
+    releaseInterface: vi.fn(() => Promise.resolve()),
+    transferOut: vi.fn((endpointNumber: number, data: BufferSource) => {
+      const array = data instanceof Uint8Array ? data : new Uint8Array(data as ArrayBuffer);
+      transfers.push({ endpointNumber, data: Uint8Array.from(array) });
+      return Promise.resolve({ bytesWritten: array.byteLength, status: 'ok' as const });
+    }),
+    transferIn: vi.fn((_endpointNumber: number, length: number) => {
+      const out = new Uint8Array(length);
+      out.set(statusBytes.subarray(0, length));
+      return Promise.resolve({
+        data: new DataView(out.buffer),
+        status: 'ok' as const,
+      });
+    }),
+    __transfers: transfers,
+    __statusBytes: statusBytes,
+  } as unknown as MockUSBDevice;
 
-  return { device, spies };
+  return device;
 }

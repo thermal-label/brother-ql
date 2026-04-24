@@ -1,160 +1,129 @@
 import {
-  type DeviceDescriptor,
-  type JobOptions,
-  type MediaDescriptor,
-  type PageData,
-  type PageOptions,
-  type PrinterStatus,
-  type TextPrintOptions,
-  type ImagePrintOptions,
+  DEFAULT_MEDIA,
+  DEVICES,
+  STATUS_REQUEST,
+  createPreviewOffline,
   encodeJob,
   findDevice,
   parseStatus,
   renderImage,
-  renderText,
-  rotateBitmap,
-  STATUS_REQUEST,
+  splitTwoColor,
+  type BrotherQLDevice,
+  type BrotherQLMedia,
+  type BrotherQLStatus,
+  type MediaDescriptor,
+  type PageData,
+  type PreviewOptions,
+  type PreviewResult,
+  type PrinterAdapter,
+  type RawImageData,
+  type Transport,
 } from '@thermal-label/brother-ql-core';
+import { MediaNotSpecifiedError } from '@thermal-label/contracts';
+import { buildUsbFilters } from '@thermal-label/transport';
+import { WebUsbTransport } from '@thermal-label/transport/web';
 
-const BROTHER_VID = 0x04f9;
-const USB_INTERFACE = 0;
-const BULK_OUT_ENDPOINT = 2;
-const BULK_IN_ENDPOINT = 1;
 const STATUS_BYTE_COUNT = 32;
-const CONFIGURATION_VALUE = 1;
 
-export class WebBrotherQLPrinter {
-  readonly device: USBDevice;
-  readonly descriptor: DeviceDescriptor;
+export interface RequestOptions {
+  filters?: USBDeviceFilter[];
+}
 
-  constructor(device: USBDevice, descriptor: DeviceDescriptor) {
+/**
+ * WebUSB `PrinterAdapter` for Brother QL printers.
+ *
+ * Same two-colour handling as the node driver — `splitTwoColor()` runs
+ * internally when the selected media is `colorCapable`.
+ */
+export class WebBrotherQLPrinter implements PrinterAdapter {
+  readonly family = 'brother-ql' as const;
+  readonly device: BrotherQLDevice;
+
+  private readonly transport: Transport;
+  private lastStatus: BrotherQLStatus | undefined;
+
+  constructor(device: BrotherQLDevice, transport: Transport) {
     this.device = device;
-    this.descriptor = descriptor;
+    this.transport = transport;
   }
 
-  isConnected(): boolean {
-    return this.device.opened;
+  get model(): string {
+    return this.device.name;
   }
 
-  async getStatus(): Promise<PrinterStatus> {
-    await this.device.transferOut(BULK_OUT_ENDPOINT, STATUS_REQUEST);
-    const result = await this.device.transferIn(BULK_IN_ENDPOINT, STATUS_BYTE_COUNT);
-    if (!result.data) throw new Error('No status data received');
-    return parseStatus(new Uint8Array(result.data.buffer));
+  get connected(): boolean {
+    return this.transport.connected;
   }
 
-  async print(pages: PageData[], options?: JobOptions): Promise<void> {
-    const bytes = encodeJob(pages, options);
-    await this.device.transferOut(BULK_OUT_ENDPOINT, bytes);
-  }
+  async print(image: RawImageData, media?: MediaDescriptor): Promise<void> {
+    const resolvedMedia = (media ?? this.lastStatus?.detectedMedia) as
+      | BrotherQLMedia
+      | undefined;
+    if (!resolvedMedia) throw new MediaNotSpecifiedError();
 
-  async printText(text: string, media: MediaDescriptor, options?: TextPrintOptions): Promise<void> {
-    const { invert, scaleX, scaleY, ...pageOptions } = options ?? {};
-    const base = renderText(text, { scaleX: 1, scaleY: 1 });
-    const autoScale = Math.max(
-      1,
-      Math.floor(media.printAreaDots / Math.max(base.widthPx, base.heightPx)),
-    );
-    const rawBitmap = renderText(text, {
-      ...(invert !== undefined ? { invert } : {}),
-      scaleX: scaleX ?? autoScale,
-      scaleY: scaleY ?? autoScale,
-    });
-    const bitmap = rotateBitmap(rawBitmap, 270);
-    const page: PageData = {
-      bitmap,
-      media,
-      ...(Object.keys(pageOptions).length > 0 ? { options: pageOptions } : {}),
-    };
-    await this.print([page]);
-  }
-
-  async printImage(
-    imageData: ImageData,
-    media: MediaDescriptor,
-    options?: ImagePrintOptions,
-  ): Promise<void> {
-    const { threshold, dither, invert, rotate, ...pageOptions } = options ?? {};
-    const rawImage = {
-      width: imageData.width,
-      height: imageData.height,
-      data: new Uint8Array(imageData.data.buffer),
-    };
-    const rawBitmap = renderImage(rawImage, {
-      ...(threshold !== undefined ? { threshold } : {}),
-      ...(dither ? { dither: true } : {}),
-      ...(invert ? { invert: true } : {}),
-    });
-    const rotationAngle = rotate ?? 0;
-    const bitmap =
-      rotationAngle === 0 ? rotateBitmap(rawBitmap, 270) : rotateBitmap(rawBitmap, rotationAngle);
-    const page: PageData = {
-      bitmap,
-      media,
-      ...(Object.keys(pageOptions).length > 0 ? { options: pageOptions } : {}),
-    };
-    await this.print([page]);
-  }
-
-  async printImageURL(
-    url: string,
-    media: MediaDescriptor,
-    options?: ImagePrintOptions,
-  ): Promise<void> {
-    const response = await fetch(url);
-    const blob = await response.blob();
-    const bmp = await createImageBitmap(blob);
-    const canvas = new OffscreenCanvas(bmp.width, bmp.height);
-    const ctx = canvas.getContext('2d');
-    if (!ctx) throw new Error('Could not get canvas context');
-    ctx.drawImage(bmp, 0, 0);
-    const imageData = ctx.getImageData(0, 0, bmp.width, bmp.height);
-    await this.printImage(imageData, media, options);
-  }
-
-  async printTwoColor(
-    blackImageData: ImageData,
-    redImageData: ImageData,
-    media: MediaDescriptor,
-    options?: PageOptions,
-  ): Promise<void> {
-    if (!this.descriptor.twoColor) {
-      throw new Error(
-        `Device ${this.descriptor.name} does not support two-color printing. ` +
-          'Use a QL-800, QL-810W, or QL-820NWB.',
-      );
+    let page: PageData;
+    if (resolvedMedia.colorCapable) {
+      const { black, red } = splitTwoColor(image);
+      page = { bitmap: black, redBitmap: red, media: resolvedMedia };
+    } else {
+      const bitmap = renderImage(image, { dither: true });
+      page = { bitmap, media: resolvedMedia };
     }
-    const toRaw = (img: ImageData): { width: number; height: number; data: Uint8Array } => ({
-      width: img.width,
-      height: img.height,
-      data: new Uint8Array(img.data.buffer),
-    });
-    const blackBitmap = rotateBitmap(renderImage(toRaw(blackImageData)), 270);
-    const redBitmap = rotateBitmap(renderImage(toRaw(redImageData)), 270);
-    const page: PageData = {
-      bitmap: blackBitmap,
-      redBitmap,
-      media,
-      ...(options !== undefined ? { options } : {}),
-    };
-    await this.print([page]);
+
+    const bytes = encodeJob([page]);
+    await this.transport.write(bytes);
   }
 
-  async disconnect(): Promise<void> {
-    await this.device.releaseInterface(USB_INTERFACE);
-    await this.device.close();
+  createPreview(image: RawImageData, options?: PreviewOptions): Promise<PreviewResult> {
+    const override = options?.media as BrotherQLMedia | undefined;
+    const detected = this.lastStatus?.detectedMedia as BrotherQLMedia | undefined;
+    if (override) return Promise.resolve(createPreviewOffline(image, override));
+    if (detected) return Promise.resolve(createPreviewOffline(image, detected));
+    return Promise.resolve({
+      ...createPreviewOffline(image, DEFAULT_MEDIA),
+      assumed: true,
+    });
+  }
+
+  async getStatus(): Promise<BrotherQLStatus> {
+    await this.transport.write(STATUS_REQUEST);
+    const bytes = await this.transport.read(STATUS_BYTE_COUNT);
+    const status = parseStatus(bytes);
+    this.lastStatus = status;
+    return status;
+  }
+
+  async close(): Promise<void> {
+    await this.transport.close();
   }
 }
 
-export async function openWebDevice(device: USBDevice): Promise<WebBrotherQLPrinter> {
-  const descriptor = findDevice(BROTHER_VID, device.productId);
+export const DEFAULT_FILTERS = buildUsbFilters(Object.values(DEVICES));
+
+/**
+ * Show the browser's USB picker and wrap the selected device.
+ *
+ * Requires a user gesture. Opens the device and claims interface 0 via
+ * `WebUsbTransport.fromDevice()`.
+ */
+export async function requestPrinter(options: RequestOptions = {}): Promise<WebBrotherQLPrinter> {
+  const filters = options.filters ?? DEFAULT_FILTERS;
+  const usbDevice = await navigator.usb.requestDevice({ filters });
+  return fromUSBDevice(usbDevice);
+}
+
+/**
+ * Wrap an already-selected `USBDevice`.
+ *
+ * @throws when the VID/PID is not in the Brother QL registry.
+ */
+export async function fromUSBDevice(usbDevice: USBDevice): Promise<WebBrotherQLPrinter> {
+  const descriptor = findDevice(usbDevice.vendorId, usbDevice.productId);
   if (!descriptor) {
     throw new Error(
-      `Unsupported device: VID=${BROTHER_VID.toString(16)} PID=${device.productId.toString(16)}`,
+      `Unsupported USB device: VID=0x${usbDevice.vendorId.toString(16)} PID=0x${usbDevice.productId.toString(16)}`,
     );
   }
-  await device.open();
-  await device.selectConfiguration(CONFIGURATION_VALUE);
-  await device.claimInterface(USB_INTERFACE);
-  return new WebBrotherQLPrinter(device, descriptor);
+  const transport = await WebUsbTransport.fromDevice(usbDevice);
+  return new WebBrotherQLPrinter(descriptor, transport);
 }

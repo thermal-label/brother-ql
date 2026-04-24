@@ -1,252 +1,131 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createBitmap } from '@mbtech-nl/bitmap';
-import { MEDIA, DEVICES } from '@thermal-label/brother-ql-core';
+import { describe, expect, it, vi } from 'vitest';
+import { MediaNotSpecifiedError, type Transport } from '@thermal-label/contracts';
+import { DEVICES, MEDIA } from '@thermal-label/brother-ql-core';
+import { BrotherQLPrinter } from '../printer.js';
 
-const mockWrite = vi.fn().mockImplementation(() => Promise.resolve());
-const mockRead = vi.fn().mockResolvedValue(new Uint8Array(32).fill(0));
-const mockClose = vi.fn().mockImplementation(() => Promise.resolve());
-
-const mockTransport = {
-  write: mockWrite,
-  read: mockRead,
-  close: mockClose,
-};
-
-vi.mock('../transport.js', () => ({
-  UsbTransport: {
-    open: vi.fn().mockImplementation(() => Promise.resolve(mockTransport)),
-  },
-  TcpTransport: {
-    connect: vi.fn().mockImplementation(() => Promise.resolve(mockTransport)),
-  },
-}));
-
-vi.mock('../discovery.js', () => ({
-  listPrinters: vi.fn(() => [
-    {
-      device: DEVICES.QL_820NWB,
-      serialNumber: undefined,
-      path: '1.5',
-      transport: 'usb',
+function makeTransport(statusBytes: Uint8Array = new Uint8Array(32)): {
+  transport: Transport;
+  written: Uint8Array[];
+} {
+  const written: Uint8Array[] = [];
+  const transport: Transport = {
+    get connected() {
+      return true;
     },
-  ]),
-  DEVICES,
-}));
-
-const { mockLoadImage, mockCreateCanvas } = vi.hoisted(() => ({
-  mockLoadImage: vi.fn(),
-  mockCreateCanvas: vi.fn(),
-}));
-
-vi.mock('@napi-rs/canvas', () => ({
-  loadImage: mockLoadImage,
-  createCanvas: mockCreateCanvas,
-}));
-
-beforeEach(() => {
-  mockWrite.mockClear().mockImplementation(() => Promise.resolve());
-  mockRead.mockClear().mockResolvedValue(new Uint8Array(32).fill(0));
-  mockClose.mockClear().mockImplementation(() => Promise.resolve());
-
-  const mockContext = {
-    drawImage: vi.fn(),
-    getImageData: vi.fn().mockReturnValue({ data: new Uint8Array(400) }),
+    write: vi.fn((data: Uint8Array) => {
+      written.push(new Uint8Array(data));
+      return Promise.resolve();
+    }),
+    read: vi.fn(() => Promise.resolve(statusBytes)),
+    close: vi.fn(() => Promise.resolve()),
   };
-  mockCreateCanvas
-    .mockReset()
-    .mockReturnValue({ getContext: vi.fn().mockReturnValue(mockContext) });
-  mockLoadImage.mockReset().mockResolvedValue({ width: 10, height: 10 });
-});
+  return { transport, written };
+}
+
+function solidRgba(width: number, height: number): {
+  width: number;
+  height: number;
+  data: Uint8Array;
+} {
+  return {
+    width,
+    height,
+    data: new Uint8Array(width * height * 4).fill(0),
+  };
+}
+
+function redRgba(width: number, height: number): {
+  width: number;
+  height: number;
+  data: Uint8Array;
+} {
+  const data = new Uint8Array(width * height * 4);
+  for (let i = 0; i < data.length; i += 4) {
+    data[i] = 255;
+    data[i + 1] = 0;
+    data[i + 2] = 0;
+    data[i + 3] = 255;
+  }
+  return { width, height, data };
+}
 
 describe('BrotherQLPrinter', () => {
-  it('print() writes the encoded byte stream via transport', async () => {
-    const { BrotherQLPrinter } = await import('../printer.js');
-    const printer = new BrotherQLPrinter(mockTransport, DEVICES.QL_820NWB, 'usb');
-    const bitmap = createBitmap(720, 10);
-    const media = MEDIA[259]!;
-    await printer.print([{ bitmap, media }]);
-    expect(mockWrite).toHaveBeenCalledOnce();
-    const written = mockWrite.mock.calls[0]![0] as Uint8Array;
-    // Starts with ESC i a 01 (raster mode), then 200-byte invalidate
-    expect(written[0]).toBe(0x1b);
-    expect(written[1]).toBe(0x69);
-    expect(written[2]).toBe(0x61);
-    expect(written.at(-1)).toBe(0x1a);
+  it('exposes adapter metadata', () => {
+    const { transport } = makeTransport();
+    const printer = new BrotherQLPrinter(DEVICES.QL_820NWB, transport, 'usb');
+    expect(printer.family).toBe('brother-ql');
+    expect(printer.model).toBe('QL-820NWB');
+    expect(printer.device).toBe(DEVICES.QL_820NWB);
+    expect(printer.transportType).toBe('usb');
   });
 
-  it('getStatus() sends status request and parses 32-byte response', async () => {
-    const statusBytes = new Uint8Array(32);
-    statusBytes[0] = 0x80;
-    statusBytes[10] = 62;
-    statusBytes[11] = 0x0a;
-    mockRead.mockResolvedValueOnce(statusBytes);
+  it('print() throws MediaNotSpecifiedError without media or status', async () => {
+    const { transport } = makeTransport();
+    const printer = new BrotherQLPrinter(DEVICES.QL_820NWB, transport, 'usb');
+    await expect(printer.print(solidRgba(64, 64))).rejects.toBeInstanceOf(MediaNotSpecifiedError);
+  });
 
-    const { BrotherQLPrinter } = await import('../printer.js');
-    const printer = new BrotherQLPrinter(mockTransport, DEVICES.QL_820NWB, 'usb');
+  it('print() encodes a single-colour job for non-colour-capable media', async () => {
+    const { transport, written } = makeTransport();
+    const printer = new BrotherQLPrinter(DEVICES.QL_820NWB, transport, 'usb');
+    await printer.print(solidRgba(64, 64), MEDIA[259]);
+    expect(written.length).toBeGreaterThan(0);
+  });
+
+  it('print() splits two-colour bitmap when media.colorCapable is true', async () => {
+    const { transport, written } = makeTransport();
+    const printer = new BrotherQLPrinter(DEVICES.QL_820NWB, transport, 'usb');
+    await printer.print(redRgba(64, 64), MEDIA[251]);
+    // Two-colour job header includes the expanded-mode byte sequence —
+    // just assert a job was emitted; byte-level details are covered by
+    // the core protocol tests.
+    expect(written.length).toBeGreaterThan(0);
+  });
+
+  it('createPreview() returns two planes on colorCapable media', async () => {
+    const { transport } = makeTransport();
+    const printer = new BrotherQLPrinter(DEVICES.QL_820NWB, transport, 'usb');
+    const preview = await printer.createPreview(redRgba(64, 64), { media: MEDIA[251]! });
+    expect(preview.planes.map(p => p.name)).toEqual(['black', 'red']);
+    expect(preview.assumed).toBe(false);
+  });
+
+  it('createPreview() returns one plane on non-colorCapable media', async () => {
+    const { transport } = makeTransport();
+    const printer = new BrotherQLPrinter(DEVICES.QL_820NWB, transport, 'usb');
+    const preview = await printer.createPreview(solidRgba(64, 64), { media: MEDIA[259]! });
+    expect(preview.planes).toHaveLength(1);
+    expect(preview.planes[0]!.name).toBe('black');
+  });
+
+  it('createPreview() falls back to DEFAULT_MEDIA with assumed=true', async () => {
+    const { transport } = makeTransport();
+    const printer = new BrotherQLPrinter(DEVICES.QL_820NWB, transport, 'usb');
+    const preview = await printer.createPreview(solidRgba(64, 64));
+    expect(preview.assumed).toBe(true);
+    expect(preview.media.id).toBe(259);
+  });
+
+  it('getStatus() polls until 32 bytes arrive and returns BrotherQLStatus', async () => {
+    const bytes = new Uint8Array(32);
+    bytes[10] = 62;
+    bytes[11] = 0x0a;
+    const { transport } = makeTransport(bytes);
+    const printer = new BrotherQLPrinter(DEVICES.QL_820NWB, transport, 'usb');
+
     const status = await printer.getStatus();
-
-    expect(mockWrite).toHaveBeenCalledOnce();
-    const req = mockWrite.mock.calls[0]![0] as Uint8Array;
-    expect(req[0]).toBe(0x1b);
-    expect(req[1]).toBe(0x69);
-    expect(req[2]).toBe(0x53);
-    expect(status.mediaWidthMm).toBe(62);
-    expect(status.mediaType).toBe('continuous');
+    expect(status.rawBytes.length).toBe(32);
+    expect(status.editorLiteMode).toBe(false);
+    expect(status.detectedMedia?.id).toBe(259);
   });
 
-  it('printTwoColor() throws UnsupportedOperationError on non-two-color device', async () => {
-    const { BrotherQLPrinter } = await import('../printer.js');
-    const { UnsupportedOperationError } = await import('../errors.js');
-    const printer = new BrotherQLPrinter(mockTransport, DEVICES.QL_700, 'usb');
-    const bitmap = createBitmap(720, 10);
-    const media = MEDIA[259]!;
-    await expect(printer.printTwoColor(bitmap, bitmap, media)).rejects.toThrow(
-      UnsupportedOperationError,
-    );
-  });
-
-  it('printTwoColor() succeeds on two-color capable device', async () => {
-    const { BrotherQLPrinter } = await import('../printer.js');
-    const printer = new BrotherQLPrinter(mockTransport, DEVICES.QL_820NWB, 'usb');
-    const bitmap = createBitmap(720, 10);
-    const media = MEDIA[259]!;
-    await printer.printTwoColor(bitmap, bitmap, media);
-    expect(mockWrite).toHaveBeenCalledOnce();
-  });
-
-  it('printTwoColor() passes options through to print', async () => {
-    const { BrotherQLPrinter } = await import('../printer.js');
-    const printer = new BrotherQLPrinter(mockTransport, DEVICES.QL_820NWB, 'usb');
-    const bitmap = createBitmap(720, 10);
-    await printer.printTwoColor(bitmap, bitmap, MEDIA[259]!, { autoCut: true });
-    expect(mockWrite).toHaveBeenCalledOnce();
-  });
-
-  it('printText() renders text and writes via transport', async () => {
-    const { BrotherQLPrinter } = await import('../printer.js');
-    const printer = new BrotherQLPrinter(mockTransport, DEVICES.QL_820NWB, 'usb');
-    const media = MEDIA[259]!;
-    await printer.printText('hello', media);
-    expect(mockWrite).toHaveBeenCalledOnce();
-  });
-
-  it('printText() forwards invert option', async () => {
-    const { BrotherQLPrinter } = await import('../printer.js');
-    const printer = new BrotherQLPrinter(mockTransport, DEVICES.QL_820NWB, 'usb');
-    await printer.printText('hi', MEDIA[259]!, { invert: true });
-    expect(mockWrite).toHaveBeenCalledOnce();
-  });
-
-  it('printText() passes PageOptions through to print', async () => {
-    const { BrotherQLPrinter } = await import('../printer.js');
-    const printer = new BrotherQLPrinter(mockTransport, DEVICES.QL_820NWB, 'usb');
-    await printer.printText('hi', MEDIA[259]!, { autoCut: true });
-    expect(mockWrite).toHaveBeenCalledOnce();
-  });
-
-  it('printImage() decodes a Buffer and prints', async () => {
-    const { BrotherQLPrinter } = await import('../printer.js');
-    const printer = new BrotherQLPrinter(mockTransport, DEVICES.QL_820NWB, 'usb');
-    await printer.printImage(Buffer.alloc(100), MEDIA[259]!);
-    expect(mockLoadImage).toHaveBeenCalledOnce();
-    expect(mockWrite).toHaveBeenCalledOnce();
-  });
-
-  it('printImage() loads an image from a file path', async () => {
-    const { BrotherQLPrinter } = await import('../printer.js');
-    const printer = new BrotherQLPrinter(mockTransport, DEVICES.QL_820NWB, 'usb');
-    await printer.printImage('/tmp/test.png', MEDIA[259]!);
-    expect(mockLoadImage).toHaveBeenCalledWith('/tmp/test.png');
-    expect(mockWrite).toHaveBeenCalledOnce();
-  });
-
-  it('printImage() passes through options to renderImage', async () => {
-    const { BrotherQLPrinter } = await import('../printer.js');
-    const printer = new BrotherQLPrinter(mockTransport, DEVICES.QL_820NWB, 'usb');
-    await printer.printImage(Buffer.alloc(100), MEDIA[259]!, {
-      threshold: 100,
-      dither: true,
-      invert: true,
-      rotate: 90,
-    });
-    expect(mockWrite).toHaveBeenCalledOnce();
-  });
-
-  it('printImage() passes PageOptions through to print', async () => {
-    const { BrotherQLPrinter } = await import('../printer.js');
-    const printer = new BrotherQLPrinter(mockTransport, DEVICES.QL_820NWB, 'usb');
-    await printer.printImage(Buffer.alloc(100), MEDIA[259]!, { autoCut: true });
-    expect(mockWrite).toHaveBeenCalledOnce();
-  });
-
-  it('printImage() throws when canvas is unavailable for a buffer', async () => {
-    mockLoadImage.mockRejectedValueOnce(new Error('module not found'));
-    const { BrotherQLPrinter } = await import('../printer.js');
-    const printer = new BrotherQLPrinter(mockTransport, DEVICES.QL_820NWB, 'usb');
-    await expect(printer.printImage(Buffer.alloc(10), MEDIA[259]!)).rejects.toThrow(
-      'Cannot decode image buffer',
-    );
-  });
-
-  it('printImage() throws when canvas is unavailable for a file path', async () => {
-    mockLoadImage.mockRejectedValueOnce(new Error('module not found'));
-    const { BrotherQLPrinter } = await import('../printer.js');
-    const printer = new BrotherQLPrinter(mockTransport, DEVICES.QL_820NWB, 'usb');
-    await expect(printer.printImage('/tmp/test.png', MEDIA[259]!)).rejects.toThrow(
-      'Cannot load image file',
-    );
-  });
-
-  it('close() delegates to transport close', async () => {
-    const { BrotherQLPrinter } = await import('../printer.js');
-    const printer = new BrotherQLPrinter(mockTransport, DEVICES.QL_820NWB, 'usb');
+  it('close() awaits the transport', async () => {
+    const { transport } = makeTransport();
+    const printer = new BrotherQLPrinter(DEVICES.QL_820NWB, transport, 'usb');
     await printer.close();
-    expect(mockClose).toHaveBeenCalledOnce();
-  });
-});
-
-describe('openPrinter', () => {
-  it('opens the first discovered printer when no options given', async () => {
-    const { openPrinter } = await import('../printer.js');
-    const printer = await openPrinter();
-    expect(printer.device.name).toBe('QL-820NWB');
-    expect(printer.transport).toBe('usb');
-  });
-
-  it('opens printer by vid and pid when specified', async () => {
-    const { openPrinter } = await import('../printer.js');
-    const printer = await openPrinter({ pid: DEVICES.QL_820NWB.pid, vid: DEVICES.QL_820NWB.vid });
-    expect(printer.device.name).toBe('QL-820NWB');
-    expect(printer.transport).toBe('usb');
-  });
-
-  it('throws for an unknown pid', async () => {
-    const { openPrinter } = await import('../printer.js');
-    await expect(openPrinter({ pid: 0x9999 })).rejects.toThrow('Unknown device');
-  });
-
-  it('throws when no printers are found', async () => {
-    const { listPrinters } = await import('../discovery.js');
-    vi.mocked(listPrinters).mockReturnValueOnce([]);
-    const { openPrinter } = await import('../printer.js');
-    await expect(openPrinter()).rejects.toThrow('No Brother QL printers found');
-  });
-});
-
-describe('openPrinterTcp', () => {
-  it('connects via TCP and returns a printer', async () => {
-    const { openPrinterTcp } = await import('../printer.js');
-    const printer = await openPrinterTcp('192.168.1.100');
-    expect(printer.transport).toBe('tcp');
-    expect(mockWrite).toHaveBeenCalledOnce();
-    expect(mockRead).toHaveBeenCalledOnce();
-  });
-
-  it('uses custom port when specified', async () => {
-    const { TcpTransport } = await import('../transport.js');
-    const { openPrinterTcp } = await import('../printer.js');
-    await openPrinterTcp('192.168.1.100', 4444);
-    const connectMock = vi.mocked(TcpTransport).connect;
-    expect(connectMock).toHaveBeenCalledWith('192.168.1.100', 4444);
+    // Dodge @typescript-eslint/unbound-method — the point is to verify
+    // the mock was called, not to keep a `this`-bound reference.
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(vi.mocked(transport.close)).toHaveBeenCalled();
   });
 });

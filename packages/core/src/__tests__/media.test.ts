@@ -7,14 +7,14 @@ describe('findMedia', () => {
     expect(m).toBeDefined();
     expect(m!.widthMm).toBe(62);
     expect(m!.type).toBe('continuous');
-    expect(m!.lengthMm).toBe(0);
+    expect(m!.heightMm).toBeUndefined();
   });
 
   it('returns correct descriptor for 62x29mm die-cut (ID 274)', () => {
     const m = findMedia(274);
     expect(m).toBeDefined();
     expect(m!.type).toBe('die-cut');
-    expect(m!.lengthMm).toBeGreaterThan(0);
+    expect(m!.heightMm).toBe(29);
   });
 
   it('returns undefined for unknown ID', () => {
@@ -46,18 +46,29 @@ describe('findMediaByWidth', () => {
 });
 
 describe('Media registry invariants', () => {
-  it('die-cut media has non-zero lengthMm', () => {
+  it('die-cut media has a heightMm', () => {
     for (const m of Object.values(MEDIA)) {
       if (m.type === 'die-cut') {
-        expect(m.lengthMm).toBeGreaterThan(0);
+        expect(m.heightMm).toBeDefined();
+        expect(m.heightMm!).toBeGreaterThan(0);
       }
     }
   });
 
-  it('continuous media has lengthMm === 0', () => {
+  it('continuous media omits heightMm', () => {
     for (const m of Object.values(MEDIA)) {
       if (m.type === 'continuous') {
-        expect(m.lengthMm).toBe(0);
+        expect(m.heightMm).toBeUndefined();
+      }
+    }
+  });
+
+  it('only DK-22251 is colorCapable', () => {
+    for (const m of Object.values(MEDIA)) {
+      if (m.id === 251) {
+        expect(m.colorCapable).toBe(true);
+      } else {
+        expect(m.colorCapable).toBe(false);
       }
     }
   });

@@ -65,9 +65,18 @@ describe('Device registry invariants', () => {
     }
   });
 
-  it('every device has bluetooth: false (BT out of scope)', () => {
+  it('every device belongs to the brother-ql family', () => {
     for (const dev of Object.values(DEVICES)) {
-      expect(dev.bluetooth).toBe(false);
+      expect(dev.family).toBe('brother-ql');
+    }
+  });
+
+  it('BLE UUIDs are placeholders until GATT sniffing (DECISIONS.md D9)', () => {
+    for (const dev of Object.values(DEVICES)) {
+      const bt = (dev as { bluetooth?: { serviceUuid: string } }).bluetooth;
+      if (bt !== undefined) {
+        expect(bt.serviceUuid).toBe('TBD');
+      }
     }
   });
 });

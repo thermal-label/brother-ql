@@ -1,5 +1,5 @@
 import { getRow, createBitmap } from '@mbtech-nl/bitmap';
-import { type MediaDescriptor, type PageData, type JobOptions, type PageOptions } from './types.js';
+import { type BrotherQLMedia, type PageData, type JobOptions, type PageOptions } from './types.js';
 
 export function buildInvalidate(): Uint8Array {
   return new Uint8Array(200);
@@ -22,7 +22,7 @@ export function buildStatusNotification(enabled: boolean): Uint8Array {
 }
 
 export function buildPrintInfo(
-  media: MediaDescriptor,
+  media: BrotherQLMedia,
   rowCount: number,
   pageIndex: number,
 ): Uint8Array {
@@ -38,7 +38,7 @@ export function buildPrintInfo(
   buf[3] = validFlags;
   buf[4] = mediaType;
   buf[5] = media.widthMm;
-  buf[6] = media.lengthMm;
+  buf[6] = media.heightMm ?? 0;
   // rowCount little-endian at bytes 7-8 (offsets 4-5 in param block)
   buf[7] = rowCount & 0xff;
   buf[8] = (rowCount >> 8) & 0xff;
@@ -161,12 +161,12 @@ export function encodeJob(pages: PageData[], options: JobOptions = {}): Uint8Arr
     const compress = opts.compress ?? false;
     const { bitmap, media } = page;
 
-    // twoColorTape media (e.g. DK-22251) requires two-color mode even for black-only jobs.
+    // colorCapable media (e.g. DK-22251) requires two-color mode even for black-only jobs.
     // Auto-create an empty red plane when the tape demands it but caller didn't supply one.
-    const twoColor = page.redBitmap !== undefined || media.twoColorTape === true;
+    const twoColor = page.redBitmap !== undefined || media.colorCapable;
     const redBitmap =
       page.redBitmap ??
-      (media.twoColorTape ? createBitmap(bitmap.widthPx, bitmap.heightPx) : undefined);
+      (media.colorCapable ? createBitmap(bitmap.widthPx, bitmap.heightPx) : undefined);
 
     if (twoColor && redBitmap !== undefined) {
       if (bitmap.widthPx !== redBitmap.widthPx || bitmap.heightPx !== redBitmap.heightPx) {

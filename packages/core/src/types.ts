@@ -1,43 +1,73 @@
+/* eslint-disable import-x/consistent-type-specifier-style */
 import { type LabelBitmap } from '@mbtech-nl/bitmap';
+import type {
+  BluetoothConfig,
+  DeviceDescriptor,
+  MediaDescriptor,
+  PrinterStatus,
+} from '@thermal-label/contracts';
 
 export type MediaType = 'continuous' | 'die-cut';
 export type HeadWidth = 720 | 1296;
 export type ColorMode = 'single' | 'two-color';
 export type NetworkSupport = 'none' | 'wifi' | 'wired' | 'wifi+wired';
 
-export interface DeviceDescriptor {
-  name: string;
+/**
+ * Brother QL device descriptor.
+ *
+ * Extends the contracts base with QL-specific fields (head geometry,
+ * protocol feature flags, the optional mass-storage PID for Editor
+ * Lite mode). BLE configuration is carried on the inherited
+ * `bluetooth?: BluetoothConfig` field — UUIDs are TBD for all models
+ * until GATT sniffing is done (see DECISIONS.md D9).
+ */
+export interface BrotherQLDevice extends DeviceDescriptor {
+  family: 'brother-ql';
   vid: number;
   pid: number;
   headPins: HeadWidth;
   bytesPerRow: number;
   twoColor: boolean;
   network: NetworkSupport;
-  bluetooth: boolean;
   autocut: boolean;
   compression: boolean;
   editorLite: boolean;
+  /** Alternate PID seen when the printer is in Editor Lite mass-storage mode. */
   massStoragePid?: number;
+  bluetooth?: BluetoothConfig;
 }
 
-export interface MediaDescriptor {
+/**
+ * Brother QL media descriptor.
+ *
+ * Extends `MediaDescriptor` with the dots-based geometry the raster
+ * encoder needs. `colorCapable: true` flips the driver into
+ * two-colour mode — only DK-22251 has this set in the registry.
+ */
+export interface BrotherQLMedia extends MediaDescriptor {
   id: number;
-  name: string;
   type: MediaType;
-  widthMm: number;
-  lengthMm: number;
+  colorCapable: boolean;
   printAreaDots: number;
   leftMarginPins: number;
   rightMarginPins: number;
+  /** Die-cut masked area in dots (registration windows). */
   dieCutMaskedAreaDots?: number;
-  /** True for DK-22251 and similar two-color tapes — printer rejects single-color jobs */
-  twoColorTape?: boolean;
+}
+
+/**
+ * Brother QL status — contracts `PrinterStatus` plus the
+ * `editorLiteMode` flag (pre-paired QL-820NWB silently drops raster
+ * jobs when in Editor Lite mode; callers need to know).
+ */
+export interface BrotherQLStatus extends PrinterStatus {
+  editorLiteMode: boolean;
 }
 
 export interface PageData {
   bitmap: LabelBitmap;
   redBitmap?: LabelBitmap;
-  media: MediaDescriptor;
+  media: BrotherQLMedia;
   options?: PageOptions;
 }
 
@@ -51,27 +81,4 @@ export interface PageOptions {
 
 export interface JobOptions {
   copies?: number;
-}
-
-export interface TextPrintOptions extends PageOptions {
-  invert?: boolean;
-  scaleX?: number;
-  scaleY?: number;
-}
-
-export interface ImagePrintOptions extends PageOptions {
-  threshold?: number;
-  dither?: boolean;
-  invert?: boolean;
-  rotate?: 0 | 90 | 180 | 270;
-}
-
-export interface PrinterStatus {
-  ready: boolean;
-  mediaWidthMm: number;
-  mediaLengthMm: number;
-  mediaType: MediaType | null;
-  errors: string[];
-  editorLiteMode: boolean;
-  rawBytes: Uint8Array;
 }

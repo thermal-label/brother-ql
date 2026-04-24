@@ -1,6 +1,6 @@
 {
   "name": "@thermal-label/brother-ql-web",
-  "version": "0.0.1",
+  "version": "0.2.0",
   "description": "WebUSB browser driver for Brother QL label printers",
   "keywords": [
     "brother",
@@ -44,11 +44,11 @@
   },
   "sideEffects": false,
   "main": "./dist/index.js",
-  "types": "./src/index.ts",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/index.js",
-      "types": "./src/index.ts"
+      "types": "./dist/index.d.ts"
     }
   },
   "scripts": {
@@ -58,13 +58,16 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@thermal-label/brother-ql-core": "workspace:*"
+    "@thermal-label/brother-ql-core": "workspace:*",
+    "@thermal-label/contracts": "^0.1.1",
+    "@thermal-label/transport": "^0.1.0"
   },
   "peerDependencies": {
     "typescript": ">=5.0"
   },
   "devDependencies": {
     "@mbtech-nl/tsconfig": "^1.0.0",
+    "@types/w3c-web-usb": "^1.0.0",
     "@vitest/coverage-v8": "^2.1.9",
     "jsdom": "^26.1.0",
     "typescript": "~5.5.0",

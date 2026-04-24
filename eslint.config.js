@@ -2,7 +2,7 @@ import mbtech from '@mbtech-nl/eslint-config';
 export default [
   // Global ignores must be a standalone config object
   {
-    ignores: ['**/dist/**', '**/node_modules/**', '**/vitest.config.ts'],
+    ignores: ['**/dist/**', '**/coverage/**', '**/node_modules/**', '**/vitest.config.ts'],
   },
   ...mbtech,
   {

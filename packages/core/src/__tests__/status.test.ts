@@ -33,42 +33,53 @@ describe('parseStatus', () => {
   it('returns ready=true with no errors', () => {
     const status = parseStatus(makeStatusBytes());
     expect(status.ready).toBe(true);
-    expect(status.errors).toHaveLength(0);
+    expect(status.errors).toEqual([]);
   });
 
-  it('parses media width and type', () => {
+  it('resolves 62mm continuous to detectedMedia', () => {
     const status = parseStatus(makeStatusBytes({ mediaWidthMm: 62, mediaTypeByte: 0x0a }));
-    expect(status.mediaWidthMm).toBe(62);
-    expect(status.mediaType).toBe('continuous');
+    expect(status.mediaLoaded).toBe(true);
+    expect(status.detectedMedia?.id).toBe(259);
+    expect(status.detectedMedia?.widthMm).toBe(62);
+    expect(status.detectedMedia?.type).toBe('continuous');
   });
 
-  it('parses media length from byte 17 (0 for continuous, mm for die-cut)', () => {
-    const cont = parseStatus(makeStatusBytes({ mediaLengthMm: 0 }));
-    expect(cont.mediaLengthMm).toBe(0);
-    const diecut = parseStatus(makeStatusBytes({ mediaTypeByte: 0x0b, mediaLengthMm: 90 }));
-    expect(diecut.mediaLengthMm).toBe(90);
+  it('resolves 62x29mm die-cut to detectedMedia', () => {
+    const status = parseStatus(
+      makeStatusBytes({ mediaWidthMm: 62, mediaTypeByte: 0x0b, mediaLengthMm: 29 }),
+    );
+    expect(status.detectedMedia?.id).toBe(274);
+    expect(status.detectedMedia?.type).toBe('die-cut');
+    expect(status.detectedMedia?.heightMm).toBe(29);
   });
 
-  it('parses die-cut media type', () => {
-    const status = parseStatus(makeStatusBytes({ mediaTypeByte: 0x0b }));
-    expect(status.mediaType).toBe('die-cut');
+  it('leaves detectedMedia undefined for unknown media', () => {
+    const status = parseStatus(
+      makeStatusBytes({ mediaWidthMm: 100, mediaTypeByte: 0x0a }),
+    );
+    expect(status.detectedMedia).toBeUndefined();
   });
 
-  it('returns null mediaType for unknown byte', () => {
-    const status = parseStatus(makeStatusBytes({ mediaTypeByte: 0xff }));
-    expect(status.mediaType).toBeNull();
+  it('leaves mediaLoaded=false when width is 0', () => {
+    const status = parseStatus(makeStatusBytes({ mediaWidthMm: 0, mediaTypeByte: 0 }));
+    expect(status.mediaLoaded).toBe(false);
   });
 
-  it('parses error info 1 bits', () => {
-    const status = parseStatus(makeStatusBytes({ errInfo1: 0b00000001 })); // No media
-    expect(status.errors).toContain('No media');
+  it('surfaces no_media error code for err1 bit 0', () => {
+    const status = parseStatus(makeStatusBytes({ errInfo1: 0b00000001 }));
+    expect(status.errors.map(e => e.code)).toContain('no_media');
     expect(status.ready).toBe(false);
   });
 
-  it('parses error info 2 bits', () => {
-    const status = parseStatus(makeStatusBytes({ errInfo2: 0b00010000 })); // Cover open
-    expect(status.errors).toContain('Cover open');
+  it('surfaces cover_open error code for err2 bit 4', () => {
+    const status = parseStatus(makeStatusBytes({ errInfo2: 0b00010000 }));
+    expect(status.errors.map(e => e.code)).toContain('cover_open');
     expect(status.ready).toBe(false);
+  });
+
+  it('surfaces cutter_jam error code for err1 bit 2', () => {
+    const status = parseStatus(makeStatusBytes({ errInfo1: 0b00000100 }));
+    expect(status.errors.map(e => e.code)).toContain('cutter_jam');
   });
 
   it('ready=false when statusType is error (0x02)', () => {
@@ -82,7 +93,7 @@ describe('parseStatus', () => {
     expect(status.rawBytes).toEqual(bytes);
   });
 
-  it('editorLiteMode is false (detected at discovery time, not from status bytes)', () => {
+  it('editorLiteMode is on the BrotherQLStatus extension', () => {
     const status = parseStatus(makeStatusBytes());
     expect(status.editorLiteMode).toBe(false);
   });

@@ -1,6 +1,6 @@
 {
   "name": "@thermal-label/brother-ql-node",
-  "version": "0.0.1",
+  "version": "0.2.0",
   "description": "Node.js USB and TCP driver for Brother QL label printers",
   "keywords": [
     "brother",
@@ -45,11 +45,11 @@
   },
   "sideEffects": false,
   "main": "./dist/index.js",
-  "types": "./src/index.ts",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/index.js",
-      "types": "./src/index.ts"
+      "types": "./dist/index.d.ts"
     }
   },
   "scripts": {
@@ -61,6 +61,8 @@
   "dependencies": {
     "@mbtech-nl/bitmap": "^0.1.0",
     "@thermal-label/brother-ql-core": "workspace:*",
+    "@thermal-label/contracts": "^0.1.1",
+    "@thermal-label/transport": "^0.1.0",
     "usb": "^2.0.0"
   },
   "optionalDependencies": {
