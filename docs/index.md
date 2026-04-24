@@ -4,7 +4,7 @@ layout: home
 hero:
   name: '@thermal-label/brother-ql'
   text: Brother QL label printing without the bloat
-  tagline: No vendor software. No proprietary drivers. Just USB, TypeScript, and a clean API — from Node.js, the CLI, or the browser.
+  tagline: No vendor software. No proprietary drivers. Just USB, TCP, Bluetooth-SPP, TypeScript, and a clean API — from Node.js or the browser.
   actions:
     - theme: brand
       text: Get started
@@ -18,23 +18,18 @@ hero:
 
 features:
   - icon: 🟢
-    title: Node.js (USB + TCP)
-    details: Direct USB bulk-transfer printing via libusb, or raw TCP for network-connected QL printers. Supports all QL models from QL-500 to QL-1115NWB.
+    title: Node.js
+    details: USB via libusb, TCP for network-connected QL printers, or Bluetooth-SPP via the OS serial port (QL-820NWB). All models from QL-500 to QL-1115NWB.
     link: /node
     linkText: Node.js guide
   - icon: 🌐
-    title: Browser (WebUSB)
-    details: Print directly from Chrome or Edge without any native drivers or installs. Works in any secure context.
+    title: Browser
+    details: WebUSB in Chrome/Edge, plus Web Serial for OS-paired QL-820NWB Bluetooth. Secure context required.
     link: /web
     linkText: Web guide
-  - icon: ⌨️
-    title: CLI
-    details: One-line label printing from the terminal. Global install, no configuration required. USB and TCP supported.
-    link: /cli
-    linkText: CLI guide
   - icon: 🔴
     title: Two-color printing
-    details: Full black + red label support for QL-800, QL-810W, and QL-820NWB with DK-22251 labels.
+    details: Black + red support for QL-800, QL-810W, and QL-820NWB with DK-22251 labels — driven by a single print() call, colour split in core.
     link: /hardware
     linkText: Hardware guide
   - icon: 📡

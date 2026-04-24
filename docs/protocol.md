@@ -225,7 +225,7 @@ this flag against the loaded media. If DK-22251 (black+red) tape is installed
 and bit 0 is not set, the printer displays "wrong roll type" and refuses to
 print — even if the raster data itself is valid. Set bit 0 whenever the job
 contains `0x77` (two-color) raster rows, or whenever the media descriptor has
-`twoColorTape: true`.
+`colorCapable: true`.
 
 ### (g) Margin — `1B 69 64 [n1] [n2]`
 
@@ -335,7 +335,7 @@ may introduce reordering or fragmentation that makes concurrent printing
 unreliable.
 
 ```typescript
-const printer = await openPrinterTcp('192.168.1.100'); // default port 9100
+const printer = await discovery.openPrinter({ host: '192.168.1.100' }); // default port 9100
 ```
 
 ## WebUSB (browser)

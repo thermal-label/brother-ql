@@ -5,14 +5,29 @@ import {
   type BrotherQLDevice,
 } from '@thermal-label/brother-ql-core';
 /* eslint-disable import-x/consistent-type-specifier-style */
-import type {
-  DiscoveredPrinter,
-  OpenOptions,
-  PrinterDiscovery,
-} from '@thermal-label/contracts';
-import { TcpTransport, UsbTransport } from '@thermal-label/transport/node';
+import type { DiscoveredPrinter, OpenOptions, PrinterDiscovery } from '@thermal-label/contracts';
+import { SerialTransport, TcpTransport, UsbTransport } from '@thermal-label/transport/node';
 import * as usb from 'usb';
 import { BrotherQLPrinter } from './printer.js';
+
+/**
+ * Driver-specific `openPrinter` options.
+ *
+ * Extends the contracts `OpenOptions` with `path` / `baudRate` for
+ * serial (RFCOMM over OS-paired Bluetooth on the QL-820NWB, or any
+ * USB-to-serial adapter). Baud rate is forwarded to the OS driver;
+ * RFCOMM ignores it, but `serialport` requires a value.
+ */
+export interface BrotherQLOpenOptions extends OpenOptions {
+  /**
+   * Serial device path — e.g. `/dev/rfcomm0` (Linux) or `COM3`
+   * (Windows) after pairing the printer via the OS Bluetooth
+   * settings. Mutually exclusive with `host` and the USB fields.
+   */
+  path?: string;
+  /** Baud rate override; defaults to 9600. */
+  baudRate?: number;
+}
 
 const BROTHER_VID = 0x04f9;
 
@@ -89,7 +104,20 @@ export class BrotherQLDiscovery implements PrinterDiscovery {
     }));
   }
 
-  async openPrinter(options: OpenOptions = {}): Promise<BrotherQLPrinter> {
+  async openPrinter(options: BrotherQLOpenOptions = {}): Promise<BrotherQLPrinter> {
+    if (options.path !== undefined) {
+      const transport = await SerialTransport.open(options.path, options.baudRate);
+      // Serial (typically RFCOMM) carries no identifying metadata —
+      // fall back to the most capable descriptor with a serial
+      // transport tag. `getStatus()` still returns accurate
+      // detectedMedia regardless of which descriptor we attach.
+      const descriptor = Object.values(DEVICES).find(d =>
+        (d.transports as readonly string[]).includes('serial'),
+      );
+      if (!descriptor) throw new Error('No serial-capable Brother QL descriptor found.');
+      return new BrotherQLPrinter(descriptor, transport, 'serial');
+    }
+
     if (options.host !== undefined) {
       const transport = await TcpTransport.connect(options.host, options.port);
       const descriptor = Object.values(DEVICES).find(d => d.network !== 'none');

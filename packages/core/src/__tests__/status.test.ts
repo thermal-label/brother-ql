@@ -54,9 +54,7 @@ describe('parseStatus', () => {
   });
 
   it('leaves detectedMedia undefined for unknown media', () => {
-    const status = parseStatus(
-      makeStatusBytes({ mediaWidthMm: 100, mediaTypeByte: 0x0a }),
-    );
+    const status = parseStatus(makeStatusBytes({ mediaWidthMm: 100, mediaTypeByte: 0x0a }));
     expect(status.detectedMedia).toBeUndefined();
   });
 

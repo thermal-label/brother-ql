@@ -48,7 +48,7 @@ importers:
         specifier: ^0.1.0
         version: 0.1.0
       '@thermal-label/contracts':
-        specifier: ^0.1.1
+        specifier: ^0.1.2
         version: 0.1.2
     devDependencies:
       '@mbtech-nl/tsconfig':
@@ -76,11 +76,11 @@ importers:
         specifier: workspace:*
         version: link:../core
       '@thermal-label/contracts':
-        specifier: ^0.1.1
+        specifier: ^0.1.2
         version: 0.1.2
       '@thermal-label/transport':
-        specifier: ^0.1.0
-        version: 0.1.0(usb@2.17.0)
+        specifier: ^0.2.0
+        version: 0.2.0(usb@2.17.0)
       usb:
         specifier: ^2.0.0
         version: 2.17.0
@@ -111,11 +111,11 @@ importers:
         specifier: workspace:*
         version: link:../core
       '@thermal-label/contracts':
-        specifier: ^0.1.1
+        specifier: ^0.1.2
         version: 0.1.2
       '@thermal-label/transport':
-        specifier: ^0.1.0
-        version: 0.1.0(usb@2.17.0)
+        specifier: ^0.2.0
+        version: 0.2.0(usb@2.17.0)
     devDependencies:
       '@mbtech-nl/tsconfig':
         specifier: ^1.0.0
@@ -886,12 +886,15 @@ packages:
   '@thermal-label/contracts@0.1.2':
     resolution: {integrity: sha512-p3Fj9PjGrTdCtNoMHcQNbCSfVffFd0E42okIAjIyoCNRsTM+L2qR7AAVIL6EX33EFxV7A7F5ziGpNZxz9yNU7w==}
 
-  '@thermal-label/transport@0.1.0':
-    resolution: {integrity: sha512-bBXuGg7yrOuGm1VWpM6PuutMmCDmt/Vh/0zWxuEkzmEKa5ywyoipnn2LxZ60qKniCzn1d2/fYS/8Pth1nybO+g==}
+  '@thermal-label/transport@0.2.0':
+    resolution: {integrity: sha512-MXoVkK71okEkKzp3ZfAqGo80jTogHGw56kc6DwJXtVUJRLRgMqwpjnvDVL5qnQ1xi7zKGB9mLp639nIhXPnk+w==}
     engines: {node: '>=24.0.0'}
     peerDependencies:
+      serialport: '>=12.0.0'
       usb: '>=2.14.0'
     peerDependenciesMeta:
+      serialport:
+        optional: true
       usb:
         optional: true
 
@@ -3421,7 +3424,7 @@ snapshots:
     dependencies:
       '@mbtech-nl/bitmap': 1.0.1
 
-  '@thermal-label/transport@0.1.0(usb@2.17.0)':
+  '@thermal-label/transport@0.2.0(usb@2.17.0)':
     dependencies:
       '@thermal-label/contracts': 0.1.2
     optionalDependencies:

@@ -1,15 +1,27 @@
-# Web (WebUSB) Guide
+# Web Guide
+
+`@thermal-label/brother-ql-web` talks to Brother QL printers directly
+from Chrome or Edge via the
+[WebUSB API](https://developer.mozilla.org/en-US/docs/Web/API/WebUSB_API),
+and — for the QL-820NWB / 820NWBc — via the
+[Web Serial API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API)
+over the OS-level Bluetooth-SPP pairing. No backend, no native
+drivers. Implements the same `PrinterAdapter` the Node.js driver does,
+backed by `WebUsbTransport` / `WebSerialTransport` from
+`@thermal-label/transport/web`.
 
 ## Browser support
 
-| Browser    | Support      |
-| ---------- | ------------ |
-| Chrome 61+ | ✅           |
-| Edge 79+   | ✅           |
-| Firefox    | ❌ No WebUSB |
-| Safari     | ❌ No WebUSB |
+| Browser    | WebUSB | Web Serial |
+| ---------- | :----: | :--------: |
+| Chrome 61+ |   ✅   |     ✅     |
+| Edge 79+   |   ✅   |     ✅     |
+| Firefox    |   ❌   |     ❌     |
+| Safari     |   ❌   |     ❌     |
 
-Requires a [secure context](https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts): `https://` or `localhost`. WebUSB is not available in iframes without the `allowusb` permission.
+Requires a [secure context](https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts)
+(`https://` or `localhost`) and a user gesture (click / keypress)
+for the initial pairing prompt.
 
 ## Install
 
@@ -20,115 +32,183 @@ pnpm add @thermal-label/brother-ql-web
 ## Quick start
 
 ```ts
-import { requestPrinter, findMedia } from '@thermal-label/brother-ql-web';
+import { requestPrinter } from '@thermal-label/brother-ql-web';
+import { MEDIA } from '@thermal-label/brother-ql-core';
 
-// Must be called in response to a user gesture (click, etc.)
+// Must run from a user gesture.
 const printer = await requestPrinter();
-const media = findMedia(259)!;
-await printer.printText('Hello WebUSB', media);
+try {
+  await printer.print(image, MEDIA[259]); // 62mm continuous
+} finally {
+  await printer.close();
+}
 ```
+
+`image` is `RawImageData` — `{ width, height, data }` with `data` as
+an RGBA `Uint8Array`. Build one from a canvas `ImageData`:
+
+```ts
+const bmp = await createImageBitmap(file);
+const canvas = new OffscreenCanvas(bmp.width, bmp.height);
+const ctx = canvas.getContext('2d')!;
+ctx.drawImage(bmp, 0, 0);
+const id = ctx.getImageData(0, 0, bmp.width, bmp.height);
+const image = { width: id.width, height: id.height, data: new Uint8Array(id.data.buffer) };
+```
+
+---
+
+## Two-colour (DK-22251)
+
+Same call — the driver reads `media.colorCapable` and runs
+`splitTwoColor()` before encoding. Red pixels (`r > 180 && g < 100 &&
+b < 100`) go to the red plane, everything else to black. Overlaps
+resolve in favour of black.
+
+```ts
+await printer.print(image, MEDIA[251]);
+```
+
+QL-800 / QL-810W / QL-820NWB are the models with the red print head.
+
+---
+
+## Bluetooth (QL-820NWB)
+
+The 820 series exposes classic Bluetooth SPP, not BLE/GATT — so Web
+Bluetooth is not applicable. After pairing the printer through the
+OS Bluetooth settings, it surfaces as a serial port. Use the
+`@thermal-label/transport/web` `WebSerialTransport` in a minimal
+wrapper:
+
+```ts
+import { WebSerialTransport } from '@thermal-label/transport/web';
+import {
+  DEVICES,
+  encodeJob,
+  splitTwoColor,
+  renderImage,
+  STATUS_REQUEST,
+  parseStatus,
+  MEDIA,
+  type BrotherQLStatus,
+} from '@thermal-label/brother-ql-core';
+
+// User-gesture pick
+const port = await navigator.serial.requestPort();
+const transport = await WebSerialTransport.fromPort(port);
+
+// Reuse the driver's encode path by constructing the page explicitly
+const media = MEDIA[259];
+const bitmap = renderImage(image, { dither: true });
+await transport.write(encodeJob([{ bitmap, media }]));
+```
+
+A first-class `openSerialPrinter()` helper for the web package is a
+follow-up — the node `discovery.openPrinter({ path })` covers the
+common case today.
+
+---
 
 ## React example
 
 ```tsx
 import { useState } from 'react';
-import { requestPrinter, findMedia, type WebBrotherQLPrinter } from '@thermal-label/brother-ql-web';
+import { requestPrinter, type WebBrotherQLPrinter } from '@thermal-label/brother-ql-web';
+import { MEDIA } from '@thermal-label/brother-ql-core';
 
-export function PrintButton() {
+export function PrintButton({
+  image,
+}: {
+  image: { width: number; height: number; data: Uint8Array };
+}) {
   const [printer, setPrinter] = useState<WebBrotherQLPrinter | null>(null);
 
   async function connect() {
-    const p = await requestPrinter();
-    setPrinter(p);
+    setPrinter(await requestPrinter());
   }
 
   async function print() {
     if (!printer) return;
-    const media = findMedia(259)!;
-    await printer.printText('Hello from React', media);
+    await printer.print(image, MEDIA[259]);
+  }
+
+  async function disconnect() {
+    if (!printer) return;
+    await printer.close();
+    setPrinter(null);
   }
 
   return (
     <div>
-      {printer ? (
-        <button onClick={print}>Print</button>
-      ) : (
-        <button onClick={connect}>Connect printer</button>
-      )}
+      <button onClick={connect} disabled={!!printer}>
+        Connect
+      </button>
+      <button onClick={print} disabled={!printer}>
+        Print
+      </button>
+      <button onClick={disconnect} disabled={!printer}>
+        Disconnect
+      </button>
     </div>
   );
 }
 ```
 
-## Two-color printing
+---
+
+## Status
 
 ```ts
-import { requestPrinter, findMedia } from '@thermal-label/brother-ql-web';
+const status = await printer.getStatus();
 
-const printer = await requestPrinter();
-const media = findMedia(259)!;
-
-// Get ImageData from canvas elements
-const blackCtx = (document.getElementById('black') as HTMLCanvasElement).getContext('2d')!;
-const redCtx = (document.getElementById('red') as HTMLCanvasElement).getContext('2d')!;
-const { width, height } = blackCtx.canvas;
-
-await printer.printTwoColor(
-  blackCtx.getImageData(0, 0, width, height),
-  redCtx.getImageData(0, 0, width, height),
-  media,
-);
+status.ready; // printer idle and error-free
+status.mediaLoaded; // roll detected
+status.detectedMedia; // BrotherQLMedia — auto-populated from the 32-byte response
+status.editorLiteMode; // driver extension — true when 820NWB is in Editor Lite
+status.errors; // PrinterError[] — same codes as the node driver
 ```
 
-`printTwoColor` throws if the connected printer doesn't support two-color printing (requires QL-800/810W/820NWB).
-
-## Print from URL
-
-```ts
-await printer.printImageURL('https://example.com/label.png', media, {
-  threshold: 128,
-  dither: true,
-});
-```
-
-Uses `fetch` + `createImageBitmap` + `OffscreenCanvas` internally — no server-side rendering required.
+---
 
 ## How it works
 
-1. `requestPrinter()` calls `navigator.usb.requestDevice({ filters })` with all known Brother QL PIDs
-2. The user picks a printer from the browser's native dialog
-3. The package calls `open()`, `selectConfiguration(1)`, and `claimInterface(0)`
-4. Print data is sent via `transferOut()` to endpoint 2 (bulk OUT)
-5. Status responses are read via `transferIn()` from endpoint 1 (bulk IN)
+1. `requestPrinter()` calls `navigator.usb.requestDevice({ filters })`
+   with the Brother QL VID/PIDs.
+2. `WebUsbTransport.fromDevice()` opens the device, selects the
+   active configuration, claims interface 0, and resolves the bulk
+   IN/OUT endpoints from the interface descriptor.
+3. `print()` runs `renderImage` (or `splitTwoColor`) depending on
+   media, then calls `encodeJob()` from
+   `@thermal-label/brother-ql-core` — byte-for-byte identical to the
+   Node.js driver.
 
-The byte protocol is **byte-for-byte identical** to the USB stream used by the Node.js package — the same `encodeJob()` function from `@thermal-label/brother-ql-core` is used.
+---
 
-## Using a pre-obtained USBDevice
+## Pre-obtained USBDevice
 
 ```ts
 import { fromUSBDevice } from '@thermal-label/brother-ql-web';
 
-// If you already have a USBDevice from navigator.usb.getDevices()
-const devices = await navigator.usb.getDevices();
-const device = devices[0];
+const [device] = await navigator.usb.getDevices();
 if (device) {
-  const printer = fromUSBDevice(device);
-  // Note: fromUSBDevice does not open/claim the device — you must do it first
+  const printer = await fromUSBDevice(device);
 }
 ```
 
+`fromUSBDevice` is async — it hands the device to
+`WebUsbTransport.fromDevice()`, which opens and claims it for you.
+
+---
+
 ## API summary
 
-| Export                       | Description                          |
-| ---------------------------- | ------------------------------------ |
-| `requestPrinter(options?)`   | Show USB picker and open printer     |
-| `fromUSBDevice(device)`      | Wrap an existing USBDevice           |
-| `WebBrotherQLPrinter`        | Printer class                        |
-| `findMedia(id)`              | Look up media by numeric ID          |
-| `renderText(text, options?)` | Render 1bpp text bitmap (from core)  |
-| `renderImage(raw, options?)` | Render 1bpp image bitmap (from core) |
-| `rotateBitmap(bitmap, deg)`  | Rotate bitmap (from core)            |
-| `DEVICES`                    | Device descriptor registry           |
-| `MEDIA`                      | Media descriptor registry            |
+| Export                     | Description                           |
+| -------------------------- | ------------------------------------- |
+| `requestPrinter(options?)` | Show USB picker and open the printer  |
+| `fromUSBDevice(device)`    | Wrap a pre-paired `USBDevice` (async) |
+| `WebBrotherQLPrinter`      | Adapter class                         |
+| `DEFAULT_FILTERS`          | Brother QL VID/PID filter set         |
 
-See the live demo at [/demo](/demo) — connect a real printer to print directly from the browser.
+See the live demo at [/demo](/demo) — connect a real printer to print
+directly from the browser.

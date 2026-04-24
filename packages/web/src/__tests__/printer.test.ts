@@ -4,7 +4,10 @@ import { DEVICES, MEDIA } from '@thermal-label/brother-ql-core';
 import { fromUSBDevice, requestPrinter } from '../printer.js';
 import { createMockUSBDevice } from './webusb-mock.js';
 
-function solidRgba(width: number, height: number): {
+function solidRgba(
+  width: number,
+  height: number,
+): {
   width: number;
   height: number;
   data: Uint8Array;
@@ -64,9 +67,7 @@ describe('requestPrinter', () => {
     await requestPrinter();
 
     expect(requestDevice).toHaveBeenCalledOnce();
-    const call = (
-      requestDevice.mock.calls as unknown as [{ filters: USBDeviceFilter[] }][]
-    )[0]![0];
+    const call = (requestDevice.mock.calls as unknown as [{ filters: USBDeviceFilter[] }][])[0]![0];
     const pids = call.filters.map(f => f.productId);
     for (const d of Object.values(DEVICES)) {
       expect(pids).toContain(d.pid);

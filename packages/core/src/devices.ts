@@ -2,24 +2,11 @@ import { type BrotherQLDevice } from './types.js';
 
 const MASS_STORAGE_PIDS = new Set([0x20aa, 0x20ab]);
 
-/**
- * GATT service/characteristic UUIDs for QL-820NWB BLE are not yet
- * discovered. These placeholder strings let the registry carry the
- * `'web-bluetooth'` transport tag for tooling, but the web-bluetooth
- * path will not actually work until the UUIDs are filled in. See
- * DECISIONS.md D9.
- */
-const BLE_TBD = {
-  serviceUuid: 'TBD',
-  txCharacteristicUuid: 'TBD',
-  namePrefix: 'QL-820',
-} as const;
-
 export const DEVICES = {
   QL_820NWB: {
     name: 'QL-820NWB',
     family: 'brother-ql',
-    transports: ['usb', 'webusb', 'tcp', 'web-bluetooth'],
+    transports: ['usb', 'webusb', 'tcp', 'serial', 'web-serial'],
     vid: 0x04f9,
     pid: 0x20a7,
     headPins: 720,
@@ -29,12 +16,11 @@ export const DEVICES = {
     autocut: true,
     compression: true,
     editorLite: true,
-    bluetooth: BLE_TBD,
   },
   QL_820NWBc: {
     name: 'QL-820NWBc',
     family: 'brother-ql',
-    transports: ['usb', 'webusb', 'tcp', 'web-bluetooth'],
+    transports: ['usb', 'webusb', 'tcp', 'serial', 'web-serial'],
     vid: 0x04f9,
     pid: 0x209d,
     headPins: 720,
@@ -44,7 +30,6 @@ export const DEVICES = {
     autocut: true,
     compression: true,
     editorLite: true,
-    bluetooth: BLE_TBD,
   },
   QL_810W: {
     name: 'QL-810W',

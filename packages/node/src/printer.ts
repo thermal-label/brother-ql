@@ -59,9 +59,7 @@ export class BrotherQLPrinter implements PrinterAdapter {
   }
 
   async print(image: RawImageData, media?: MediaDescriptor): Promise<void> {
-    const resolvedMedia = (media ?? this.lastStatus?.detectedMedia) as
-      | BrotherQLMedia
-      | undefined;
+    const resolvedMedia = (media ?? this.lastStatus?.detectedMedia) as BrotherQLMedia | undefined;
     if (!resolvedMedia) {
       throw new MediaNotSpecifiedError();
     }

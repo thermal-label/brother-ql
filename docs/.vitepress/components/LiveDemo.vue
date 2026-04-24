@@ -1,6 +1,71 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
-import { renderText, findMedia, MEDIA, rotateBitmap } from '@thermal-label/brother-ql-web';
+import {
+  findMedia,
+  MEDIA,
+  renderText,
+  rotateBitmap,
+  type LabelBitmap,
+  type RawImageData,
+} from '@thermal-label/brother-ql-core';
+
+function bitmapToInk(bitmap: LabelBitmap): Uint8Array {
+  const { widthPx, heightPx, data } = bitmap;
+  const stride = Math.ceil(widthPx / 8);
+  const ink = new Uint8Array(widthPx * heightPx);
+  for (let y = 0; y < heightPx; y++) {
+    for (let x = 0; x < widthPx; x++) {
+      ink[y * widthPx + x] =
+        ((data[y * stride + Math.floor(x / 8)]! >> (7 - (x % 8))) & 1) === 1 ? 1 : 0;
+    }
+  }
+  return ink;
+}
+
+function bitmapToRawImage(bitmap: LabelBitmap): RawImageData {
+  const { widthPx, heightPx } = bitmap;
+  const ink = bitmapToInk(bitmap);
+  const data = new Uint8Array(widthPx * heightPx * 4);
+  for (let i = 0; i < ink.length; i++) {
+    const isInk = ink[i] === 1;
+    const offset = i * 4;
+    const value = isInk ? 0 : 255;
+    data[offset] = value;
+    data[offset + 1] = value;
+    data[offset + 2] = value;
+    data[offset + 3] = 255;
+  }
+  return { width: widthPx, height: heightPx, data };
+}
+
+function twoColorTextToRawImage(black: LabelBitmap, red: LabelBitmap): RawImageData {
+  // Stack red above black with a one-pixel gap so splitTwoColor sees a
+  // clean two-layer image. Width is the wider of the two.
+  const width = Math.max(black.widthPx, red.widthPx);
+  const height = black.heightPx + red.heightPx + 1;
+  const data = new Uint8Array(width * height * 4);
+  data.fill(255); // white background; alpha overwritten below
+  for (let i = 3; i < data.length; i += 4) data[i] = 255;
+
+  const paint = (bitmap: LabelBitmap, yOffset: number, colour: [number, number, number]): void => {
+    const ink = bitmapToInk(bitmap);
+    for (let y = 0; y < bitmap.heightPx; y++) {
+      for (let x = 0; x < bitmap.widthPx; x++) {
+        if (ink[y * bitmap.widthPx + x] === 0) continue;
+        const offset = ((y + yOffset) * width + x) * 4;
+        data[offset] = colour[0];
+        data[offset + 1] = colour[1];
+        data[offset + 2] = colour[2];
+        data[offset + 3] = 255;
+      }
+    }
+  };
+
+  paint(red, 0, [220, 0, 0]); // triggers isRedish: r > 180, g < 100, b < 100
+  paint(black, red.heightPx + 1, [0, 0, 0]);
+
+  return { width, height, data };
+}
 
 const TARGET_H = 48; // target preview canvas height in pixels before CSS scaling
 
@@ -80,7 +145,12 @@ function updateSinglePreview(): void {
     scaleX: 1,
     scaleY: 1,
   });
-  drawBitmap(singleCanvas.value, bitmap, singleInvert.value ? '#fff' : '#111', singleInvert.value ? '#111' : '#fff');
+  drawBitmap(
+    singleCanvas.value,
+    bitmap,
+    singleInvert.value ? '#fff' : '#111',
+    singleInvert.value ? '#111' : '#fff',
+  );
 }
 
 function updateTwoColorPreview(): void {
@@ -120,7 +190,7 @@ async function connect(): Promise<void> {
   try {
     const { requestPrinter } = await import('@thermal-label/brother-ql-web');
     printer.value = await requestPrinter();
-    printerName.value = printer.value.descriptor.name;
+    printerName.value = printer.value.device.name;
     statusType.value = 'ok';
     statusMessage.value = 'Ready to print.';
   } catch (err) {
@@ -134,7 +204,7 @@ async function connect(): Promise<void> {
 async function disconnect(): Promise<void> {
   if (!printer.value) return;
   try {
-    await printer.value.disconnect();
+    await printer.value.close();
   } catch {
     // ignore
   }
@@ -151,33 +221,20 @@ async function printLabel(): Promise<void> {
   statusType.value = 'idle';
   try {
     if (activeTab.value === 'single') {
-      await printer.value.printText(singleText.value, media.value, {
-        invert: singleInvert.value,
-      });
+      const bitmap = rotateBitmap(
+        renderText(singleText.value, { invert: singleInvert.value, scaleX: 1, scaleY: 1 }),
+        90,
+      );
+      await printer.value.print(bitmapToRawImage(bitmap), media.value);
     } else {
-      if (!printer.value.descriptor.twoColor) {
+      if (!printer.value.device.twoColor) {
         statusType.value = 'error';
         statusMessage.value = 'Two-color printing requires a QL-800, QL-810W, or QL-820NWB.';
         return;
       }
-      const toImageData = (text: string): ImageData => {
-        const bmp = rotateBitmap(renderText(text, { scaleX: 1, scaleY: 1 }), 90);
-        const arr = new Uint8ClampedArray(bmp.widthPx * bmp.heightPx * 4);
-        for (let i = 0; i < bmp.widthPx * bmp.heightPx; i++) {
-          const bit = (bmp.data[Math.floor(i / 8)]! >> (7 - (i % 8))) & 1;
-          const v = bit ? 0 : 255;
-          arr[i * 4] = v;
-          arr[i * 4 + 1] = v;
-          arr[i * 4 + 2] = v;
-          arr[i * 4 + 3] = 255;
-        }
-        return new ImageData(arr, bmp.widthPx, bmp.heightPx);
-      };
-      await printer.value.printTwoColor(
-        toImageData(blackText.value),
-        toImageData(redText.value),
-        media.value,
-      );
+      const black = rotateBitmap(renderText(blackText.value, { scaleX: 1, scaleY: 1 }), 90);
+      const red = rotateBitmap(renderText(redText.value, { scaleX: 1, scaleY: 1 }), 90);
+      await printer.value.print(twoColorTextToRawImage(black, red), media.value);
     }
     statusType.value = 'ok';
     statusMessage.value = 'Label sent ✓';
@@ -289,19 +346,10 @@ async function printLabel(): Promise<void> {
 
       <div class="action-buttons">
         <template v-if="isWebUSBAvailable">
-          <button
-            v-if="!printer"
-            class="btn btn-connect"
-            :disabled="isConnecting"
-            @click="connect"
-          >
+          <button v-if="!printer" class="btn btn-connect" :disabled="isConnecting" @click="connect">
             {{ isConnecting ? 'Waiting for browser…' : '🔌 Connect printer' }}
           </button>
-          <button
-            class="btn btn-print"
-            :disabled="!printer || isPrinting"
-            @click="printLabel"
-          >
+          <button class="btn btn-print" :disabled="!printer || isPrinting" @click="printLabel">
             {{ isPrinting ? 'Printing…' : '▶ Print label' }}
           </button>
         </template>

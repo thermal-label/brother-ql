@@ -12,10 +12,7 @@ import { type BrotherQLMedia } from './types.js';
  * exactly what `print()` does for that media. Single-colour media
  * returns one black plane.
  */
-export function createPreviewOffline(
-  image: RawImageData,
-  media: BrotherQLMedia,
-): PreviewResult {
+export function createPreviewOffline(image: RawImageData, media: BrotherQLMedia): PreviewResult {
   if (media.colorCapable) {
     const { black, red } = splitTwoColor(image);
     return {

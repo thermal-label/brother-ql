@@ -81,13 +81,26 @@ All transports use `Uint8Array` and `async close()`. Local
 plane; matching pixels to the red plane. Overlaps resolve in favour
 of black (red bit cleared).
 
-## D9 — Bluetooth UUIDs (TBD)
+## D9 — Bluetooth on the QL-820NWB goes through the serial transports
 
-The QL-820NWB supports Web Bluetooth in principle. GATT service and
-characteristic UUIDs are not yet discovered — entries in the device
-registry carry placeholder strings (`'TBD'`). The
-`web-bluetooth` transport path will not work until real UUIDs are
-filled in. Out of scope for this retrofit.
+The QL-820NWB / 820NWBc expose classic Bluetooth (SPP), not BLE/GATT —
+so Web Bluetooth cannot drive them. After pairing the printer via the
+OS Bluetooth settings, the kernel exposes an RFCOMM serial port:
+
+- **Linux**: `/dev/rfcomm0` (after `bluetoothctl pair` + `rfcomm bind`).
+- **Windows**: an auto-assigned `COM<n>`.
+- **macOS**: unsupported — Apple removed classic Bluetooth SPP.
+
+Drivers talk to the printer through
+`SerialTransport` from `@thermal-label/transport/node` and
+`WebSerialTransport` from `@thermal-label/transport/web`. The device
+registry tags both models with `transports: [..., 'serial', 'web-serial']`
+and no `'web-bluetooth'` entry anywhere.
+
+On the node side, `discovery.openPrinter({ path, baudRate? })` opens
+the serial port; `baudRate` defaults to 9600 (ignored by RFCOMM). On
+the web side, callers use the browser picker; paired devices show up
+in the Web Serial port list alongside wired serial adapters.
 
 ## D10 — CLI removal + version bump
 

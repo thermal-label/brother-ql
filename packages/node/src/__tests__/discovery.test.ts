@@ -1,12 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { usbOpen, tcpConnect } = vi.hoisted(() => ({
+const { usbOpen, tcpConnect, serialOpen } = vi.hoisted(() => ({
   usbOpen: vi.fn(),
   tcpConnect: vi.fn(),
+  serialOpen: vi.fn(),
 }));
 vi.mock('@thermal-label/transport/node', () => ({
   UsbTransport: { open: usbOpen },
   TcpTransport: { connect: tcpConnect },
+  SerialTransport: { open: serialOpen },
 }));
 
 vi.mock('usb', () => ({
@@ -48,6 +50,7 @@ const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {
 beforeEach(() => {
   usbOpen.mockReset();
   tcpConnect.mockReset();
+  serialOpen.mockReset();
   warnSpy.mockClear();
   vi.mocked(usb.getDeviceList).mockReset().mockReturnValue([]);
 });
@@ -59,9 +62,7 @@ describe('BrotherQLDiscovery', () => {
 
   describe('listPrinters', () => {
     it('returns known Brother QL devices from USB enumeration', async () => {
-      vi.mocked(usb.getDeviceList).mockReturnValueOnce([
-        makeUsbDevice(0x04f9, 0x20a7) as never,
-      ]);
+      vi.mocked(usb.getDeviceList).mockReturnValueOnce([makeUsbDevice(0x04f9, 0x20a7) as never]);
       const printers = await discovery.listPrinters();
       expect(printers).toHaveLength(1);
       expect(printers[0]!.device.name).toBe('QL-820NWB');
@@ -70,16 +71,12 @@ describe('BrotherQLDiscovery', () => {
     });
 
     it('excludes unknown (non-Brother) USB devices', async () => {
-      vi.mocked(usb.getDeviceList).mockReturnValueOnce([
-        makeUsbDevice(0x1234, 0x5678) as never,
-      ]);
+      vi.mocked(usb.getDeviceList).mockReturnValueOnce([makeUsbDevice(0x1234, 0x5678) as never]);
       expect(await discovery.listPrinters()).toHaveLength(0);
     });
 
     it('excludes mass-storage PIDs and warns', async () => {
-      vi.mocked(usb.getDeviceList).mockReturnValueOnce([
-        makeUsbDevice(0x04f9, 0x20aa) as never,
-      ]);
+      vi.mocked(usb.getDeviceList).mockReturnValueOnce([makeUsbDevice(0x04f9, 0x20aa) as never]);
       expect(await discovery.listPrinters()).toHaveLength(0);
       expect(warnSpy).toHaveBeenCalledOnce();
     });
@@ -87,9 +84,7 @@ describe('BrotherQLDiscovery', () => {
 
   describe('openPrinter', () => {
     it('opens a USB printer via UsbTransport', async () => {
-      vi.mocked(usb.getDeviceList).mockReturnValueOnce([
-        makeUsbDevice(0x04f9, 0x20a7) as never,
-      ]);
+      vi.mocked(usb.getDeviceList).mockReturnValueOnce([makeUsbDevice(0x04f9, 0x20a7) as never]);
       usbOpen.mockResolvedValue(fakeTransport());
 
       const printer = await discovery.openPrinter();
@@ -116,6 +111,21 @@ describe('BrotherQLDiscovery', () => {
 
       await discovery.openPrinter({ host: '10.0.0.5', port: 9101 });
       expect(tcpConnect).toHaveBeenCalledWith('10.0.0.5', 9101);
+    });
+
+    it('opens a serial printer when path is provided', async () => {
+      serialOpen.mockResolvedValue(fakeTransport());
+
+      const printer = await discovery.openPrinter({ path: '/dev/rfcomm0' });
+      expect(printer.transportType).toBe('serial');
+      expect(serialOpen).toHaveBeenCalledWith('/dev/rfcomm0', undefined);
+    });
+
+    it('forwards baudRate to SerialTransport', async () => {
+      serialOpen.mockResolvedValue(fakeTransport());
+
+      await discovery.openPrinter({ path: 'COM3', baudRate: 115200 });
+      expect(serialOpen).toHaveBeenCalledWith('COM3', 115200);
     });
   });
 });

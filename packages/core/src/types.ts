@@ -1,11 +1,6 @@
 /* eslint-disable import-x/consistent-type-specifier-style */
 import { type LabelBitmap } from '@mbtech-nl/bitmap';
-import type {
-  BluetoothConfig,
-  DeviceDescriptor,
-  MediaDescriptor,
-  PrinterStatus,
-} from '@thermal-label/contracts';
+import type { DeviceDescriptor, MediaDescriptor, PrinterStatus } from '@thermal-label/contracts';
 
 export type MediaType = 'continuous' | 'die-cut';
 export type HeadWidth = 720 | 1296;
@@ -15,11 +10,15 @@ export type NetworkSupport = 'none' | 'wifi' | 'wired' | 'wifi+wired';
 /**
  * Brother QL device descriptor.
  *
- * Extends the contracts base with QL-specific fields (head geometry,
- * protocol feature flags, the optional mass-storage PID for Editor
- * Lite mode). BLE configuration is carried on the inherited
- * `bluetooth?: BluetoothConfig` field — UUIDs are TBD for all models
- * until GATT sniffing is done (see DECISIONS.md D9).
+ * Extends the contracts base with QL-specific fields: head geometry,
+ * protocol feature flags, and the optional mass-storage PID for Editor
+ * Lite mode.
+ *
+ * **Bluetooth on the QL-820NWB / 820NWBc**: not exposed over GATT.
+ * Classic Bluetooth (SPP) is paired at the OS level; the kernel/driver
+ * exposes an RFCOMM serial port, reachable via the `'serial'` transport
+ * in Node.js and the `'web-serial'` transport in Chrome/Edge. macOS has
+ * dropped classic Bluetooth SPP — no serial route there.
  */
 export interface BrotherQLDevice extends DeviceDescriptor {
   family: 'brother-ql';
@@ -34,7 +33,6 @@ export interface BrotherQLDevice extends DeviceDescriptor {
   editorLite: boolean;
   /** Alternate PID seen when the printer is in Editor Lite mass-storage mode. */
   massStoragePid?: number;
-  bluetooth?: BluetoothConfig;
 }
 
 /**

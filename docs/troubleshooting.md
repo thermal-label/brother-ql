@@ -40,7 +40,7 @@ The number printed on the roll is the last three digits of the DK product code (
 
 ### No printers found
 
-**Symptom:** `brother-ql list` returns an empty list, or `openPrinter()` throws "No Brother QL printers found".
+**Symptom:** `discovery.listPrinters()` returns an empty list, or `discovery.openPrinter()` throws "No compatible Brother QL printer found."
 
 1. Check Editor Lite mode first (green LED must be off).
 2. Unplug and replug the USB cable.
@@ -54,7 +54,7 @@ The number printed on the roll is the last three digits of the DK product code (
 
 ### udev rules — no access
 
-**Symptom:** `brother-ql list` finds the printer but `openPrinter()` throws `LIBUSB_ERROR_ACCESS`, or nothing happens at all.
+**Symptom:** `discovery.listPrinters()` finds the printer but `discovery.openPrinter()` throws `LIBUSB_ERROR_ACCESS`, or nothing happens at all.
 
 Raw USB access on Linux requires a udev rule. Create `/etc/udev/rules.d/99-brother-ql.rules`:
 
@@ -74,7 +74,7 @@ sudo udevadm control --reload-rules && sudo udevadm trigger
 
 ### ipp-usb conflict
 
-**Symptom:** `openPrinter()` throws `LIBUSB_ERROR_BUSY`, or WebUSB throws `claimInterface failed`.
+**Symptom:** `discovery.openPrinter()` throws `LIBUSB_ERROR_BUSY`, or WebUSB throws `claimInterface failed`.
 
 Modern Linux desktops run **ipp-usb**, a daemon that auto-claims any USB printer-class interface — including Brother QL printers, even though they don't speak IPP.
 

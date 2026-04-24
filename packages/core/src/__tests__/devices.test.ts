@@ -71,12 +71,19 @@ describe('Device registry invariants', () => {
     }
   });
 
-  it('BLE UUIDs are placeholders until GATT sniffing (DECISIONS.md D9)', () => {
+  it('QL-820NWB(c) advertise serial/web-serial for OS-paired Bluetooth', () => {
+    for (const key of ['QL_820NWB', 'QL_820NWBc'] as const) {
+      const dev = DEVICES[key];
+      expect(dev.transports).toContain('serial');
+      expect(dev.transports).toContain('web-serial');
+    }
+  });
+
+  it('no device descriptor declares web-bluetooth', () => {
+    // Bluetooth on the 820 series is classic SPP, not GATT — the
+    // serial transports cover it. See packages/core/src/types.ts.
     for (const dev of Object.values(DEVICES)) {
-      const bt = (dev as { bluetooth?: { serviceUuid: string } }).bluetooth;
-      if (bt !== undefined) {
-        expect(bt.serviceUuid).toBe('TBD');
-      }
+      expect(dev.transports).not.toContain('web-bluetooth');
     }
   });
 });

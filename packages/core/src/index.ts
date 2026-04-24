@@ -2,7 +2,6 @@ export type { LabelBitmap, RawImageData } from '@mbtech-nl/bitmap';
 export { renderText, renderImage, rotateBitmap, flipHorizontal } from '@mbtech-nl/bitmap';
 
 export type {
-  BluetoothConfig,
   DeviceDescriptor,
   MediaDescriptor,
   PreviewOptions,
