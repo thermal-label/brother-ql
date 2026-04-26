@@ -79,6 +79,53 @@ describe('BrotherQLPrinter', () => {
     expect(written.length).toBeGreaterThan(0);
   });
 
+  // Find the first raster-row payload of a given opcode/colour in the
+  // encoded job. Matches the 3-byte header (opcode, colour, LEN=90) — no
+  // other command in encodeJob shares that pattern, so it's unambiguous.
+  function firstRasterRow(bytes: Uint8Array, opcode: number, colour: number): Uint8Array {
+    for (let i = 0; i < bytes.length - 3 - 90; i++) {
+      if (bytes[i] === opcode && bytes[i + 1] === colour && bytes[i + 2] === 90) {
+        return bytes.slice(i + 3, i + 3 + 90);
+      }
+    }
+    throw new Error(`no raster row with opcode 0x${opcode.toString(16)} colour 0x${colour.toString(16)}`);
+  }
+
+  it('print() horizontally mirrors the rendered bitmap (single-colour)', async () => {
+    const { transport, written } = makeTransport();
+    const printer = new BrotherQLPrinter(DEVICES.QL_820NWB, transport, 'usb');
+    // 16×1 input, all white except the leftmost pixel = black.
+    const data = new Uint8Array(16 * 4).fill(0xff);
+    data[0] = 0;
+    data[1] = 0;
+    data[2] = 0;
+    await printer.print({ width: 16, height: 1, data }, MEDIA[259]);
+    const row = firstRasterRow(written[0]!, 0x67, 0x00);
+    // MEDIA[259] leftMarginPins = 12. After horizontal flip the black pixel
+    // sits at bitmap x=15, so the head pin is 12+15=27. Byte 27>>3 = 3,
+    // bit 7-(27&7) = 4, mask 0x10. The un-mirrored position would be
+    // pin 12 → byte 1 bit 4 = 0x10; assert that's empty.
+    expect(row[3]).toBe(0x10);
+    expect(row[1]).toBe(0x00);
+  });
+
+  it('print() horizontally mirrors both planes on two-colour media', async () => {
+    const { transport, written } = makeTransport();
+    const printer = new BrotherQLPrinter(DEVICES.QL_820NWB, transport, 'usb');
+    // 16×1 input. Leftmost pixel red, the rest white.
+    const data = new Uint8Array(16 * 4).fill(0xff);
+    data[0] = 255; // R
+    data[1] = 0; // G
+    data[2] = 0; // B
+    data[3] = 255; // A
+    await printer.print({ width: 16, height: 1, data }, MEDIA[251]);
+    // Two-colour: 0x77 0x01 = black row, 0x77 0x02 = red row. The red bit
+    // should land at byte 3 / 0x10 just like the single-colour case.
+    const redRow = firstRasterRow(written[0]!, 0x77, 0x02);
+    expect(redRow[3]).toBe(0x10);
+    expect(redRow[1]).toBe(0x00);
+  });
+
   it('print() uses detected media from a prior getStatus when media is omitted', async () => {
     const bytes = new Uint8Array(32);
     bytes[10] = 62;

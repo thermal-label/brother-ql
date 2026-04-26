@@ -100,6 +100,44 @@ describe('WebBrotherQLPrinter', () => {
     expect(device.__transfers.length).toBeGreaterThan(0);
   });
 
+  // See node printer.test.ts for the same helper — searches for a 3-byte
+  // raster-row header (opcode, colour, LEN=90).
+  function firstRasterRow(bytes: Uint8Array, opcode: number, colour: number): Uint8Array {
+    for (let i = 0; i < bytes.length - 3 - 90; i++) {
+      if (bytes[i] === opcode && bytes[i + 1] === colour && bytes[i + 2] === 90) {
+        return bytes.slice(i + 3, i + 3 + 90);
+      }
+    }
+    throw new Error(`no raster row with opcode 0x${opcode.toString(16)} colour 0x${colour.toString(16)}`);
+  }
+
+  it('print() horizontally mirrors the rendered bitmap (single-colour)', async () => {
+    const device = createMockUSBDevice({ productId: 0x20a7 });
+    const printer = await fromUSBDevice(device);
+    const data = new Uint8Array(16 * 4).fill(0xff);
+    data[0] = 0;
+    data[1] = 0;
+    data[2] = 0;
+    await printer.print({ width: 16, height: 1, data }, MEDIA[259]);
+    const row = firstRasterRow(device.__transfers[0]!.data, 0x67, 0x00);
+    expect(row[3]).toBe(0x10);
+    expect(row[1]).toBe(0x00);
+  });
+
+  it('print() horizontally mirrors both planes on two-colour media', async () => {
+    const device = createMockUSBDevice({ productId: 0x20a7 });
+    const printer = await fromUSBDevice(device);
+    const data = new Uint8Array(16 * 4).fill(0xff);
+    data[0] = 255;
+    data[1] = 0;
+    data[2] = 0;
+    data[3] = 255;
+    await printer.print({ width: 16, height: 1, data }, MEDIA[251]);
+    const redRow = firstRasterRow(device.__transfers[0]!.data, 0x77, 0x02);
+    expect(redRow[3]).toBe(0x10);
+    expect(redRow[1]).toBe(0x00);
+  });
+
   it('print() throws MediaNotSpecifiedError when media is missing', async () => {
     const device = createMockUSBDevice({ productId: 0x20a7 });
     const printer = await fromUSBDevice(device);

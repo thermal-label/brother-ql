@@ -5,6 +5,7 @@ import {
   createPreviewOffline,
   encodeJob,
   findDevice,
+  flipHorizontal,
   parseStatus,
   renderImage,
   splitTwoColor,
@@ -59,12 +60,20 @@ export class WebBrotherQLPrinter implements PrinterAdapter {
     const resolvedMedia = (media ?? this.lastStatus?.detectedMedia) as BrotherQLMedia | undefined;
     if (!resolvedMedia) throw new MediaNotSpecifiedError();
 
+    // Brother QL print head: pin 0 (the first pin in each raster row) sits
+    // on the right side of the printed face when the leading edge is held
+    // up. Mirror the rendered bitmap so the input image's x-axis matches
+    // the printed x-axis. Verified on QL-820NWBc + DK-22251.
     let page: PageData;
     if (resolvedMedia.colorCapable) {
       const { black, red } = splitTwoColor(image);
-      page = { bitmap: black, redBitmap: red, media: resolvedMedia };
+      page = {
+        bitmap: flipHorizontal(black),
+        redBitmap: flipHorizontal(red),
+        media: resolvedMedia,
+      };
     } else {
-      const bitmap = renderImage(image, { dither: true });
+      const bitmap = flipHorizontal(renderImage(image, { dither: true }));
       page = { bitmap, media: resolvedMedia };
     }
 
