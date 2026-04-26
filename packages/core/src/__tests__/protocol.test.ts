@@ -170,6 +170,57 @@ describe('encodeJob', () => {
     }
     expect(found).toBe(true);
   });
+
+  it('compress option PackBits-encodes each raster row (LEN < uncompressed size)', () => {
+    // All-zero bitmap → every row is 90 zero bytes. PackBits collapses each
+    // row to 2 wire bytes (0xA7 0x00), so the LEN byte in the row header
+    // should be 2 instead of 90.
+    const page: PageData = { ...makePage(696, 3), options: { compress: true } };
+    const buf = encodeJob([page]);
+    // Find single-color row headers (0x67 0x00 LEN). With compression on,
+    // LEN should be 2 for each row, and the payload byte should be 0x00.
+    const rowHeaders: number[] = [];
+    for (let i = 0; i < buf.length - 4; i++) {
+      if (buf[i] === 0x67 && buf[i + 1] === 0x00) {
+        // Skip the byte sequence inside the 200-byte invalidate block
+        // (which is also all zeros, so 0x67 won't appear there). Heuristic:
+        // verify the next byte after LEN is the PackBits header 0xA7.
+        if (buf[i + 2] === 2 && buf[i + 3] === 0xa7 && buf[i + 4] === 0x00) {
+          rowHeaders.push(i);
+        }
+      }
+    }
+    expect(rowHeaders.length).toBe(3);
+  });
+
+  it('compress option two-color: both planes PackBits-encoded per row', () => {
+    const bitmap = createBitmap(696, 2);
+    const redBitmap = createBitmap(696, 2);
+    const page: PageData = {
+      bitmap,
+      redBitmap,
+      media: media62,
+      options: { compress: true },
+    };
+    const buf = encodeJob([page]);
+    const blackRows: number[] = [];
+    const redRows: number[] = [];
+    for (let i = 0; i < buf.length - 4; i++) {
+      // Each compressed row is [0x77 0x01|0x02 0x02 0xA7 0x00] for an empty
+      // 696-pin row (90 zero bytes → 2 PackBits bytes).
+      if (
+        buf[i] === 0x77 &&
+        buf[i + 2] === 2 &&
+        buf[i + 3] === 0xa7 &&
+        buf[i + 4] === 0x00
+      ) {
+        if (buf[i + 1] === 0x01) blackRows.push(i);
+        if (buf[i + 1] === 0x02) redRows.push(i);
+      }
+    }
+    expect(blackRows.length).toBe(2);
+    expect(redRows.length).toBe(2);
+  });
 });
 
 describe('buildRasterMode', () => {

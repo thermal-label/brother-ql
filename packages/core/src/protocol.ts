@@ -1,4 +1,5 @@
 import { getRow, createBitmap } from '@mbtech-nl/bitmap';
+import { packBits } from './pack-bits.js';
 import { type BrotherQLMedia, type PageData, type JobOptions, type PageOptions } from './types.js';
 
 export function buildInvalidate(): Uint8Array {
@@ -192,17 +193,23 @@ export function encodeJob(pages: PageData[], options: JobOptions = {}): Uint8Arr
 
     // Rows interleaved per raster line (matches Python brother_ql behaviour).
     // Two-color: black row then red row for each line. Single-color: black only.
+    // When `compress` is on, each row's bytes are PackBits-encoded and the
+    // raster-row LEN byte carries the compressed length. The printer was
+    // already switched into compression mode by `buildCompression(true)`
+    // above, so it expects every subsequent row to be PackBits.
     for (let r = 0; r < rowCount; r++) {
       const blackSrc = getRow(bitmap, r);
       const blackBytes = new Uint8Array(rowByteLen);
       placeBits(blackSrc, bitmap.widthPx, blackBytes, media.leftMarginPins);
-      chunks.push(buildRasterRow(blackBytes, 'black', twoColor));
+      const blackPayload = compress ? packBits(blackBytes) : blackBytes;
+      chunks.push(buildRasterRow(blackPayload, 'black', twoColor));
 
       if (twoColor && redBitmap !== undefined) {
         const redSrc = getRow(redBitmap, r);
         const redBytes = new Uint8Array(rowByteLen);
         placeBits(redSrc, redBitmap.widthPx, redBytes, media.leftMarginPins);
-        chunks.push(buildRasterRow(redBytes, 'red', twoColor));
+        const redPayload = compress ? packBits(redBytes) : redBytes;
+        chunks.push(buildRasterRow(redPayload, 'red', twoColor));
       }
     }
 
