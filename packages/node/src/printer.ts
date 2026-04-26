@@ -25,6 +25,19 @@ const STATUS_BYTE_COUNT = 32;
 const STATUS_POLL_INTERVAL_MS = 150;
 const STATUS_POLL_ATTEMPTS = 10;
 
+// Empirical: a single libusb bulk transfer of an entire raster job (~50 kB
+// uncompressed two-colour at 280 rows) reliably hangs the QL-820NWBc
+// firmware mid-print. Chunking the OUT pipe to ~1 kB with a 20 ms gap
+// keeps the printer's input ring buffer drained at roughly its raster
+// processing rate (~175 bytes/ms at 80 mm/s feed). Adds about 1 s to a
+// 50 kB job, which is negligible compared to physical print time.
+//
+// Python `brother_ql` users hit this less often because the typical CLI
+// path writes through `/dev/usb/lpN` where the kernel's usblp driver
+// provides flow control; libusb bypasses that.
+const USB_CHUNK_SIZE = 1024;
+const USB_CHUNK_DELAY_MS = 20;
+
 /**
  * Node.js driver for Brother QL label printers.
  *
@@ -83,7 +96,17 @@ export class BrotherQLPrinter implements PrinterAdapter {
     }
 
     const bytes = encodeJob([page]);
-    await this.transport.write(bytes);
+    await this.writeChunked(bytes);
+  }
+
+  private async writeChunked(bytes: Uint8Array): Promise<void> {
+    for (let off = 0; off < bytes.length; off += USB_CHUNK_SIZE) {
+      const end = Math.min(off + USB_CHUNK_SIZE, bytes.length);
+      await this.transport.write(bytes.subarray(off, end));
+      if (end < bytes.length) {
+        await new Promise<void>(r => setTimeout(r, USB_CHUNK_DELAY_MS));
+      }
+    }
   }
 
   createPreview(image: RawImageData, options?: PreviewOptions): Promise<PreviewResult> {

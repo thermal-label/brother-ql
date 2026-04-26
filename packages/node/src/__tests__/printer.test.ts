@@ -109,6 +109,21 @@ describe('BrotherQLPrinter', () => {
     expect(row[1]).toBe(0x00);
   });
 
+  it('print() splits the job into ≤1 KB OUT-pipe chunks (firmware flow-control)', async () => {
+    // 696×120 two-colour encodes to roughly 24 kB uncompressed — more than
+    // enough to require multiple chunks. Each emitted slice must be ≤1024
+    // bytes so the printer's input ring buffer has time to drain between
+    // bursts. Single libusb writes that exceed the buffer reliably hang
+    // the QL-820NWBc firmware mid-print.
+    const { transport, written } = makeTransport();
+    const printer = new BrotherQLPrinter(DEVICES.QL_820NWB, transport, 'usb');
+    await printer.print(solidRgba(696, 120), MEDIA[251]);
+    expect(written.length).toBeGreaterThan(1);
+    for (const w of written) {
+      expect(w.length).toBeLessThanOrEqual(1024);
+    }
+  });
+
   it('print() horizontally mirrors both planes on two-colour media', async () => {
     const { transport, written } = makeTransport();
     const printer = new BrotherQLPrinter(DEVICES.QL_820NWB, transport, 'usb');
@@ -135,7 +150,9 @@ describe('BrotherQLPrinter', () => {
     await printer.getStatus();
     const before = written.length;
     await printer.print(solidRgba(64, 64));
-    expect(written.length).toBe(before + 1);
+    // print() chunks the OUT pipe; just assert it issued at least one
+    // additional write after the status round-trip.
+    expect(written.length).toBeGreaterThan(before);
   });
 
   it('print() splits two-colour bitmap when media.colorCapable is true', async () => {

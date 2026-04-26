@@ -124,6 +124,16 @@ describe('WebBrotherQLPrinter', () => {
     expect(row[1]).toBe(0x00);
   });
 
+  it('print() splits the job into ≤1 KB OUT-pipe chunks (firmware flow-control)', async () => {
+    const device = createMockUSBDevice({ productId: 0x20a7 });
+    const printer = await fromUSBDevice(device);
+    await printer.print(solidRgba(696, 120), MEDIA[251]);
+    expect(device.__transfers.length).toBeGreaterThan(1);
+    for (const t of device.__transfers) {
+      expect(t.data.length).toBeLessThanOrEqual(1024);
+    }
+  });
+
   it('print() horizontally mirrors both planes on two-colour media', async () => {
     const device = createMockUSBDevice({ productId: 0x20a7 });
     const printer = await fromUSBDevice(device);

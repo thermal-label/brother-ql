@@ -26,6 +26,12 @@ import { WebUsbTransport } from '@thermal-label/transport/web';
 
 const STATUS_BYTE_COUNT = 32;
 
+// Same OUT-pipe chunking as the Node driver — see packages/node/src/printer.ts
+// for the rationale. WebUSB rides the same libusb-style bulk transfer path,
+// so the firmware buffer-overrun risk is identical.
+const USB_CHUNK_SIZE = 1024;
+const USB_CHUNK_DELAY_MS = 20;
+
 export interface RequestOptions {
   filters?: USBDeviceFilter[];
 }
@@ -78,7 +84,17 @@ export class WebBrotherQLPrinter implements PrinterAdapter {
     }
 
     const bytes = encodeJob([page]);
-    await this.transport.write(bytes);
+    await this.writeChunked(bytes);
+  }
+
+  private async writeChunked(bytes: Uint8Array): Promise<void> {
+    for (let off = 0; off < bytes.length; off += USB_CHUNK_SIZE) {
+      const end = Math.min(off + USB_CHUNK_SIZE, bytes.length);
+      await this.transport.write(bytes.subarray(off, end));
+      if (end < bytes.length) {
+        await new Promise<void>(r => setTimeout(r, USB_CHUNK_DELAY_MS));
+      }
+    }
   }
 
   createPreview(image: RawImageData, options?: PreviewOptions): Promise<PreviewResult> {
