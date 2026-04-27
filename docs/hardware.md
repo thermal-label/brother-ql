@@ -26,6 +26,11 @@ All devices share Vendor ID `0x04F9` (Brother Industries Ltd.) and use the same 
 | QL-1110NWB | `0x20A9` | 1296      | —         | WiFi + LAN | 🟡 Expected |
 | QL-1115NWB | `0x20AC` | 1296      | —         | WiFi + LAN | 🟡 Expected |
 
+> Going further than the two-step CTA below? Follow the full
+> [verification checklist](./verification-checklist) — it covers TCP,
+> WebUSB, and the family-specific capability tests (two-colour,
+> auto-cut, mass-storage mode).
+
 <div class="hw-cta">
   <div class="hw-cta-header">
     <span class="hw-cta-icon">🔌</span>
