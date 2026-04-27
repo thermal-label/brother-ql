@@ -2,7 +2,10 @@
   "name": "brother-ql",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=24.0.0", "pnpm": ">=9.0.0" },
+  "engines": {
+    "node": ">=24.0.0",
+    "pnpm": ">=9.0.0"
+  },
   "prettier": "@mbtech-nl/prettier-config",
   "scripts": {
     "build": "pnpm -r run build",
@@ -12,6 +15,7 @@
     "format": "prettier --write packages docs",
     "typecheck": "pnpm -r run typecheck",
     "docs:api": "typedoc",
+    "validate:hardware-status": "node scripts/validate-hardware-status.mjs",
     "prepare": "node -e \"try{require('node:child_process').execSync('git config core.hooksPath .githooks',{stdio:'ignore'})}catch{}\"",
     "changeset": "changeset",
     "version": "changeset version",
@@ -27,6 +31,7 @@
     "typedoc": "^0.28.0",
     "typedoc-plugin-markdown": "^4.0.0",
     "typescript": "~5.5.0",
-    "vitest": "^2.0.0"
+    "vitest": "^2.0.0",
+    "yaml": "^2.8.3"
   }
 }

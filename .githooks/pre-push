@@ -27,4 +27,13 @@ if ! git diff --quiet -- docs/api; then
 fi
 
 echo "[pre-push] docs/api up to date." >&2
+
+if [ -f docs/hardware-status.yaml ] && [ -f scripts/validate-hardware-status.mjs ]; then
+  echo "[pre-push] validating docs/hardware-status.yaml…" >&2
+  if ! node scripts/validate-hardware-status.mjs; then
+    echo "[pre-push] hardware-status.yaml failed validation." >&2
+    exit 1
+  fi
+fi
+
 exit 0
