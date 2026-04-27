@@ -1,6 +1,6 @@
 {
   "name": "@thermal-label/brother-ql-core",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Protocol encoding, device registry, and media registry for Brother QL label printers",
   "keywords": [
     "brother",

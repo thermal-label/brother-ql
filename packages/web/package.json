@@ -1,6 +1,6 @@
 {
   "name": "@thermal-label/brother-ql-web",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "WebUSB browser driver for Brother QL label printers",
   "keywords": [
     "brother",
