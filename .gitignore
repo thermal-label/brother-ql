@@ -4,6 +4,6 @@ dist/
 coverage/
 docs/.vitepress/dist/
 docs/.vitepress/cache/
-docs/api/
 *.tsbuildinfo
 .DS_Store
+.claude/
