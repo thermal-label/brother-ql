@@ -59,7 +59,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@mbtech-nl/bitmap": "^0.1.0",
+    "@mbtech-nl/bitmap": "^1.2.0",
     "@thermal-label/contracts": "^0.1.2"
   },
   "devDependencies": {

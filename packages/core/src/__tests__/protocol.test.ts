@@ -14,7 +14,7 @@ import {
   buildExpandedMode,
   encodeJob,
 } from '../protocol.js';
-import { type PageData } from '../types.js';
+import type { PageData } from '../types.js';
 import { MEDIA } from '../media.js';
 
 describe('buildInvalidate', () => {

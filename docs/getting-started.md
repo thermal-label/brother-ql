@@ -50,7 +50,8 @@ await printer.print(image, MEDIA[259]);
 ### Two-colour (DK-22251)
 
 Just pass the DK-22251 descriptor — the driver runs
-`splitTwoColor()` internally and sends both planes:
+`renderMultiPlaneImage()` from `@mbtech-nl/bitmap` internally and
+sends both planes:
 
 ```ts
 await printer.print(image, MEDIA[251]); // two-colour DK-22251

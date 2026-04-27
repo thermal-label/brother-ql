@@ -15,8 +15,8 @@ Consumed from npm.
 
 `printText`, `printImage`, `printImageURL`, `printTwoColor` are deleted.
 The single `print()` takes full RGBA. When `media.colorCapable` is
-true (e.g. DK-22251), the driver runs `splitTwoColor()` internally and
-hands the two planes to `encodeJob()`.
+true (e.g. DK-22251), the driver runs `renderMultiPlaneImage()` from
+`@mbtech-nl/bitmap` internally and hands the two planes to `encodeJob()`.
 
 ## D3 — Local type renames
 
@@ -75,11 +75,15 @@ All transports use `Uint8Array` and `async close()`. Local
 
 ## D8 — Two-colour handling
 
-`splitTwoColor(image, options?)` lives in
-`packages/core/src/colour.ts`. `isRedish()` threshold: `r > 180`,
-`g < 100`, `b < 100`, alpha ≥ 128. Non-matching pixels go to the black
-plane; matching pixels to the red plane. Overlaps resolve in favour
-of black (red bit cleared).
+The two-colour split is delegated to `renderMultiPlaneImage()` in
+`@mbtech-nl/bitmap` (added in v1.2). This package keeps only the
+brother-ql-specific palette constant — `BROTHER_QL_TWO_COLOR_PALETTE`
+in `packages/core/src/palette.ts`: `[{name:'black', rgb:[0,0,0]},
+{name:'red', rgb:[255,0,0]}]`. The bitmap classifier maps each source
+pixel to its nearest palette entry (or to the implicit white
+background) by RGB distance, which guarantees mutual exclusivity by
+construction. The legacy `isRedish` heuristic (`r > 180 && g < 100 &&
+b < 100`) and `splitTwoColor` helper are removed.
 
 ## D9 — Bluetooth on the QL-820NWB goes through the serial transports
 

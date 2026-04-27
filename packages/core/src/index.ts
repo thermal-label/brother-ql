@@ -1,5 +1,11 @@
-export type { LabelBitmap, RawImageData } from '@mbtech-nl/bitmap';
-export { renderText, renderImage, rotateBitmap, flipHorizontal } from '@mbtech-nl/bitmap';
+export type { LabelBitmap, PaletteEntry, RawImageData } from '@mbtech-nl/bitmap';
+export {
+  flipHorizontal,
+  renderImage,
+  renderMultiPlaneImage,
+  renderText,
+  rotateBitmap,
+} from '@mbtech-nl/bitmap';
 
 export type {
   DeviceDescriptor,
@@ -25,9 +31,9 @@ export {
   findMediaByDimensions,
   findMediaByWidth,
 } from './media.js';
+export { BROTHER_QL_TWO_COLOR_PALETTE } from './palette.js';
 export { encodeJob } from './protocol.js';
 export { parseStatus, STATUS_REQUEST } from './status.js';
-export { isRedish, splitTwoColor, type TwoColorOptions, type TwoColorResult } from './colour.js';
 export { createPreviewOffline } from './preview.js';
 
 export type {

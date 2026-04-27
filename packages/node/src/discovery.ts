@@ -1,10 +1,5 @@
-import {
-  DEVICES,
-  findDevice,
-  isMassStorageMode,
-  type BrotherQLDevice,
-} from '@thermal-label/brother-ql-core';
-/* eslint-disable import-x/consistent-type-specifier-style */
+import { DEVICES, findDevice, isMassStorageMode } from '@thermal-label/brother-ql-core';
+import type { BrotherQLDevice } from '@thermal-label/brother-ql-core';
 import type { DiscoveredPrinter, OpenOptions, PrinterDiscovery } from '@thermal-label/contracts';
 import { SerialTransport, TcpTransport, UsbTransport } from '@thermal-label/transport/node';
 import * as usb from 'usb';

@@ -6,13 +6,6 @@ export default [
   },
   ...mbtech,
   {
-    // import-x/consistent-type-specifier-style (prefer-inline) and
-    // @typescript-eslint/no-import-type-side-effects conflict — prefer-inline wins.
-    rules: {
-      '@typescript-eslint/no-import-type-side-effects': 'off',
-    },
-  },
-  {
     // CLI source files intentionally use console for user-facing output.
     files: ['packages/cli/src/**/*.ts'],
     rules: {

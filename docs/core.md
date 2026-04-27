@@ -2,9 +2,11 @@
 
 `@thermal-label/brother-ql-core` is the shared protocol layer used by
 both the Node.js and Web packages. It contains the raster encoder,
-the device and media registries, the status parser, the
-`splitTwoColor` helper, and the offline preview. It also re-exports
-the `@thermal-label/contracts` base types.
+the device and media registries, the status parser, the offline
+preview, and the two-colour palette constant. Pixel-to-plane splitting
+runs through `renderMultiPlaneImage` in `@mbtech-nl/bitmap`, which is
+re-exported here. The package also re-exports the
+`@thermal-label/contracts` base types.
 
 ```bash
 pnpm add @thermal-label/brother-ql-core
@@ -25,11 +27,10 @@ checklist for other languages.
 | `findMedia(id)` / `findMediaByWidth(mm, type)` / `findMediaByDimensions(w, h, twoColor?)` | Media lookups                                                 |
 | `STATUS_REQUEST`                                                                          | `ESC i S` — 3-byte status request                             |
 | `parseStatus(bytes)`                                                                      | Parse the 32-byte response into `BrotherQLStatus`             |
-| `splitTwoColor(image, options?)`                                                          | RGBA → `{ black, red }` 1bpp planes for DK-22251              |
-| `isRedish(r, g, b, a)`                                                                    | Driver's red-pixel heuristic (threshold 180/100/100)          |
+| `BROTHER_QL_TWO_COLOR_PALETTE`                                                            | Black + red palette for `renderMultiPlaneImage` on DK-22251   |
 | `createPreviewOffline(image, media)`                                                      | Render `PreviewResult` without a live connection              |
 | `encodeJob(pages, options?)`                                                              | Encode a complete print job to bytes                          |
-| `renderText` / `renderImage` / `rotateBitmap` / `flipHorizontal`                          | Bitmap helpers (re-exported from `@mbtech-nl/bitmap`)         |
+| `renderText` / `renderImage` / `renderMultiPlaneImage` / `rotateBitmap` / `flipHorizontal` | Bitmap helpers (re-exported from `@mbtech-nl/bitmap`)        |
 | `BrotherQLDevice`                                                                         | Device descriptor type (extends contracts `DeviceDescriptor`) |
 | `BrotherQLMedia`                                                                          | Media descriptor type (extends contracts `MediaDescriptor`)   |
 | `BrotherQLStatus`                                                                         | `PrinterStatus` + `editorLiteMode`                            |
@@ -93,21 +94,31 @@ const bytes = encodeJob([{ bitmap, media }]);
 ### Encode a two-colour job (DK-22251)
 
 ```ts
-import { encodeJob, findMedia, splitTwoColor, rotateBitmap } from '@thermal-label/brother-ql-core';
+import {
+  BROTHER_QL_TWO_COLOR_PALETTE,
+  encodeJob,
+  findMedia,
+  renderMultiPlaneImage,
+  rotateBitmap,
+} from '@thermal-label/brother-ql-core';
 
 const media = findMedia(251)!; // 62mm DK-22251
-const { black, red } = splitTwoColor(image); // RGBA → two 1bpp planes
+const { black, red } = renderMultiPlaneImage(image, {
+  palette: BROTHER_QL_TWO_COLOR_PALETTE,
+});
 const bitmap = rotateBitmap(black, 270);
 const redBitmap = rotateBitmap(red, 270);
 
 const bytes = encodeJob([{ bitmap, redBitmap, media }]);
 ```
 
-`splitTwoColor` classifies a pixel as red when
-`r > 180 && g < 100 && b < 100 && a >= 128`. Overlaps resolve to
-black. The node and web drivers call `splitTwoColor` automatically
-whenever `media.colorCapable` is `true` — you only invoke it directly
-if you want to customise the threshold or pre-render the planes.
+`renderMultiPlaneImage` classifies each pixel to its nearest palette
+entry (black, red, or the implicit white background) by RGB distance,
+which guarantees every dot lands in at most one plane. Pass
+`colorSpace: 'lab'`, per-plane `dither` / `gamma` / `threshold`, or a
+custom palette for richer control — see the bitmap library's docs.
+The node and web drivers run `renderMultiPlaneImage` with this palette
+automatically whenever `media.colorCapable` is `true`.
 
 ### Look up media
 

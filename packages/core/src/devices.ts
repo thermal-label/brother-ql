@@ -1,4 +1,4 @@
-import { type BrotherQLDevice } from './types.js';
+import type { BrotherQLDevice } from './types.js';
 
 const MASS_STORAGE_PIDS = new Set([0x20aa, 0x20ab]);
 

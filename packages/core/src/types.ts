@@ -1,5 +1,4 @@
-/* eslint-disable import-x/consistent-type-specifier-style */
-import { type LabelBitmap } from '@mbtech-nl/bitmap';
+import type { LabelBitmap } from '@mbtech-nl/bitmap';
 import type { DeviceDescriptor, MediaDescriptor, PrinterStatus } from '@thermal-label/contracts';
 
 export type MediaType = 'continuous' | 'die-cut';

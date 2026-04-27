@@ -1,6 +1,6 @@
 import { getRow, createBitmap } from '@mbtech-nl/bitmap';
 import { packBits } from './pack-bits.js';
-import { type BrotherQLMedia, type PageData, type JobOptions, type PageOptions } from './types.js';
+import type { BrotherQLMedia, PageData, JobOptions, PageOptions } from './types.js';
 
 export function buildInvalidate(): Uint8Array {
   return new Uint8Array(200);

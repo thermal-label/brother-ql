@@ -1,4 +1,4 @@
-import { type BrotherQLMedia, type MediaType } from './types.js';
+import type { BrotherQLMedia, MediaType } from './types.js';
 
 /**
  * Registry of supported Brother QL consumables.

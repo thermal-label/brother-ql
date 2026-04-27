@@ -61,9 +61,11 @@ const image = { width: id.width, height: id.height, data: new Uint8Array(id.data
 ## Two-colour (DK-22251)
 
 Same call — the driver reads `media.colorCapable` and runs
-`splitTwoColor()` before encoding. Red pixels (`r > 180 && g < 100 &&
-b < 100`) go to the red plane, everything else to black. Overlaps
-resolve in favour of black.
+`renderMultiPlaneImage()` from `@mbtech-nl/bitmap` with the
+`BROTHER_QL_TWO_COLOR_PALETTE` (black + red) before encoding. Each
+source pixel is classified to its nearest palette entry (or to the
+implicit white background) by RGB distance, so every dot lands in at
+most one plane.
 
 ```ts
 await printer.print(image, MEDIA[251]);
@@ -86,8 +88,8 @@ import { WebSerialTransport } from '@thermal-label/transport/web';
 import {
   DEVICES,
   encodeJob,
-  splitTwoColor,
   renderImage,
+  renderMultiPlaneImage,
   STATUS_REQUEST,
   parseStatus,
   MEDIA,
@@ -178,8 +180,8 @@ status.errors; // PrinterError[] — same codes as the node driver
 2. `WebUsbTransport.fromDevice()` opens the device, selects the
    active configuration, claims interface 0, and resolves the bulk
    IN/OUT endpoints from the interface descriptor.
-3. `print()` runs `renderImage` (or `splitTwoColor`) depending on
-   media, then calls `encodeJob()` from
+3. `print()` runs `renderImage` (or `renderMultiPlaneImage`) depending
+   on media, then calls `encodeJob()` from
    `@thermal-label/brother-ql-core` — byte-for-byte identical to the
    Node.js driver.
 

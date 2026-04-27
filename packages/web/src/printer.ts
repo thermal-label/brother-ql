@@ -1,4 +1,5 @@
 import {
+  BROTHER_QL_TWO_COLOR_PALETTE,
   DEFAULT_MEDIA,
   DEVICES,
   STATUS_REQUEST,
@@ -8,17 +9,20 @@ import {
   flipHorizontal,
   parseStatus,
   renderImage,
-  splitTwoColor,
-  type BrotherQLDevice,
-  type BrotherQLMedia,
-  type BrotherQLStatus,
-  type MediaDescriptor,
-  type PageData,
-  type PreviewOptions,
-  type PreviewResult,
-  type PrinterAdapter,
-  type RawImageData,
-  type Transport,
+  renderMultiPlaneImage,
+} from '@thermal-label/brother-ql-core';
+import type {
+  BrotherQLDevice,
+  BrotherQLMedia,
+  BrotherQLStatus,
+  LabelBitmap,
+  MediaDescriptor,
+  PageData,
+  PreviewOptions,
+  PreviewResult,
+  PrinterAdapter,
+  RawImageData,
+  Transport,
 } from '@thermal-label/brother-ql-core';
 import { MediaNotSpecifiedError } from '@thermal-label/contracts';
 import { buildUsbFilters } from '@thermal-label/transport';
@@ -39,8 +43,8 @@ export interface RequestOptions {
 /**
  * WebUSB `PrinterAdapter` for Brother QL printers.
  *
- * Same two-colour handling as the node driver — `splitTwoColor()` runs
- * internally when the selected media is `colorCapable`.
+ * Same two-colour handling as the node driver — `renderMultiPlaneImage()`
+ * runs internally when the selected media is `colorCapable`.
  */
 export class WebBrotherQLPrinter implements PrinterAdapter {
   readonly family = 'brother-ql' as const;
@@ -72,7 +76,9 @@ export class WebBrotherQLPrinter implements PrinterAdapter {
     // the printed x-axis. Verified on QL-820NWBc + DK-22251.
     let page: PageData;
     if (resolvedMedia.colorCapable) {
-      const { black, red } = splitTwoColor(image);
+      const { black, red } = renderMultiPlaneImage(image, {
+        palette: BROTHER_QL_TWO_COLOR_PALETTE,
+      }) as Record<'black' | 'red', LabelBitmap>;
       page = {
         bitmap: flipHorizontal(black),
         redBitmap: flipHorizontal(red),

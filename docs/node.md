@@ -6,8 +6,8 @@ interface from
 built on
 [`@thermal-label/transport`](https://www.npmjs.com/package/@thermal-label/transport).
 Single `print(image, media?)` handles both single-colour and
-two-colour labels — the driver runs `splitTwoColor()` internally when
-`media.colorCapable` is `true`.
+two-colour labels — the driver runs `renderMultiPlaneImage()` from
+`@mbtech-nl/bitmap` internally when `media.colorCapable` is `true`.
 
 ## Install
 
@@ -128,10 +128,11 @@ await printer.print(image, MEDIA[259]);
 ### Two-colour (DK-22251)
 
 Same call — the driver notices `media.colorCapable === true` and
-runs `splitTwoColor()` on the RGBA image to separate black and red
-planes before encoding. The default heuristic (in
-`@thermal-label/brother-ql-core`) classifies a pixel as red when
-`r > 180 && g < 100 && b < 100 && a >= 128`. Overlaps go to black.
+runs `renderMultiPlaneImage()` from `@mbtech-nl/bitmap` on the RGBA
+image with the `BROTHER_QL_TWO_COLOR_PALETTE` (black + red) to
+separate the two planes before encoding. Each source pixel is
+classified to its nearest palette entry (or to the implicit white
+background) by RGB distance, so every dot lands in at most one plane.
 
 ```ts
 await printer.print(image, MEDIA[251]);

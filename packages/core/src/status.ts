@@ -1,6 +1,5 @@
-/* eslint-disable import-x/consistent-type-specifier-style */
 import type { PrinterError } from '@thermal-label/contracts';
-import { type BrotherQLStatus } from './types.js';
+import type { BrotherQLStatus } from './types.js';
 import { findMediaByDimensions } from './media.js';
 
 export const STATUS_REQUEST = new Uint8Array([0x1b, 0x69, 0x53]);
