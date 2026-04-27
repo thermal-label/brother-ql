@@ -6,8 +6,6 @@
 
 # Interface: PreviewOptions
 
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/preview.d.ts:10
-
 Options for `PrinterAdapter.createPreview()`.
 
 Only `media?` is part of the contract — rendering knobs like threshold
@@ -19,8 +17,6 @@ own options, not on this cross-family interface.
 ### media?
 
 > `optional` **media?**: [`MediaDescriptor`](MediaDescriptor.md)
-
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/preview.d.ts:23
 
 Override detected media. Use when:
 

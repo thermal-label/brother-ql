@@ -6,8 +6,6 @@
 
 # Interface: BrotherQLOpenOptions
 
-Defined in: [packages/node/src/discovery.ts:16](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/node/src/discovery.ts#L16)
-
 Driver-specific `openPrinter` options.
 
 Extends the contracts `OpenOptions` with `path` / `baudRate` for
@@ -25,8 +23,6 @@ RFCOMM ignores it, but `serialport` requires a value.
 
 > `optional` **baudRate?**: `number`
 
-Defined in: [packages/node/src/discovery.ts:24](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/node/src/discovery.ts#L24)
-
 Baud rate override; defaults to 9600.
 
 #### Overrides
@@ -38,8 +34,6 @@ Baud rate override; defaults to 9600.
 ### host?
 
 > `optional` **host?**: `string`
-
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/discovery.d.ts:38
 
 TCP host (IP or hostname).
 
@@ -53,8 +47,6 @@ TCP host (IP or hostname).
 
 > `optional` **path?**: `string`
 
-Defined in: [packages/node/src/discovery.ts:22](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/node/src/discovery.ts#L22)
-
 Serial device path — e.g. `/dev/rfcomm0` (Linux) or `COM3`
 (Windows) after pairing the printer via the OS Bluetooth
 settings. Mutually exclusive with `host` and the USB fields.
@@ -64,8 +56,6 @@ settings. Mutually exclusive with `host` and the USB fields.
 ### pid?
 
 > `optional` **pid?**: `number`
-
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/discovery.d.ts:34
 
 Match by USB Product ID.
 
@@ -79,8 +69,6 @@ Match by USB Product ID.
 
 > `optional` **port?**: `number`
 
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/discovery.d.ts:40
-
 TCP port. Default 9100.
 
 #### Inherited from
@@ -92,8 +80,6 @@ TCP port. Default 9100.
 ### serialNumber?
 
 > `optional` **serialNumber?**: `string`
-
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/discovery.d.ts:36
 
 Match by USB / mDNS serial number.
 
@@ -107,8 +93,6 @@ Match by USB / mDNS serial number.
 
 > `optional` **serialPath?**: `string`
 
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/discovery.d.ts:45
-
 Serial port path. Examples: `/dev/rfcomm0` (Linux, Bluetooth SPP),
 `/dev/ttyUSB0` (Linux, USB-serial adapter), `COM3` (Windows).
 
@@ -121,8 +105,6 @@ Serial port path. Examples: `/dev/rfcomm0` (Linux, Bluetooth SPP),
 ### vid?
 
 > `optional` **vid?**: `number`
-
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/discovery.d.ts:32
 
 Match by USB Vendor ID.
 

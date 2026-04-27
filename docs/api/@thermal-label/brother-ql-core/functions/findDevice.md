@@ -8,8 +8,6 @@
 
 > **findDevice**(`vid`, `pid`): [`BrotherQLDevice`](../interfaces/BrotherQLDevice.md) \| `undefined`
 
-Defined in: [packages/core/src/devices.ts:276](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/core/src/devices.ts#L276)
-
 ## Parameters
 
 ### vid

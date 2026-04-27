@@ -6,8 +6,6 @@
 
 # Interface: PrintOptions
 
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/status.d.ts:8
-
 Options for a single `PrinterAdapter.print()` call.
 
 Drivers may extend this with family-specific fields; structural typing
@@ -23,8 +21,6 @@ accepts any superset wherever `PrintOptions` is consumed.
 
 > `optional` **copies?**: `number`
 
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/status.d.ts:10
-
 Number of copies to print. Default 1.
 
 ***
@@ -32,8 +28,6 @@ Number of copies to print. Default 1.
 ### density?
 
 > `optional` **density?**: `string`
-
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/status.d.ts:20
 
 Driver-specific density setting.
 

@@ -8,8 +8,6 @@
 
 > **TransportType** = `"usb"` \| `"tcp"` \| `"serial"` \| `"webusb"` \| `"web-serial"` \| `"web-bluetooth"`
 
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/device.d.ts:15
-
 Supported transport types a driver can use to talk to a printer.
 
 - `usb`: raw USB via a platform USB API (e.g. `node-usb`).

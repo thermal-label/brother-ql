@@ -6,8 +6,6 @@
 
 # Class: WebBrotherQLPrinter
 
-Defined in: [printer.ts:53](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/web/src/printer.ts#L53)
-
 WebUSB `PrinterAdapter` for Brother QL printers.
 
 Mirrors the node driver's behaviour — `renderMultiPlaneImage()` runs
@@ -24,8 +22,6 @@ internally when the resolved media carries a `palette`, and
 ### Constructor
 
 > **new WebBrotherQLPrinter**(`device`, `transport`): `WebBrotherQLPrinter`
-
-Defined in: [printer.ts:60](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/web/src/printer.ts#L60)
 
 #### Parameters
 
@@ -47,8 +43,6 @@ Defined in: [printer.ts:60](https://github.com/thermal-label/brother-ql/blob/d0e
 
 > `readonly` **device**: [`BrotherQLDevice`](../../brother-ql-core/interfaces/BrotherQLDevice.md)
 
-Defined in: [printer.ts:55](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/web/src/printer.ts#L55)
-
 The device descriptor for the connected printer.
 
 Useful for logging, diagnostics, and displaying VID/PID. Undefined
@@ -65,8 +59,6 @@ raw TCP connection to a known IP).
 
 > `readonly` **family**: `"brother-ql"`
 
-Defined in: [printer.ts:54](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/web/src/printer.ts#L54)
-
 Driver family identifier, e.g. `'brother-ql'` or `'labelwriter'`.
 
 #### Implementation of
@@ -80,8 +72,6 @@ Driver family identifier, e.g. `'brother-ql'` or `'labelwriter'`.
 #### Get Signature
 
 > **get** **connected**(): `boolean`
-
-Defined in: [printer.ts:69](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/web/src/printer.ts#L69)
 
 Whether the printer is currently connected.
 
@@ -103,8 +93,6 @@ Whether the printer is currently connected.
 
 > **get** **model**(): `string`
 
-Defined in: [printer.ts:65](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/web/src/printer.ts#L65)
-
 Human-readable model name from the driver's device registry.
 
 ##### Returns
@@ -123,8 +111,6 @@ Human-readable model name from the driver's device registry.
 
 > **close**(): `Promise`\<`void`\>
 
-Defined in: [printer.ts:136](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/web/src/printer.ts#L136)
-
 Close the connection. Always call in `finally` blocks.
 
 #### Returns
@@ -140,8 +126,6 @@ Close the connection. Always call in `finally` blocks.
 ### createPreview()
 
 > **createPreview**(`image`, `options?`): `Promise`\<[`PreviewResult`](../../brother-ql-core/interfaces/PreviewResult.md)\>
-
-Defined in: [printer.ts:117](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/web/src/printer.ts#L117)
 
 Generate a preview showing how this printer would reproduce the
 design on the given media. Returns separated 1bpp planes with
@@ -187,8 +171,6 @@ For offline preview without a live connection, use the static
 
 > **getStatus**(): `Promise`\<[`BrotherQLStatus`](../../brother-ql-core/interfaces/BrotherQLStatus.md)\>
 
-Defined in: [printer.ts:128](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/web/src/printer.ts#L128)
-
 Query printer status including detected media.
 
 #### Returns
@@ -204,8 +186,6 @@ Query printer status including detected media.
 ### print()
 
 > **print**(`image`, `media?`, `options?`): `Promise`\<`void`\>
-
-Defined in: [printer.ts:73](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/web/src/printer.ts#L73)
 
 Print from a full-colour RGBA image.
 

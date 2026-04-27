@@ -8,8 +8,6 @@
 
 > **renderText**(`text`, `options?`): [`LabelBitmap`](../interfaces/LabelBitmap.md)
 
-Defined in: node\_modules/.pnpm/@mbtech-nl+bitmap@1.2.1/node\_modules/@mbtech-nl/bitmap/dist/font/render.d.ts:21
-
 Render an ASCII string into a packed 1bpp bitmap using the bundled font.
 
 Each character is rasterised left-to-right with `letterSpacing` pixels of

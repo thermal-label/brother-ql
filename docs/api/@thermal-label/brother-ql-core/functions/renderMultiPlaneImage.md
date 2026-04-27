@@ -8,8 +8,6 @@
 
 > **renderMultiPlaneImage**(`image`, `options`): `Record`\<`string`, [`LabelBitmap`](../interfaces/LabelBitmap.md)\>
 
-Defined in: node\_modules/.pnpm/@mbtech-nl+bitmap@1.2.1/node\_modules/@mbtech-nl/bitmap/dist/multiplane.d.ts:44
-
 Convert RGBA pixel data into one 1bpp `LabelBitmap` per palette entry.
 
 Targets thermal printers that can place more than one ink/foil colour

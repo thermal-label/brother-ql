@@ -6,8 +6,6 @@
 
 # Interface: PreviewResult
 
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/preview.d.ts:54
-
 Result of `PrinterAdapter.createPreview()`.
 
 Contains one `PreviewPlane` per colour the printer would produce,
@@ -20,8 +18,6 @@ guess.
 ### assumed
 
 > **assumed**: `boolean`
-
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/preview.d.ts:67
 
 True if the media was assumed/defaulted because detection wasn't
 available and no override was provided.
@@ -36,8 +32,6 @@ for accurate result."
 
 > **media**: [`MediaDescriptor`](MediaDescriptor.md)
 
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/preview.d.ts:58
-
 The media used for this preview (detected, overridden, or defaulted).
 
 ***
@@ -45,7 +39,5 @@ The media used for this preview (detected, overridden, or defaulted).
 ### planes
 
 > **planes**: [`PreviewPlane`](PreviewPlane.md)[]
-
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/preview.d.ts:56
 
 One entry per colour plane the printer would produce.

@@ -8,8 +8,6 @@
 
 > **findMediaByDimensions**(`widthMm`, `heightMm`, `twoColorMode?`): [`BrotherQLMedia`](../interfaces/BrotherQLMedia.md) \| `undefined`
 
-Defined in: [packages/core/src/media.ts:312](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/core/src/media.ts#L312)
-
 Match status-response dimensions to a media registry entry.
 
 ## Parameters

@@ -8,8 +8,6 @@
 
 > **pickRotation**(`image`, `media`, `familyDirection`, `override?`): `0` \| `90` \| `180` \| `270`
 
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/orientation.d.ts:32
-
 Pick the rotation value to pass to `renderImage` / `renderMultiPlaneImage`.
 
 Pure function — no IO, no driver state. The driver supplies its

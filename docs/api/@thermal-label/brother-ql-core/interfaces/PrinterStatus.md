@@ -6,8 +6,6 @@
 
 # Interface: PrinterStatus
 
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/status.d.ts:44
-
 Runtime status of a printer.
 
 Returned by `PrinterAdapter.getStatus()` and used to drive media
@@ -22,8 +20,6 @@ auto-detection in subsequent `print()` / `createPreview()` calls.
 ### detectedMedia?
 
 > `optional` **detectedMedia?**: [`MediaDescriptor`](MediaDescriptor.md)
-
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/status.d.ts:59
 
 Detected media descriptor, if the printer supports detection.
 
@@ -40,8 +36,6 @@ media is provided.
 
 > **errors**: [`PrinterError`](PrinterError.md)[]
 
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/status.d.ts:66
-
 Structured error list. Empty array = no errors.
 
 Use `PrinterError.code` for programmatic branching and
@@ -53,8 +47,6 @@ Use `PrinterError.code` for programmatic branching and
 
 > **mediaLoaded**: `boolean`
 
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/status.d.ts:48
-
 Media is loaded (only meaningful if the printer supports detection).
 
 ***
@@ -62,8 +54,6 @@ Media is loaded (only meaningful if the printer supports detection).
 ### rawBytes
 
 > **rawBytes**: `Uint8Array`
-
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/status.d.ts:73
 
 Raw status bytes from the printer.
 
@@ -75,7 +65,5 @@ interface should be preferred for normal use.
 ### ready
 
 > **ready**: `boolean`
-
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/status.d.ts:46
 
 Printer is ready to accept a print job.

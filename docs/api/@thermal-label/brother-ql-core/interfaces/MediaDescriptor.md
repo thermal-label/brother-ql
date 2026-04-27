@@ -6,8 +6,6 @@
 
 # Interface: MediaDescriptor
 
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/media.d.ts:54
-
 Base media descriptor.
 
 Each driver extends this with family-specific fields (print area dots,
@@ -75,8 +73,6 @@ const m: MediaDescriptor = {
 
 > `optional` **cornerRadiusMm?**: `number`
 
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/media.d.ts:126
-
 Corner radius (mm) of die-cut labels with rounded corners.
 
 Only meaningful for die-cut media. Undefined or `0` = sharp
@@ -88,8 +84,6 @@ rounded rectangle degenerates to a circle.
 ### defaultOrientation?
 
 > `optional` **defaultOrientation?**: `"horizontal"` \| `"vertical"`
-
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/media.d.ts:100
 
 Hint for how the user is expected to author content for this media.
 Drives the auto-rotate decision in `print()`:
@@ -109,8 +103,6 @@ Drives the auto-rotate decision in `print()`:
 
 > `optional` **heightMm?**: `number`
 
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/media.d.ts:67
-
 Physical height/length in mm.
 
 - Undefined = continuous (variable length; printer cuts to content).
@@ -122,8 +114,6 @@ Physical height/length in mm.
 
 > **id**: `string` \| `number`
 
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/media.d.ts:56
-
 Unique identifier within the driver family.
 
 ***
@@ -132,8 +122,6 @@ Unique identifier within the driver family.
 
 > **name**: `string`
 
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/media.d.ts:58
-
 Human-readable name, e.g. `"62mm continuous"` or `"DK-22251"`.
 
 ***
@@ -141,8 +129,6 @@ Human-readable name, e.g. `"62mm continuous"` or `"DK-22251"`.
 ### palette?
 
 > `optional` **palette?**: readonly [`PaletteEntry`](PaletteEntry.md)[]
-
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/media.d.ts:86
 
 Inks this media supports, beyond the implicit white substrate.
 
@@ -159,8 +145,6 @@ For DK-22251 (the only multi-ink media we ship today):
 ### printMargins?
 
 > `optional` **printMargins?**: `object`
-
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/media.d.ts:113
 
 Insets (mm) inside the media bounds where the printer may clip a
 design (paper-feed tolerance, head edges, die-cut slack).
@@ -195,8 +179,6 @@ safe to design within.
 
 > **type**: `string`
 
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/media.d.ts:74
-
 Media type classification — driver-specific string values.
 
 Common values: `'continuous'`, `'die-cut'`, `'tape'`.
@@ -207,7 +189,5 @@ Drivers may define additional values as needed.
 ### widthMm
 
 > **widthMm**: `number`
-
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/media.d.ts:60
 
 Physical width in mm.

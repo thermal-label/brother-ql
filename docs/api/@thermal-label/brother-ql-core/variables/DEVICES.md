@@ -8,8 +8,6 @@
 
 > `const` **DEVICES**: `object`
 
-Defined in: [packages/core/src/devices.ts:5](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/core/src/devices.ts#L5)
-
 ## Type Declaration
 
 ### QL\_1050

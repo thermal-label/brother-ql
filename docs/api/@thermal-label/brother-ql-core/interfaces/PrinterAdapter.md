@@ -6,8 +6,6 @@
 
 # Interface: PrinterAdapter
 
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/adapter.d.ts:14
-
 High-level printer interface implemented by each driver family.
 
 Consumers (CLIs, label-maker apps, ad-hoc scripts) program against
@@ -21,8 +19,6 @@ in each `*-node` / `*-web` package.
 
 > `readonly` **connected**: `boolean`
 
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/adapter.d.ts:20
-
 Whether the printer is currently connected.
 
 ***
@@ -30,8 +26,6 @@ Whether the printer is currently connected.
 ### device?
 
 > `readonly` `optional` **device?**: [`DeviceDescriptor`](DeviceDescriptor.md)
-
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/adapter.d.ts:28
 
 The device descriptor for the connected printer.
 
@@ -45,8 +39,6 @@ raw TCP connection to a known IP).
 
 > `readonly` **family**: `string`
 
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/adapter.d.ts:16
-
 Driver family identifier, e.g. `'brother-ql'` or `'labelwriter'`.
 
 ***
@@ -55,8 +47,6 @@ Driver family identifier, e.g. `'brother-ql'` or `'labelwriter'`.
 
 > `readonly` **model**: `string`
 
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/adapter.d.ts:18
-
 Human-readable model name from the driver's device registry.
 
 ## Methods
@@ -64,8 +54,6 @@ Human-readable model name from the driver's device registry.
 ### close()
 
 > **close**(): `Promise`\<`void`\>
-
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/adapter.d.ts:85
 
 Close the connection. Always call in `finally` blocks.
 
@@ -78,8 +66,6 @@ Close the connection. Always call in `finally` blocks.
 ### createPreview()
 
 > **createPreview**(`image`, `options?`): `Promise`\<[`PreviewResult`](PreviewResult.md)\>
-
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/adapter.d.ts:81
 
 Generate a preview showing how this printer would reproduce the
 design on the given media. Returns separated 1bpp planes with
@@ -121,8 +107,6 @@ For offline preview without a live connection, use the static
 
 > **getStatus**(): `Promise`\<[`PrinterStatus`](PrinterStatus.md)\>
 
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/adapter.d.ts:83
-
 Query printer status including detected media.
 
 #### Returns
@@ -134,8 +118,6 @@ Query printer status including detected media.
 ### print()
 
 > **print**(`image`, `media?`, `options?`): `Promise`\<`void`\>
-
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/adapter.d.ts:60
 
 Print from a full-colour RGBA image.
 

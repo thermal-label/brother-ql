@@ -8,8 +8,6 @@
 
 > **parseStatus**(`bytes`): [`BrotherQLStatus`](../interfaces/BrotherQLStatus.md)
 
-Defined in: [packages/core/src/status.ts:48](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/core/src/status.ts#L48)
-
 Parse a Brother QL 32-byte status response.
 
 Fields:

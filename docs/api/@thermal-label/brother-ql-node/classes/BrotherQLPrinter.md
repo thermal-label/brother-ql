@@ -6,8 +6,6 @@
 
 # Class: BrotherQLPrinter
 
-Defined in: [packages/node/src/printer.ts:64](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/node/src/printer.ts#L64)
-
 Node.js driver for Brother QL label printers.
 
 Implements `PrinterAdapter`. Callers get a printer instance from
@@ -34,8 +32,6 @@ with `options.rotate`.
 
 > **new BrotherQLPrinter**(`device`, `transport`, `transportType`): `BrotherQLPrinter`
 
-Defined in: [packages/node/src/printer.ts:72](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/node/src/printer.ts#L72)
-
 #### Parameters
 
 ##### device
@@ -60,8 +56,6 @@ Defined in: [packages/node/src/printer.ts:72](https://github.com/thermal-label/b
 
 > `readonly` **device**: [`BrotherQLDevice`](../../brother-ql-core/interfaces/BrotherQLDevice.md)
 
-Defined in: [packages/node/src/printer.ts:66](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/node/src/printer.ts#L66)
-
 The device descriptor for the connected printer.
 
 Useful for logging, diagnostics, and displaying VID/PID. Undefined
@@ -78,8 +72,6 @@ raw TCP connection to a known IP).
 
 > `readonly` **family**: `"brother-ql"`
 
-Defined in: [packages/node/src/printer.ts:65](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/node/src/printer.ts#L65)
-
 Driver family identifier, e.g. `'brother-ql'` or `'labelwriter'`.
 
 #### Implementation of
@@ -92,8 +84,6 @@ Driver family identifier, e.g. `'brother-ql'` or `'labelwriter'`.
 
 > `readonly` **transportType**: [`TransportType`](../../brother-ql-core/type-aliases/TransportType.md)
 
-Defined in: [packages/node/src/printer.ts:67](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/node/src/printer.ts#L67)
-
 ## Accessors
 
 ### connected
@@ -101,8 +91,6 @@ Defined in: [packages/node/src/printer.ts:67](https://github.com/thermal-label/b
 #### Get Signature
 
 > **get** **connected**(): `boolean`
-
-Defined in: [packages/node/src/printer.ts:82](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/node/src/printer.ts#L82)
 
 Whether the printer is currently connected.
 
@@ -124,8 +112,6 @@ Whether the printer is currently connected.
 
 > **get** **model**(): `string`
 
-Defined in: [packages/node/src/printer.ts:78](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/node/src/printer.ts#L78)
-
 Human-readable model name from the driver's device registry.
 
 ##### Returns
@@ -144,8 +130,6 @@ Human-readable model name from the driver's device registry.
 
 > **close**(): `Promise`\<`void`\>
 
-Defined in: [packages/node/src/printer.ts:164](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/node/src/printer.ts#L164)
-
 Close the connection. Always call in `finally` blocks.
 
 #### Returns
@@ -161,8 +145,6 @@ Close the connection. Always call in `finally` blocks.
 ### createPreview()
 
 > **createPreview**(`image`, `options?`): `Promise`\<[`PreviewResult`](../../brother-ql-core/interfaces/PreviewResult.md)\>
-
-Defined in: [packages/node/src/printer.ts:132](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/node/src/printer.ts#L132)
 
 Generate a preview showing how this printer would reproduce the
 design on the given media. Returns separated 1bpp planes with
@@ -208,8 +190,6 @@ For offline preview without a live connection, use the static
 
 > **getStatus**(): `Promise`\<[`BrotherQLStatus`](../../brother-ql-core/interfaces/BrotherQLStatus.md)\>
 
-Defined in: [packages/node/src/printer.ts:150](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/node/src/printer.ts#L150)
-
 Poll the status endpoint until 32 bytes are available.
 
 The USB `transferAsync()` call resolves immediately with 0 bytes if
@@ -229,8 +209,6 @@ delay up to `STATUS_POLL_ATTEMPTS` times.
 ### print()
 
 > **print**(`image`, `media?`, `options?`): `Promise`\<`void`\>
-
-Defined in: [packages/node/src/printer.ts:86](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/node/src/printer.ts#L86)
 
 Print from a full-colour RGBA image.
 

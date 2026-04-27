@@ -6,8 +6,6 @@
 
 # Interface: Transport
 
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/transport.d.ts:8
-
 A bidirectional byte channel to a printer.
 
 Implemented by `@thermal-label/transport` for each transport type
@@ -20,8 +18,6 @@ interface and never touch platform APIs directly.
 
 > `readonly` **connected**: `boolean`
 
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/transport.d.ts:34
-
 Whether the transport is currently connected.
 
 ## Methods
@@ -29,8 +25,6 @@ Whether the transport is currently connected.
 ### close()
 
 > **close**(): `Promise`\<`void`\>
-
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/transport.d.ts:32
 
 Close the connection.
 
@@ -45,8 +39,6 @@ Always safe to call multiple times. Always `await` the result.
 ### read()
 
 > **read**(`length`, `timeout?`): `Promise`\<`Uint8Array`\>
-
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/transport.d.ts:26
 
 Read bytes from the printer.
 
@@ -86,8 +78,6 @@ TransportClosedError if the transport is closed mid-read.
 ### write()
 
 > **write**(`data`): `Promise`\<`void`\>
-
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/transport.d.ts:10
 
 Send bytes to the printer.
 

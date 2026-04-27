@@ -8,8 +8,6 @@
 
 > **renderImage**(`image`, `options?`): [`LabelBitmap`](../interfaces/LabelBitmap.md)
 
-Defined in: node\_modules/.pnpm/@mbtech-nl+bitmap@1.2.1/node\_modules/@mbtech-nl/bitmap/dist/image.d.ts:40
-
 Convert RGBA pixel data to a packed 1bpp bitmap.
 
 Inside `renderImage` the pipeline runs in this fixed order; each step is

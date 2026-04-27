@@ -8,8 +8,6 @@
 
 > **rotateBitmap**(`bitmap`, `degrees`): [`LabelBitmap`](../interfaces/LabelBitmap.md)
 
-Defined in: node\_modules/.pnpm/@mbtech-nl+bitmap@1.2.1/node\_modules/@mbtech-nl/bitmap/dist/transform.d.ts:31
-
 Rotate a bitmap clockwise by 90, 180, or 270 degrees.
 
 For 90 and 270 the output dimensions are swapped (`widthPx` and `heightPx`

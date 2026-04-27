@@ -6,8 +6,6 @@
 
 # Interface: BrotherQLMedia
 
-Defined in: [packages/core/src/types.ts:49](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/core/src/types.ts#L49)
-
 Brother QL media descriptor.
 
 Extends `MediaDescriptor` with the dots-based geometry the raster
@@ -24,8 +22,6 @@ multi-plane mode — only DK-22251 declares one in the registry.
 
 > `optional` **cornerRadiusMm?**: `number`
 
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/media.d.ts:126
-
 Corner radius (mm) of die-cut labels with rounded corners.
 
 Only meaningful for die-cut media. Undefined or `0` = sharp
@@ -41,8 +37,6 @@ rounded rectangle degenerates to a circle.
 ### defaultOrientation?
 
 > `optional` **defaultOrientation?**: `"horizontal"` \| `"vertical"`
-
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/media.d.ts:100
 
 Hint for how the user is expected to author content for this media.
 Drives the auto-rotate decision in `print()`:
@@ -66,8 +60,6 @@ Drives the auto-rotate decision in `print()`:
 
 > `optional` **dieCutMaskedAreaDots?**: `number`
 
-Defined in: [packages/core/src/types.ts:56](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/core/src/types.ts#L56)
-
 Die-cut masked area in dots (registration windows).
 
 ***
@@ -75,8 +67,6 @@ Die-cut masked area in dots (registration windows).
 ### heightMm?
 
 > `optional` **heightMm?**: `number`
-
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/media.d.ts:67
 
 Physical height/length in mm.
 
@@ -93,8 +83,6 @@ Physical height/length in mm.
 
 > **id**: `number`
 
-Defined in: [packages/core/src/types.ts:50](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/core/src/types.ts#L50)
-
 Unique identifier within the driver family.
 
 #### Overrides
@@ -107,15 +95,11 @@ Unique identifier within the driver family.
 
 > **leftMarginPins**: `number`
 
-Defined in: [packages/core/src/types.ts:53](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/core/src/types.ts#L53)
-
 ***
 
 ### name
 
 > **name**: `string`
-
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/media.d.ts:58
 
 Human-readable name, e.g. `"62mm continuous"` or `"DK-22251"`.
 
@@ -128,8 +112,6 @@ Human-readable name, e.g. `"62mm continuous"` or `"DK-22251"`.
 ### palette?
 
 > `optional` **palette?**: readonly [`PaletteEntry`](PaletteEntry.md)[]
-
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/media.d.ts:86
 
 Inks this media supports, beyond the implicit white substrate.
 
@@ -151,15 +133,11 @@ For DK-22251 (the only multi-ink media we ship today):
 
 > **printAreaDots**: `number`
 
-Defined in: [packages/core/src/types.ts:52](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/core/src/types.ts#L52)
-
 ***
 
 ### printMargins?
 
 > `optional` **printMargins?**: `object`
-
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/media.d.ts:113
 
 Insets (mm) inside the media bounds where the printer may clip a
 design (paper-feed tolerance, head edges, die-cut slack).
@@ -198,15 +176,11 @@ safe to design within.
 
 > **rightMarginPins**: `number`
 
-Defined in: [packages/core/src/types.ts:54](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/core/src/types.ts#L54)
-
 ***
 
 ### type
 
 > **type**: [`MediaType`](../type-aliases/MediaType.md)
-
-Defined in: [packages/core/src/types.ts:51](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/core/src/types.ts#L51)
 
 Media type classification — driver-specific string values.
 
@@ -222,8 +196,6 @@ Drivers may define additional values as needed.
 ### widthMm
 
 > **widthMm**: `number`
-
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/media.d.ts:60
 
 Physical width in mm.
 

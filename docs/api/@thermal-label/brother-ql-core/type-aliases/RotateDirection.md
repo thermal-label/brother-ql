@@ -8,8 +8,6 @@
 
 > **RotateDirection** = `90` \| `270`
 
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/orientation.d.ts:10
-
 Direction the printer family rotates landscape input.
 
 `90` = clockwise, `270` = counter-clockwise. Each driver picks the

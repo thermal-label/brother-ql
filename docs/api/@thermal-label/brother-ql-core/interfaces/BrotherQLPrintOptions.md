@@ -6,8 +6,6 @@
 
 # Interface: BrotherQLPrintOptions
 
-Defined in: [packages/core/src/types.ts:95](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/core/src/types.ts#L95)
-
 Per-call print options for `BrotherQLPrinter.print()`.
 
 Extends the cross-driver `PrintOptions` with QL-specific knobs. The
@@ -25,8 +23,6 @@ defers to the media's `defaultOrientation` heuristic.
 
 > `optional` **copies?**: `number`
 
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/status.d.ts:10
-
 Number of copies to print. Default 1.
 
 #### Inherited from
@@ -38,8 +34,6 @@ Number of copies to print. Default 1.
 ### density?
 
 > `optional` **density?**: `string`
-
-Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/status.d.ts:20
 
 Driver-specific density setting.
 
@@ -58,5 +52,3 @@ additional values such as `'medium'` or `'high'`. Drivers throw
 ### rotate?
 
 > `optional` **rotate?**: `0` \| `"auto"` \| `90` \| `180` \| `270`
-
-Defined in: [packages/core/src/types.ts:96](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/core/src/types.ts#L96)
