@@ -20,22 +20,23 @@ checklist for other languages.
 
 ## Exports
 
-| Export                                                                                    | Description                                                   |
-| ----------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| `DEVICES` / `findDevice` / `isMassStorageMode`                                            | Device registry (family, transports, feature flags) + lookups |
-| `MEDIA` / `DEFAULT_MEDIA`                                                                 | Media registry and the 62 mm continuous fallback for previews |
-| `findMedia(id)` / `findMediaByWidth(mm, type)` / `findMediaByDimensions(w, h, twoColor?)` | Media lookups                                                 |
-| `STATUS_REQUEST`                                                                          | `ESC i S` — 3-byte status request                             |
-| `parseStatus(bytes)`                                                                      | Parse the 32-byte response into `BrotherQLStatus`             |
-| `BROTHER_QL_TWO_COLOR_PALETTE`                                                            | Black + red palette for `renderMultiPlaneImage` on DK-22251   |
-| `createPreviewOffline(image, media)`                                                      | Render `PreviewResult` without a live connection              |
-| `encodeJob(pages, options?)`                                                              | Encode a complete print job to bytes                          |
-| `renderText` / `renderImage` / `renderMultiPlaneImage` / `rotateBitmap` / `flipHorizontal` | Bitmap helpers (re-exported from `@mbtech-nl/bitmap`)        |
-| `BrotherQLDevice`                                                                         | Device descriptor type (extends contracts `DeviceDescriptor`) |
-| `BrotherQLMedia`                                                                          | Media descriptor type (extends contracts `MediaDescriptor`)   |
-| `BrotherQLStatus`                                                                         | `PrinterStatus` + `editorLiteMode`                            |
-| `PageData` / `PageOptions` / `JobOptions`                                                 | Protocol-level job shape                                      |
-| `PrinterAdapter`, `MediaDescriptor`, `Transport`, …                                       | Re-exported from `@thermal-label/contracts`                   |
+| Export                                                                                     | Description                                                   |
+| ------------------------------------------------------------------------------------------ | ------------------------------------------------------------- |
+| `DEVICES` / `findDevice` / `isMassStorageMode`                                             | Device registry (family, transports, feature flags) + lookups |
+| `MEDIA` / `DEFAULT_MEDIA`                                                                  | Media registry and the 62 mm continuous fallback for previews |
+| `findMedia(id)` / `findMediaByWidth(mm, type)` / `findMediaByDimensions(w, h, twoColor?)`  | Media lookups                                                 |
+| `STATUS_REQUEST`                                                                           | `ESC i S` — 3-byte status request                             |
+| `parseStatus(bytes)`                                                                       | Parse the 32-byte response into `BrotherQLStatus`             |
+| `ROTATE_DIRECTION`                                                                         | Brother QL's family rotation direction (`90` = CW)            |
+| `pickRotation(image, media, dir, override?)`                                               | Re-exported from contracts — picks the rotation angle         |
+| `createPreviewOffline(image, media)`                                                       | Render `PreviewResult` without a live connection              |
+| `encodeJob(pages, options?)`                                                               | Encode a complete print job to bytes                          |
+| `renderText` / `renderImage` / `renderMultiPlaneImage` / `rotateBitmap` / `flipHorizontal` | Bitmap helpers (re-exported from `@mbtech-nl/bitmap`)         |
+| `BrotherQLDevice`                                                                          | Device descriptor type (extends contracts `DeviceDescriptor`) |
+| `BrotherQLMedia`                                                                           | Media descriptor type (extends contracts `MediaDescriptor`)   |
+| `BrotherQLStatus`                                                                          | `PrinterStatus` + `editorLiteMode`                            |
+| `PageData` / `PageOptions` / `JobOptions`                                                  | Protocol-level job shape                                      |
+| `PrinterAdapter`, `MediaDescriptor`, `Transport`, …                                        | Re-exported from `@thermal-label/contracts`                   |
 
 ## Key types
 
@@ -45,7 +46,11 @@ interface BrotherQLMedia extends MediaDescriptor {
   type: 'continuous' | 'die-cut';
   widthMm: number;
   heightMm?: number; // omitted for continuous media
-  colorCapable: boolean; // true only for DK-22251
+  // base MediaDescriptor adds (all optional):
+  //   palette?           — present only on multi-ink media (DK-22251)
+  //   defaultOrientation — 'horizontal' on rectangular die-cut entries
+  //   printMargins       — design-tool clip-safe insets
+  //   cornerRadiusMm     — round die-cuts set this to widthMm / 2
   printAreaDots: number;
   leftMarginPins: number;
   rightMarginPins: number;
@@ -95,16 +100,15 @@ const bytes = encodeJob([{ bitmap, media }]);
 
 ```ts
 import {
-  BROTHER_QL_TWO_COLOR_PALETTE,
   encodeJob,
   findMedia,
   renderMultiPlaneImage,
   rotateBitmap,
 } from '@thermal-label/brother-ql-core';
 
-const media = findMedia(251)!; // 62mm DK-22251
+const media = findMedia(251)!; // 62mm DK-22251 — carries `palette`
 const { black, red } = renderMultiPlaneImage(image, {
-  palette: BROTHER_QL_TWO_COLOR_PALETTE,
+  palette: media.palette!, // [black, red]
 });
 const bitmap = rotateBitmap(black, 270);
 const redBitmap = rotateBitmap(red, 270);
@@ -117,8 +121,8 @@ entry (black, red, or the implicit white background) by RGB distance,
 which guarantees every dot lands in at most one plane. Pass
 `colorSpace: 'lab'`, per-plane `dither` / `gamma` / `threshold`, or a
 custom palette for richer control — see the bitmap library's docs.
-The node and web drivers run `renderMultiPlaneImage` with this palette
-automatically whenever `media.colorCapable` is `true`.
+The node and web drivers run `renderMultiPlaneImage` with the media's
+palette automatically whenever `media.palette` is defined.
 
 ### Look up media
 
@@ -126,7 +130,7 @@ automatically whenever `media.colorCapable` is `true`.
 import { findMedia, findMediaByDimensions, MEDIA } from '@thermal-label/brother-ql-core';
 
 findMedia(259); // DK-22205 descriptor
-findMedia(251); // DK-22251 (colorCapable)
+findMedia(251); // DK-22251 (multi-ink — carries `palette`)
 findMediaByDimensions(62, 29); // die-cut 62×29 mm
 findMediaByDimensions(62, 0, false); // 62mm continuous (DK-22205)
 findMediaByDimensions(62, 0, true); // prefers DK-22251 over DK-22205

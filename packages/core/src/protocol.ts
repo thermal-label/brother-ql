@@ -162,12 +162,12 @@ export function encodeJob(pages: PageData[], options: JobOptions = {}): Uint8Arr
     const compress = opts.compress ?? false;
     const { bitmap, media } = page;
 
-    // colorCapable media (e.g. DK-22251) requires two-color mode even for black-only jobs.
+    // Multi-ink media (e.g. DK-22251) requires two-color mode even for black-only jobs.
     // Auto-create an empty red plane when the tape demands it but caller didn't supply one.
-    const twoColor = page.redBitmap !== undefined || media.colorCapable;
+    const multiInk = media.palette !== undefined;
+    const twoColor = page.redBitmap !== undefined || multiInk;
     const redBitmap =
-      page.redBitmap ??
-      (media.colorCapable ? createBitmap(bitmap.widthPx, bitmap.heightPx) : undefined);
+      page.redBitmap ?? (multiInk ? createBitmap(bitmap.widthPx, bitmap.heightPx) : undefined);
 
     if (twoColor && redBitmap !== undefined) {
       if (bitmap.widthPx !== redBitmap.widthPx || bitmap.heightPx !== redBitmap.heightPx) {

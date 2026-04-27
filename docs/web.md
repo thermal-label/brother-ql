@@ -60,12 +60,11 @@ const image = { width: id.width, height: id.height, data: new Uint8Array(id.data
 
 ## Two-colour (DK-22251)
 
-Same call — the driver reads `media.colorCapable` and runs
-`renderMultiPlaneImage()` from `@mbtech-nl/bitmap` with the
-`BROTHER_QL_TWO_COLOR_PALETTE` (black + red) before encoding. Each
-source pixel is classified to its nearest palette entry (or to the
-implicit white background) by RGB distance, so every dot lands in at
-most one plane.
+Same call — the driver reads `media.palette` and runs
+`renderMultiPlaneImage()` from `@mbtech-nl/bitmap` with
+`MEDIA[251].palette` (black + red) before encoding. Each source pixel
+is classified to its nearest palette entry (or to the implicit white
+background) by RGB distance, so every dot lands in at most one plane.
 
 ```ts
 await printer.print(image, MEDIA[251]);

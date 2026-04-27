@@ -88,7 +88,9 @@ describe('BrotherQLPrinter', () => {
         return bytes.slice(i + 3, i + 3 + 90);
       }
     }
-    throw new Error(`no raster row with opcode 0x${opcode.toString(16)} colour 0x${colour.toString(16)}`);
+    throw new Error(
+      `no raster row with opcode 0x${opcode.toString(16)} colour 0x${colour.toString(16)}`,
+    );
   }
 
   it('print() horizontally mirrors the rendered bitmap (single-colour)', async () => {
@@ -155,7 +157,7 @@ describe('BrotherQLPrinter', () => {
     expect(written.length).toBeGreaterThan(before);
   });
 
-  it('print() splits two-colour bitmap when media.colorCapable is true', async () => {
+  it('print() splits two-colour bitmap when media carries a palette', async () => {
     const { transport, written } = makeTransport();
     const printer = new BrotherQLPrinter(DEVICES.QL_820NWB, transport, 'usb');
     await printer.print(redRgba(64, 64), MEDIA[251]);
@@ -165,7 +167,27 @@ describe('BrotherQLPrinter', () => {
     expect(written.length).toBeGreaterThan(0);
   });
 
-  it('createPreview() returns two planes on colorCapable media', async () => {
+  it("print() auto-rotates landscape input on 'horizontal' die-cut media", async () => {
+    // MEDIA[271] = DK-11201 29×90, defaultOrientation: 'horizontal'.
+    // 800×200 landscape RGBA — the heuristic should rotate the bitmap 90°
+    // CW so the visual reads along the tape feed direction. Without
+    // rotation the encoded job has 200 raster rows; with rotation it has
+    // 800. Assert the explicit `rotate: 0` bypass produces a smaller job
+    // than the default auto path.
+    const { transport: autoTransport, written: autoWritten } = makeTransport();
+    const autoPrinter = new BrotherQLPrinter(DEVICES.QL_820NWB, autoTransport, 'usb');
+    await autoPrinter.print(solidRgba(800, 200), MEDIA[271]);
+
+    const { transport: bypassTransport, written: bypassWritten } = makeTransport();
+    const bypassPrinter = new BrotherQLPrinter(DEVICES.QL_820NWB, bypassTransport, 'usb');
+    await bypassPrinter.print(solidRgba(800, 200), MEDIA[271], { rotate: 0 });
+
+    const totalAuto = autoWritten.reduce((acc, b) => acc + b.length, 0);
+    const totalBypass = bypassWritten.reduce((acc, b) => acc + b.length, 0);
+    expect(totalAuto).toBeGreaterThan(totalBypass);
+  });
+
+  it('createPreview() returns two planes on multi-ink media', async () => {
     const { transport } = makeTransport();
     const printer = new BrotherQLPrinter(DEVICES.QL_820NWB, transport, 'usb');
     const preview = await printer.createPreview(redRgba(64, 64), { media: MEDIA[251]! });
@@ -173,7 +195,7 @@ describe('BrotherQLPrinter', () => {
     expect(preview.assumed).toBe(false);
   });
 
-  it('createPreview() returns one plane on non-colorCapable media', async () => {
+  it('createPreview() returns one plane on single-ink media', async () => {
     const { transport } = makeTransport();
     const printer = new BrotherQLPrinter(DEVICES.QL_820NWB, transport, 'usb');
     const preview = await printer.createPreview(solidRgba(64, 64), { media: MEDIA[259]! });

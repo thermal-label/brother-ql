@@ -4,11 +4,23 @@ import type { BrotherQLMedia, MediaType } from './types.js';
  * Registry of supported Brother QL consumables.
  *
  * Entries are keyed by the firmware media id — the same number the
- * printer reports in the 32-byte status response. `heightMm` is
- * omitted for continuous media (variable length) and set for die-cut
- * labels (fixed length). Only DK-22251 has `colorCapable: true` — the
- * driver uses that to run two-colour plane separation before sending
- * the raster.
+ * printer reports in the 32-byte status response. `heightMm` is omitted
+ * for continuous media (variable length) and set for die-cut labels
+ * (fixed length).
+ *
+ * `palette` is set on multi-ink media (DK-22251, today's only entry) —
+ * the driver routes those through `renderMultiPlaneImage` and emits the
+ * second plane in the raster job. Single-ink rolls leave it undefined
+ * and route through `renderImage` (dithered single-plane).
+ *
+ * Rectangular die-cut entries declare `defaultOrientation: 'horizontal'`
+ * so landscape input auto-rotates to read along the tape feed direction.
+ * Continuous wide tape leaves the hint undefined — users may go either
+ * way.
+ *
+ * `cornerRadiusMm` is informational; previews use it to render the
+ * actual paper outline. Round die-cut labels set the radius to
+ * `widthMm / 2` so the rounded rectangle degenerates to a circle.
  */
 export const MEDIA: Record<number, BrotherQLMedia> = {
   // Continuous length tape
@@ -17,7 +29,6 @@ export const MEDIA: Record<number, BrotherQLMedia> = {
     name: '12mm continuous',
     type: 'continuous',
     widthMm: 12,
-    colorCapable: false,
     printAreaDots: 106,
     leftMarginPins: 585,
     rightMarginPins: 29,
@@ -27,7 +38,6 @@ export const MEDIA: Record<number, BrotherQLMedia> = {
     name: '29mm continuous (DK-22210)',
     type: 'continuous',
     widthMm: 29,
-    colorCapable: false,
     printAreaDots: 306,
     leftMarginPins: 408,
     rightMarginPins: 6,
@@ -37,7 +47,6 @@ export const MEDIA: Record<number, BrotherQLMedia> = {
     name: '38mm continuous (DK-22225)',
     type: 'continuous',
     widthMm: 38,
-    colorCapable: false,
     printAreaDots: 413,
     leftMarginPins: 295,
     rightMarginPins: 12,
@@ -47,7 +56,6 @@ export const MEDIA: Record<number, BrotherQLMedia> = {
     name: '50mm continuous (DK-22246)',
     type: 'continuous',
     widthMm: 50,
-    colorCapable: false,
     printAreaDots: 554,
     leftMarginPins: 154,
     rightMarginPins: 12,
@@ -57,7 +65,6 @@ export const MEDIA: Record<number, BrotherQLMedia> = {
     name: '54mm continuous (DK-22214)',
     type: 'continuous',
     widthMm: 54,
-    colorCapable: false,
     printAreaDots: 590,
     leftMarginPins: 130,
     rightMarginPins: 0,
@@ -67,7 +74,6 @@ export const MEDIA: Record<number, BrotherQLMedia> = {
     name: '62mm continuous (DK-22205)',
     type: 'continuous',
     widthMm: 62,
-    colorCapable: false,
     printAreaDots: 696,
     leftMarginPins: 12,
     rightMarginPins: 12,
@@ -77,7 +83,10 @@ export const MEDIA: Record<number, BrotherQLMedia> = {
     name: '62mm continuous two-color (DK-22251)',
     type: 'continuous',
     widthMm: 62,
-    colorCapable: true,
+    palette: [
+      { name: 'black', rgb: [0, 0, 0] },
+      { name: 'red', rgb: [255, 0, 0] },
+    ],
     printAreaDots: 696,
     leftMarginPins: 12,
     rightMarginPins: 12,
@@ -87,7 +96,6 @@ export const MEDIA: Record<number, BrotherQLMedia> = {
     name: '102mm continuous (DK-22243)',
     type: 'continuous',
     widthMm: 102,
-    colorCapable: false,
     printAreaDots: 1164,
     leftMarginPins: 76,
     rightMarginPins: 56,
@@ -100,7 +108,8 @@ export const MEDIA: Record<number, BrotherQLMedia> = {
     type: 'die-cut',
     widthMm: 17,
     heightMm: 54,
-    colorCapable: false,
+    defaultOrientation: 'horizontal',
+    cornerRadiusMm: 3,
     printAreaDots: 165,
     leftMarginPins: 0,
     rightMarginPins: 0,
@@ -112,7 +121,8 @@ export const MEDIA: Record<number, BrotherQLMedia> = {
     type: 'die-cut',
     widthMm: 17,
     heightMm: 87,
-    colorCapable: false,
+    defaultOrientation: 'horizontal',
+    cornerRadiusMm: 3,
     printAreaDots: 165,
     leftMarginPins: 0,
     rightMarginPins: 0,
@@ -124,7 +134,8 @@ export const MEDIA: Record<number, BrotherQLMedia> = {
     type: 'die-cut',
     widthMm: 23,
     heightMm: 23,
-    colorCapable: false,
+    defaultOrientation: 'horizontal',
+    cornerRadiusMm: 3,
     printAreaDots: 236,
     leftMarginPins: 0,
     rightMarginPins: 0,
@@ -136,7 +147,8 @@ export const MEDIA: Record<number, BrotherQLMedia> = {
     type: 'die-cut',
     widthMm: 29,
     heightMm: 90,
-    colorCapable: false,
+    defaultOrientation: 'horizontal',
+    cornerRadiusMm: 3,
     printAreaDots: 306,
     leftMarginPins: 0,
     rightMarginPins: 0,
@@ -148,7 +160,8 @@ export const MEDIA: Record<number, BrotherQLMedia> = {
     type: 'die-cut',
     widthMm: 38,
     heightMm: 90,
-    colorCapable: false,
+    defaultOrientation: 'horizontal',
+    cornerRadiusMm: 3,
     printAreaDots: 413,
     leftMarginPins: 0,
     rightMarginPins: 0,
@@ -160,7 +173,8 @@ export const MEDIA: Record<number, BrotherQLMedia> = {
     type: 'die-cut',
     widthMm: 39,
     heightMm: 48,
-    colorCapable: false,
+    defaultOrientation: 'horizontal',
+    cornerRadiusMm: 3,
     printAreaDots: 425,
     leftMarginPins: 0,
     rightMarginPins: 0,
@@ -172,7 +186,8 @@ export const MEDIA: Record<number, BrotherQLMedia> = {
     type: 'die-cut',
     widthMm: 52,
     heightMm: 29,
-    colorCapable: false,
+    defaultOrientation: 'horizontal',
+    cornerRadiusMm: 3,
     printAreaDots: 578,
     leftMarginPins: 0,
     rightMarginPins: 0,
@@ -184,7 +199,8 @@ export const MEDIA: Record<number, BrotherQLMedia> = {
     type: 'die-cut',
     widthMm: 62,
     heightMm: 29,
-    colorCapable: false,
+    defaultOrientation: 'horizontal',
+    cornerRadiusMm: 3,
     printAreaDots: 696,
     leftMarginPins: 0,
     rightMarginPins: 0,
@@ -196,7 +212,8 @@ export const MEDIA: Record<number, BrotherQLMedia> = {
     type: 'die-cut',
     widthMm: 62,
     heightMm: 100,
-    colorCapable: false,
+    defaultOrientation: 'horizontal',
+    cornerRadiusMm: 3,
     printAreaDots: 696,
     leftMarginPins: 0,
     rightMarginPins: 0,
@@ -208,7 +225,8 @@ export const MEDIA: Record<number, BrotherQLMedia> = {
     type: 'die-cut',
     widthMm: 102,
     heightMm: 51,
-    colorCapable: false,
+    defaultOrientation: 'horizontal',
+    cornerRadiusMm: 3,
     printAreaDots: 1164,
     leftMarginPins: 0,
     rightMarginPins: 0,
@@ -220,7 +238,8 @@ export const MEDIA: Record<number, BrotherQLMedia> = {
     type: 'die-cut',
     widthMm: 102,
     heightMm: 152,
-    colorCapable: false,
+    defaultOrientation: 'horizontal',
+    cornerRadiusMm: 3,
     printAreaDots: 1164,
     leftMarginPins: 0,
     rightMarginPins: 0,
@@ -232,7 +251,7 @@ export const MEDIA: Record<number, BrotherQLMedia> = {
     type: 'die-cut',
     widthMm: 12,
     heightMm: 12,
-    colorCapable: false,
+    cornerRadiusMm: 6,
     printAreaDots: 94,
     leftMarginPins: 0,
     rightMarginPins: 0,
@@ -244,7 +263,7 @@ export const MEDIA: Record<number, BrotherQLMedia> = {
     type: 'die-cut',
     widthMm: 24,
     heightMm: 24,
-    colorCapable: false,
+    cornerRadiusMm: 12,
     printAreaDots: 236,
     leftMarginPins: 0,
     rightMarginPins: 0,
@@ -256,7 +275,7 @@ export const MEDIA: Record<number, BrotherQLMedia> = {
     type: 'die-cut',
     widthMm: 58,
     heightMm: 58,
-    colorCapable: false,
+    cornerRadiusMm: 29,
     printAreaDots: 618,
     leftMarginPins: 0,
     rightMarginPins: 0,
@@ -300,7 +319,7 @@ export function findMediaByDimensions(
       m => m.type === 'continuous' && m.widthMm === widthMm,
     );
     if (continuousMatches.length === 0) return undefined;
-    const preferred = continuousMatches.find(m => m.colorCapable === twoColorMode);
+    const preferred = continuousMatches.find(m => (m.palette !== undefined) === twoColorMode);
     return preferred ?? continuousMatches[0];
   }
   return Object.values(MEDIA).find(

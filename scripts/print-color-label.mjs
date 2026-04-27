@@ -28,9 +28,6 @@ const { findDevice, isMassStorageMode } = await import(
   `${projectRoot}/packages/core/dist/devices.js`
 );
 const { MEDIA } = await import(`${projectRoot}/packages/core/dist/media.js`);
-const { BROTHER_QL_TWO_COLOR_PALETTE } = await import(
-  `${projectRoot}/packages/core/dist/palette.js`
-);
 const { encodeJob } = await import(`${projectRoot}/packages/core/dist/protocol.js`);
 const { flipHorizontal, renderMultiPlaneImage } = await import(
   `${projectRoot}/packages/node/node_modules/@mbtech-nl/bitmap/dist/index.js`
@@ -105,7 +102,7 @@ if (process.argv.includes('--no-print')) {
 }
 
 const compress = process.argv.includes('--compress');
-const { black, red } = renderMultiPlaneImage(rgba, { palette: BROTHER_QL_TWO_COLOR_PALETTE });
+const { black, red } = renderMultiPlaneImage(rgba, { palette: MEDIA[251].palette });
 const page = {
   bitmap: flipHorizontal(black),
   redBitmap: flipHorizontal(red),

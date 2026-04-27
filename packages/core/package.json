@@ -60,7 +60,7 @@
   },
   "dependencies": {
     "@mbtech-nl/bitmap": "^1.2.0",
-    "@thermal-label/contracts": "^0.1.2"
+    "@thermal-label/contracts": "^0.2.0"
   },
   "devDependencies": {
     "@mbtech-nl/tsconfig": "^1.0.0",

@@ -63,13 +63,35 @@ describe('Media registry invariants', () => {
     }
   });
 
-  it('only DK-22251 is colorCapable', () => {
+  it('only DK-22251 carries a multi-ink palette', () => {
     for (const m of Object.values(MEDIA)) {
       if (m.id === 251) {
-        expect(m.colorCapable).toBe(true);
+        expect(m.palette).toBeDefined();
+        const palette = m.palette!;
+        expect(palette).toHaveLength(2);
+        expect(palette[0]!.name).toBe('black');
+        expect(palette[1]!.name).toBe('red');
       } else {
-        expect(m.colorCapable).toBe(false);
+        expect(m.palette).toBeUndefined();
       }
+    }
+  });
+
+  it('rectangular die-cut entries declare defaultOrientation: horizontal', () => {
+    const rectangularDieCutIds = [269, 270, 370, 271, 272, 367, 374, 274, 275, 365, 366];
+    for (const id of rectangularDieCutIds) {
+      const m = MEDIA[id]!;
+      expect(m, `entry ${id.toString()}`).toBeDefined();
+      expect(m.defaultOrientation, `entry ${id.toString()}`).toBe('horizontal');
+    }
+  });
+
+  it('round die-cut entries set cornerRadiusMm to widthMm / 2', () => {
+    const roundDieCutIds = [362, 363, 273];
+    for (const id of roundDieCutIds) {
+      const m = MEDIA[id]!;
+      expect(m, `entry ${id.toString()}`).toBeDefined();
+      expect(m.cornerRadiusMm, `entry ${id.toString()}`).toBe(m.widthMm / 2);
     }
   });
 

@@ -1,17 +1,19 @@
 import {
-  BROTHER_QL_TWO_COLOR_PALETTE,
   DEFAULT_MEDIA,
+  ROTATE_DIRECTION,
   STATUS_REQUEST,
   createPreviewOffline,
   encodeJob,
   flipHorizontal,
   parseStatus,
+  pickRotation,
   renderImage,
   renderMultiPlaneImage,
 } from '@thermal-label/brother-ql-core';
 import type {
   BrotherQLDevice,
   BrotherQLMedia,
+  BrotherQLPrintOptions,
   BrotherQLStatus,
   LabelBitmap,
   MediaDescriptor,
@@ -47,12 +49,17 @@ const USB_CHUNK_DELAY_MS = 20;
  *
  * Implements `PrinterAdapter`. Callers get a printer instance from
  * `discovery.openPrinter()` (USB or TCP) and interact solely through
- * the adapter surface: `print(rgba, media?)`, `createPreview`,
+ * the adapter surface: `print(rgba, media?, options?)`, `createPreview`,
  * `getStatus`, `close`.
  *
- * Two-colour media (DK-22251) is handled transparently — when
- * `media.colorCapable` is true, the driver runs the bitmap library's
- * `renderMultiPlaneImage()` internally before encoding.
+ * Multi-ink media (DK-22251) is handled transparently — when the
+ * resolved media carries a `palette`, the driver runs the bitmap
+ * library's `renderMultiPlaneImage()` internally before encoding.
+ *
+ * Orientation is auto-decided via `pickRotation`: landscape input on
+ * media tagged `defaultOrientation: 'horizontal'` rotates 90° CW so
+ * the visual reads along the tape feed direction. Override per-call
+ * with `options.rotate`.
  */
 export class BrotherQLPrinter implements PrinterAdapter {
   readonly family = 'brother-ql' as const;
@@ -76,20 +83,27 @@ export class BrotherQLPrinter implements PrinterAdapter {
     return this.transport.connected;
   }
 
-  async print(image: RawImageData, media?: MediaDescriptor): Promise<void> {
+  async print(
+    image: RawImageData,
+    media?: MediaDescriptor,
+    options?: BrotherQLPrintOptions,
+  ): Promise<void> {
     const resolvedMedia = (media ?? this.lastStatus?.detectedMedia) as BrotherQLMedia | undefined;
     if (!resolvedMedia) {
       throw new MediaNotSpecifiedError();
     }
+
+    const rotate = pickRotation(image, resolvedMedia, ROTATE_DIRECTION, options?.rotate);
 
     // Brother QL print head: pin 0 (the first pin in each raster row) sits
     // on the right side of the printed face when the leading edge is held
     // up. Mirror the rendered bitmap so the input image's x-axis matches
     // the printed x-axis. Verified on QL-820NWBc + DK-22251.
     let page: PageData;
-    if (resolvedMedia.colorCapable) {
+    if (resolvedMedia.palette) {
       const { black, red } = renderMultiPlaneImage(image, {
-        palette: BROTHER_QL_TWO_COLOR_PALETTE,
+        palette: resolvedMedia.palette,
+        rotate,
       }) as Record<'black' | 'red', LabelBitmap>;
       page = {
         bitmap: flipHorizontal(black),
@@ -97,7 +111,7 @@ export class BrotherQLPrinter implements PrinterAdapter {
         media: resolvedMedia,
       };
     } else {
-      const bitmap = flipHorizontal(renderImage(image, { dither: true }));
+      const bitmap = flipHorizontal(renderImage(image, { dither: true, rotate }));
       page = { bitmap, media: resolvedMedia };
     }
 

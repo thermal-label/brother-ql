@@ -206,3 +206,22 @@
 - [x] `pnpm test:coverage`
 - [x] `pnpm build`
 - [x] `pnpm docs:build`
+
+## Step 8 — MediaDescriptor refactor + orientation
+
+> Plan: [MEDIA_DESCRIPTOR_REFACTOR.md](MEDIA_DESCRIPTOR_REFACTOR.md)
+
+- [x] Bump `@thermal-label/contracts` to `^0.2.0` in all packages
+- [x] `BrotherQLMedia` drops `colorCapable`; new `BrotherQLPrintOptions` exposes `rotate`
+- [x] MEDIA registry: DK-22251 carries `palette`; rectangular die-cuts tagged `defaultOrientation: "horizontal"` + `cornerRadiusMm: 3`; round die-cuts set `cornerRadiusMm = widthMm / 2`
+- [x] `findMediaByDimensions` predicate switched from `colorCapable` to `palette !== undefined`
+- [x] `preview.ts` reads `media.palette` directly; `palette.ts` deleted
+- [x] `orientation.ts` (new) — `ROTATE_DIRECTION = 90` (CW; pending hardware verify per plan §6)
+- [x] `index.ts` drops `BROTHER_QL_TWO_COLOR_PALETTE`; re-exports `pickRotation` + `ROTATE_DIRECTION`
+- [x] Node + Web printers: wire `pickRotation` into `print()`; rotate flows through `renderImage` / `renderMultiPlaneImage` `rotate` option; `flipHorizontal` still runs after rotation
+- [x] Tests: media palette/orientation/cornerRadius assertions; node + web printer tests for `auto-rotate` on `horizontal` die-cut
+- [x] Scripts: `print-color-label.mjs` + `print-orientation-test.mjs` use `MEDIA[251].palette` directly
+- [x] Docs: `core.md`, `node.md`, `web.md`, `protocol.md` updated; `DECISIONS.md` D8 rewritten + new D11 for orientation strategy
+- [x] Gates green (typecheck, lint, format, test, build)
+- [ ] Hardware verification print on DK-11201 with landscape RGBA (plan §6 step 1)
+

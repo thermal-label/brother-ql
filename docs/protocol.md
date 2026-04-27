@@ -225,7 +225,7 @@ this flag against the loaded media. If DK-22251 (black+red) tape is installed
 and bit 0 is not set, the printer displays "wrong roll type" and refuses to
 print — even if the raster data itself is valid. Set bit 0 whenever the job
 contains `0x77` (two-color) raster rows, or whenever the media descriptor has
-`colorCapable: true`.
+a `palette` defined.
 
 ### (g) Margin — `1B 69 64 [n1] [n2]`
 

@@ -43,14 +43,14 @@ describe('WebBrotherQLPrinter', () => {
     expect(printer.connected).toBe(true);
   });
 
-  it('print() splits two-colour images when media.colorCapable is true', async () => {
+  it('print() splits two-colour images when media carries a palette', async () => {
     const device = createMockUSBDevice({ productId: 0x20a7 });
     const printer = await fromUSBDevice(device);
     await printer.print(redRgba(64, 64), MEDIA[251]);
     expect(device.__transfers.length).toBeGreaterThan(0);
   });
 
-  it('createPreview() returns two planes on colorCapable media', async () => {
+  it('createPreview() returns two planes on multi-ink media', async () => {
     const device = createMockUSBDevice({ productId: 0x20a7 });
     const printer = await fromUSBDevice(device);
     const preview = await printer.createPreview(redRgba(64, 64), { media: MEDIA[251]! });
@@ -58,7 +58,7 @@ describe('WebBrotherQLPrinter', () => {
     expect(preview.assumed).toBe(false);
   });
 
-  it('createPreview() returns one plane on non-colorCapable media', async () => {
+  it('createPreview() returns one plane on single-ink media', async () => {
     const device = createMockUSBDevice({ productId: 0x20a7 });
     const printer = await fromUSBDevice(device);
     const preview = await printer.createPreview(solidRgba(64, 64), { media: MEDIA[259]! });
@@ -93,11 +93,29 @@ describe('WebBrotherQLPrinter', () => {
     expect(printer.connected).toBe(false);
   });
 
-  it('print() writes an encoded raster job for non-colorCapable media', async () => {
+  it('print() writes an encoded raster job for single-ink media', async () => {
     const device = createMockUSBDevice({ productId: 0x20a7 });
     const printer = await fromUSBDevice(device);
     await printer.print(solidRgba(64, 64), MEDIA[259]);
     expect(device.__transfers.length).toBeGreaterThan(0);
+  });
+
+  it("print() auto-rotates landscape input on 'horizontal' die-cut media", async () => {
+    // MEDIA[271] = DK-11201 29×90, defaultOrientation: 'horizontal'.
+    // 800×200 landscape RGBA — auto-rotate kicks in. Bypass with
+    // `rotate: 0` for the comparison case; the auto path encodes more
+    // raster rows so the total transfer is larger.
+    const autoDevice = createMockUSBDevice({ productId: 0x20a7 });
+    const autoPrinter = await fromUSBDevice(autoDevice);
+    await autoPrinter.print(solidRgba(800, 200), MEDIA[271]);
+
+    const bypassDevice = createMockUSBDevice({ productId: 0x20a7 });
+    const bypassPrinter = await fromUSBDevice(bypassDevice);
+    await bypassPrinter.print(solidRgba(800, 200), MEDIA[271], { rotate: 0 });
+
+    const totalAuto = autoDevice.__transfers.reduce((acc, t) => acc + t.data.length, 0);
+    const totalBypass = bypassDevice.__transfers.reduce((acc, t) => acc + t.data.length, 0);
+    expect(totalAuto).toBeGreaterThan(totalBypass);
   });
 
   // See node printer.test.ts for the same helper — searches for a 3-byte
@@ -108,7 +126,9 @@ describe('WebBrotherQLPrinter', () => {
         return bytes.slice(i + 3, i + 3 + 90);
       }
     }
-    throw new Error(`no raster row with opcode 0x${opcode.toString(16)} colour 0x${colour.toString(16)}`);
+    throw new Error(
+      `no raster row with opcode 0x${opcode.toString(16)} colour 0x${colour.toString(16)}`,
+    );
   }
 
   it('print() horizontally mirrors the rendered bitmap (single-colour)', async () => {

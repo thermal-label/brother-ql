@@ -61,8 +61,8 @@
   "dependencies": {
     "@mbtech-nl/bitmap": "^1.2.0",
     "@thermal-label/brother-ql-core": "workspace:*",
-    "@thermal-label/contracts": "^0.1.2",
-    "@thermal-label/transport": "^0.2.0",
+    "@thermal-label/contracts": "^0.2.0",
+    "@thermal-label/transport": "^0.2.1",
     "usb": "^2.0.0"
   },
   "optionalDependencies": {

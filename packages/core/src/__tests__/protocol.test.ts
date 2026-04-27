@@ -208,12 +208,7 @@ describe('encodeJob', () => {
     for (let i = 0; i < buf.length - 4; i++) {
       // Each compressed row is [0x77 0x01|0x02 0x02 0xA7 0x00] for an empty
       // 696-pin row (90 zero bytes → 2 PackBits bytes).
-      if (
-        buf[i] === 0x77 &&
-        buf[i + 2] === 2 &&
-        buf[i + 3] === 0xa7 &&
-        buf[i + 4] === 0x00
-      ) {
+      if (buf[i] === 0x77 && buf[i + 2] === 2 && buf[i + 3] === 0xa7 && buf[i + 4] === 0x00) {
         if (buf[i + 1] === 0x01) blackRows.push(i);
         if (buf[i + 1] === 0x02) redRows.push(i);
       }

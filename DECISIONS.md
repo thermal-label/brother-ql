@@ -14,9 +14,11 @@ Consumed from npm.
 ## D2 — One `print(RawImageData, media?, options?)`
 
 `printText`, `printImage`, `printImageURL`, `printTwoColor` are deleted.
-The single `print()` takes full RGBA. When `media.colorCapable` is
-true (e.g. DK-22251), the driver runs `renderMultiPlaneImage()` from
-`@mbtech-nl/bitmap` internally and hands the two planes to `encodeJob()`.
+The single `print()` takes full RGBA. When the resolved media carries
+a `palette` (e.g. DK-22251), the driver runs `renderMultiPlaneImage()`
+from `@mbtech-nl/bitmap` with that palette and hands the two planes
+to `encodeJob()`. `options.rotate` accepts `'auto'` (default) | `0` |
+`90` | `180` | `270` to override the orientation heuristic (see D11).
 
 ## D3 — Local type renames
 
@@ -73,17 +75,38 @@ All transports use `Uint8Array` and `async close()`. Local
 `@thermal-label/transport/node`; web plumbing replaced with
 `WebUsbTransport` from `@thermal-label/transport/web`.
 
-## D8 — Two-colour handling
+## D8 — Multi-ink handling lives on the media descriptor
 
-The two-colour split is delegated to `renderMultiPlaneImage()` in
-`@mbtech-nl/bitmap` (added in v1.2). This package keeps only the
-brother-ql-specific palette constant — `BROTHER_QL_TWO_COLOR_PALETTE`
-in `packages/core/src/palette.ts`: `[{name:'black', rgb:[0,0,0]},
-{name:'red', rgb:[255,0,0]}]`. The bitmap classifier maps each source
-pixel to its nearest palette entry (or to the implicit white
-background) by RGB distance, which guarantees mutual exclusivity by
-construction. The legacy `isRedish` heuristic (`r > 180 && g < 100 &&
-b < 100`) and `splitTwoColor` helper are removed.
+The multi-plane split is delegated to `renderMultiPlaneImage()` in
+`@mbtech-nl/bitmap` (added in v1.2). The palette lives directly on
+each `BrotherQLMedia` entry — DK-22251 declares `palette:
+[{name:'black', rgb:[0,0,0]}, {name:'red', rgb:[255,0,0]}]`; every
+other media leaves it undefined. The driver branches on
+`media.palette !== undefined` to pick `renderMultiPlaneImage` vs the
+single-plane dithered `renderImage`.
+
+The previous standalone `BROTHER_QL_TWO_COLOR_PALETTE` constant in
+`packages/core/src/palette.ts` is gone — there's no need for callers
+to reconstruct the palette from a separate file. The legacy
+`isRedish` heuristic (`r > 180 && g < 100 && b < 100`) and
+`splitTwoColor` helper are also removed.
+
+## D11 — Cross-driver orientation strategy
+
+Orientation moved from the protocol layer to the driver layer via
+`pickRotation` in `@thermal-label/contracts`. Each media entry may
+declare `defaultOrientation: 'horizontal' | 'vertical'`; the driver
+combines that with the input image's aspect ratio and a per-family
+`ROTATE_DIRECTION` constant (Brother QL: `90` = CW) to pick the
+rotation angle, which is then passed to `renderImage` /
+`renderMultiPlaneImage` via the `rotate` option.
+
+Net effect for users: input images are treated as the intended
+visual; landscape input on rectangular die-cut media auto-rotates
+to read along the tape feed direction. `print(image, media, { rotate
+})` lets callers force a specific angle. `flipHorizontal` (the
+pin-mirror compensation) still runs *after* rotation since it
+addresses head geometry, not image orientation.
 
 ## D9 — Bluetooth on the QL-820NWB goes through the serial transports
 

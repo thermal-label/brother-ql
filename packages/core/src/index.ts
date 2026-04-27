@@ -17,11 +17,16 @@ export type {
   PrinterAdapter,
   PrinterError,
   PrinterStatus,
+  RotateDirection,
   Transport,
   TransportType,
 } from '@thermal-label/contracts';
 
-export { MediaNotSpecifiedError, UnsupportedOperationError } from '@thermal-label/contracts';
+export {
+  MediaNotSpecifiedError,
+  pickRotation,
+  UnsupportedOperationError,
+} from '@thermal-label/contracts';
 
 export { DEVICES, findDevice, isMassStorageMode } from './devices.js';
 export {
@@ -31,7 +36,7 @@ export {
   findMediaByDimensions,
   findMediaByWidth,
 } from './media.js';
-export { BROTHER_QL_TWO_COLOR_PALETTE } from './palette.js';
+export { ROTATE_DIRECTION } from './orientation.js';
 export { encodeJob } from './protocol.js';
 export { parseStatus, STATUS_REQUEST } from './status.js';
 export { createPreviewOffline } from './preview.js';
@@ -39,6 +44,7 @@ export { createPreviewOffline } from './preview.js';
 export type {
   BrotherQLDevice,
   BrotherQLMedia,
+  BrotherQLPrintOptions,
   BrotherQLStatus,
   ColorMode,
   HeadWidth,

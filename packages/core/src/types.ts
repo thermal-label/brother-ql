@@ -1,5 +1,10 @@
 import type { LabelBitmap } from '@mbtech-nl/bitmap';
-import type { DeviceDescriptor, MediaDescriptor, PrinterStatus } from '@thermal-label/contracts';
+import type {
+  DeviceDescriptor,
+  MediaDescriptor,
+  PrintOptions,
+  PrinterStatus,
+} from '@thermal-label/contracts';
 
 export type MediaType = 'continuous' | 'die-cut';
 export type HeadWidth = 720 | 1296;
@@ -38,13 +43,12 @@ export interface BrotherQLDevice extends DeviceDescriptor {
  * Brother QL media descriptor.
  *
  * Extends `MediaDescriptor` with the dots-based geometry the raster
- * encoder needs. `colorCapable: true` flips the driver into
- * two-colour mode — only DK-22251 has this set in the registry.
+ * encoder needs. The base `palette` field flips the driver into
+ * multi-plane mode — only DK-22251 declares one in the registry.
  */
 export interface BrotherQLMedia extends MediaDescriptor {
   id: number;
   type: MediaType;
-  colorCapable: boolean;
   printAreaDots: number;
   leftMarginPins: number;
   rightMarginPins: number;
@@ -78,4 +82,16 @@ export interface PageOptions {
 
 export interface JobOptions {
   copies?: number;
+}
+
+/**
+ * Per-call print options for `BrotherQLPrinter.print()`.
+ *
+ * Extends the cross-driver `PrintOptions` with QL-specific knobs. The
+ * `rotate` override picks the rotation angle passed to
+ * `renderImage` / `renderMultiPlaneImage` — `'auto'` (the default)
+ * defers to the media's `defaultOrientation` heuristic.
+ */
+export interface BrotherQLPrintOptions extends PrintOptions {
+  rotate?: 'auto' | 0 | 90 | 180 | 270;
 }

@@ -1,19 +1,21 @@
 import {
-  BROTHER_QL_TWO_COLOR_PALETTE,
   DEFAULT_MEDIA,
   DEVICES,
+  ROTATE_DIRECTION,
   STATUS_REQUEST,
   createPreviewOffline,
   encodeJob,
   findDevice,
   flipHorizontal,
   parseStatus,
+  pickRotation,
   renderImage,
   renderMultiPlaneImage,
 } from '@thermal-label/brother-ql-core';
 import type {
   BrotherQLDevice,
   BrotherQLMedia,
+  BrotherQLPrintOptions,
   BrotherQLStatus,
   LabelBitmap,
   MediaDescriptor,
@@ -43,8 +45,10 @@ export interface RequestOptions {
 /**
  * WebUSB `PrinterAdapter` for Brother QL printers.
  *
- * Same two-colour handling as the node driver — `renderMultiPlaneImage()`
- * runs internally when the selected media is `colorCapable`.
+ * Mirrors the node driver's behaviour — `renderMultiPlaneImage()` runs
+ * internally when the resolved media carries a `palette`, and
+ * `pickRotation` auto-rotates landscape input on media tagged
+ * `defaultOrientation: 'horizontal'`.
  */
 export class WebBrotherQLPrinter implements PrinterAdapter {
   readonly family = 'brother-ql' as const;
@@ -66,18 +70,25 @@ export class WebBrotherQLPrinter implements PrinterAdapter {
     return this.transport.connected;
   }
 
-  async print(image: RawImageData, media?: MediaDescriptor): Promise<void> {
+  async print(
+    image: RawImageData,
+    media?: MediaDescriptor,
+    options?: BrotherQLPrintOptions,
+  ): Promise<void> {
     const resolvedMedia = (media ?? this.lastStatus?.detectedMedia) as BrotherQLMedia | undefined;
     if (!resolvedMedia) throw new MediaNotSpecifiedError();
+
+    const rotate = pickRotation(image, resolvedMedia, ROTATE_DIRECTION, options?.rotate);
 
     // Brother QL print head: pin 0 (the first pin in each raster row) sits
     // on the right side of the printed face when the leading edge is held
     // up. Mirror the rendered bitmap so the input image's x-axis matches
     // the printed x-axis. Verified on QL-820NWBc + DK-22251.
     let page: PageData;
-    if (resolvedMedia.colorCapable) {
+    if (resolvedMedia.palette) {
       const { black, red } = renderMultiPlaneImage(image, {
-        palette: BROTHER_QL_TWO_COLOR_PALETTE,
+        palette: resolvedMedia.palette,
+        rotate,
       }) as Record<'black' | 'red', LabelBitmap>;
       page = {
         bitmap: flipHorizontal(black),
@@ -85,7 +96,7 @@ export class WebBrotherQLPrinter implements PrinterAdapter {
         media: resolvedMedia,
       };
     } else {
-      const bitmap = flipHorizontal(renderImage(image, { dither: true }));
+      const bitmap = flipHorizontal(renderImage(image, { dither: true, rotate }));
       page = { bitmap, media: resolvedMedia };
     }
 

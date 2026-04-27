@@ -32,7 +32,7 @@ describe('createPreviewOffline', () => {
     expect(preview.assumed).toBe(false);
   });
 
-  it('returns black + red planes for colorCapable media (DK-22251)', () => {
+  it('returns black + red planes for multi-ink media (DK-22251)', () => {
     const image = solidRgba(8, 8, [255, 0, 0, 255]);
     const preview = createPreviewOffline(image, MEDIA[251]!);
     expect(preview.planes.map(p => p.name)).toEqual(['black', 'red']);

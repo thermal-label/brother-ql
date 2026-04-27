@@ -32,11 +32,7 @@ export function packBits(input: Uint8Array): Uint8Array {
   while (i < input.length) {
     // How many identical bytes start at position i (cap at 128).
     let runEnd = i + 1;
-    while (
-      runEnd < input.length &&
-      runEnd - i < 128 &&
-      input[runEnd] === input[i]
-    ) {
+    while (runEnd < input.length && runEnd - i < 128 && input[runEnd] === input[i]) {
       runEnd++;
     }
     const runLen = runEnd - i;

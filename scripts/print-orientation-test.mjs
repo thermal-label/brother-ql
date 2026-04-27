@@ -39,9 +39,6 @@ const { findDevice, isMassStorageMode } = await import(
   `${projectRoot}/packages/core/dist/devices.js`
 );
 const { MEDIA } = await import(`${projectRoot}/packages/core/dist/media.js`);
-const { BROTHER_QL_TWO_COLOR_PALETTE } = await import(
-  `${projectRoot}/packages/core/dist/palette.js`
-);
 const { encodeJob } = await import(`${projectRoot}/packages/core/dist/protocol.js`);
 const { flipHorizontal, renderMultiPlaneImage } = await import(
   `${projectRoot}/packages/node/node_modules/@mbtech-nl/bitmap/dist/index.js`
@@ -228,7 +225,7 @@ if (process.argv.includes('--mirror')) {
 // so we can verify whether the bitmap handed to the wire is actually solid
 // in the regions we care about. White = bit unset, dark colour = bit set.
 if (process.argv.includes('--debug-planes')) {
-  const { black, red } = renderMultiPlaneImage(rgba, { palette: BROTHER_QL_TWO_COLOR_PALETTE });
+  const { black, red } = renderMultiPlaneImage(rgba, { palette: MEDIA[251].palette });
   const renderPlane = (plane, ink) => {
     const c = createCanvas(plane.widthPx, plane.heightPx);
     const cx = c.getContext('2d');
@@ -320,7 +317,7 @@ if (process.argv.includes('--status')) {
 // Status-reported media id is unreliable on this unit; we know physically
 // DK-22251 is loaded. Sharing the 62 mm geometry means no 'wrong paper' error.
 const forcedMedia = MEDIA[251];
-console.log(`Forcing media: ${forcedMedia.name} (id ${forcedMedia.id}) — colorCapable=${forcedMedia.colorCapable}`);
+console.log(`Forcing media: ${forcedMedia.name} (id ${forcedMedia.id}) — palette=${forcedMedia.palette ? forcedMedia.palette.map(p => p.name).join('+') : 'single-ink'}`);
 
 const highRes = process.argv.includes('--high-res');
 const compress = process.argv.includes('--compress');
@@ -329,7 +326,7 @@ if (highRes || compress) {
   // PageOptions (highResolution / compress) aren't surfaced through
   // printer.print(), so bypass the adapter and encode manually. Chunked
   // writes are still done here so this path matches driver behaviour.
-  const { black, red } = renderMultiPlaneImage(rgba, { palette: BROTHER_QL_TWO_COLOR_PALETTE });
+  const { black, red } = renderMultiPlaneImage(rgba, { palette: MEDIA[251].palette });
   const pageOptions = {
     ...(highRes ? { highResolution: true } : {}),
     ...(compress ? { compress: true } : {}),

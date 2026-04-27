@@ -5,9 +5,11 @@ interface from
 [`@thermal-label/contracts`](https://www.npmjs.com/package/@thermal-label/contracts),
 built on
 [`@thermal-label/transport`](https://www.npmjs.com/package/@thermal-label/transport).
-Single `print(image, media?)` handles both single-colour and
-two-colour labels — the driver runs `renderMultiPlaneImage()` from
-`@mbtech-nl/bitmap` internally when `media.colorCapable` is `true`.
+Single `print(image, media?, options?)` handles both single-ink and
+multi-ink labels — the driver runs `renderMultiPlaneImage()` from
+`@mbtech-nl/bitmap` internally whenever the resolved media carries a
+`palette`, and auto-rotates landscape input on media tagged
+`defaultOrientation: 'horizontal'`.
 
 ## Install
 
@@ -127,12 +129,12 @@ await printer.print(image, MEDIA[259]);
 
 ### Two-colour (DK-22251)
 
-Same call — the driver notices `media.colorCapable === true` and
+Same call — the driver notices `media.palette !== undefined` and
 runs `renderMultiPlaneImage()` from `@mbtech-nl/bitmap` on the RGBA
-image with the `BROTHER_QL_TWO_COLOR_PALETTE` (black + red) to
-separate the two planes before encoding. Each source pixel is
-classified to its nearest palette entry (or to the implicit white
-background) by RGB distance, so every dot lands in at most one plane.
+image with `MEDIA[251].palette` (black + red) to separate the two
+planes before encoding. Each source pixel is classified to its
+nearest palette entry (or to the implicit white background) by RGB
+distance, so every dot lands in at most one plane.
 
 ```ts
 await printer.print(image, MEDIA[251]);
