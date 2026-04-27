@@ -211,5 +211,5 @@ if (device) {
 | `WebBrotherQLPrinter`      | Adapter class                         |
 | `DEFAULT_FILTERS`          | Brother QL VID/PID filter set         |
 
-See the live demo at [/demo](/demo) — connect a real printer to print
+See the live demo at [/demo](/demo/brother-ql) — connect a real printer to print
 directly from the browser.

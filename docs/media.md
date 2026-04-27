@@ -21,74 +21,74 @@ Bits column is `[SW5][SW4][SW3][SW2][SW1][SW0]` — the binary value equals the 
 
 | SW  | Media ID | Pins                 | Media type                    | Size             | DK code      | Material          | Notes                                                      | Bits     |
 | --- | -------- | -------------------- | ----------------------------- | ---------------- | ------------ | ----------------- | ---------------------------------------------------------- | -------- |
-| 0   | —        | ![](/pins/sw-00.svg) | No media                      | —                | —            | —                 |                                                            | `000000` |
-| 1   | 271      | ![](/pins/sw-01.svg) | Standard Address Label        | 29×90mm          | DK-11201     | Paper, die-cut    |                                                            | `000001` |
-| 2   | 272      | ![](/pins/sw-02.svg) | Large Address Label           | 38×90mm          | DK-11208     | Paper, die-cut    |                                                            | `000010` |
-| 3   | 274      | ![](/pins/sw-03.svg) | Small Address Label           | 62×29mm          | DK-11209     | Paper, die-cut    |                                                            | `000011` |
-| 4   | 275      | ![](/pins/sw-04.svg) | Shipping Label                | 62×100mm         | DK-11202     | Paper, die-cut    |                                                            | `000100` |
-| 5   | 269      | ![](/pins/sw-05.svg) | Multi Purpose Label           | 17×54mm          | DK-11204     | Paper, die-cut    |                                                            | `000101` |
-| 6   | 270      | ![](/pins/sw-06.svg) | File Folder Label             | 17×87mm          | DK-11203     | Paper, die-cut    |                                                            | `000110` |
-| 7   | 273      | ![](/pins/sw-07.svg) | CD/DVD Label                  | 58mm Ø           | DK-11207     | Paper, die-cut    | Round, masked center                                       | `000111` |
-| 8   | —        | ![](/pins/sw-08.svg) | Reserved                      | —                | —            | —                 |                                                            | `001000` |
-| 9   | —        | ![](/pins/sw-09.svg) | Reserved                      | —                | —            | —                 |                                                            | `001001` |
-| 10  | —        | ![](/pins/sw-10.svg) | Reserved                      | —                | —            | —                 |                                                            | `001010` |
-| 11  | —        | ![](/pins/sw-11.svg) | Reserved                      | —                | —            | —                 |                                                            | `001011` |
-| 12  | 370      | ![](/pins/sw-12.svg) | Square Paper Label            | 23×23mm          | DK-11221     | Paper, die-cut    |                                                            | `001100` |
-| 13  | —        | ![](/pins/sw-13.svg) | Reserved                      | —                | —            | —                 |                                                            | `001101` |
-| 14  | —        | ![](/pins/sw-14.svg) | Not to be used                | —                | —            | —                 |                                                            | `001110` |
-| 15  | —        | ![](/pins/sw-15.svg) | Not to be used                | —                | —            | —                 |                                                            | `001111` |
-| 16  | —        | ![](/pins/sw-16.svg) | Not to be used                | —                | —            | —                 |                                                            | `010000` |
-| 17  | 362      | ![](/pins/sw-17.svg) | Round Paper Label 12mm        | 12mm Ø           | DK-11219     | Paper, die-cut    |                                                            | `010001` |
-| 18  | 363      | ![](/pins/sw-18.svg) | Round Paper Label 24mm        | 24mm Ø           | DK-11218     | Paper, die-cut    |                                                            | `010010` |
-| 19  | —        | ![](/pins/sw-19.svg) | Not to be used                | —                | —            | —                 |                                                            | `010011` |
-| 20  | 258      | ![](/pins/sw-20.svg) | White Paper Tape 29mm         | 29mm continuous  | DK-22210     | Paper, continuous |                                                            | `010100` |
-| 21  | 259      | ![](/pins/sw-21.svg) | White Paper Tape 62mm         | 62mm continuous  | DK-22205     | Paper, continuous | Also: DK-44205 (removable), DK-44605 (removable yellow)    | `010101` |
-| 22  | —        | ![](/pins/sw-22.svg) | White Film Tape 29mm          | 29mm continuous  | DK-22211     | Film, continuous  |                                                            | `010110` |
-| 23  | —        | ![](/pins/sw-23.svg) | White Film Tape 62mm          | 62mm continuous  | DK-22212     | Film, continuous  |                                                            | `010111` |
-| 24  | —        | ![](/pins/sw-24.svg) | Yellow Film Tape 62mm         | 62mm continuous  | DK-22606     | Film, continuous  |                                                            | `011000` |
-| 25  | —        | ![](/pins/sw-25.svg) | Clear Film Tape 62mm          | 62mm continuous  | DK-22113     | Film, continuous  |                                                            | `011001` |
-| 26  | 257      | ![](/pins/sw-26.svg) | White Paper Tape 12mm         | 12mm continuous  | DK-22214     | Paper, continuous |                                                            | `011010` |
-| 27  | 262      | ![](/pins/sw-27.svg) | White Paper Tape 50mm         | 50mm continuous  | DK-22223     | Paper, continuous |                                                            | `011011` |
-| 28  | **251**  | ![](/pins/sw-28.svg) | **Two-color Paper Tape 62mm** | 62mm continuous  | **DK-22251** | Paper, continuous | **Black+red. QL-800 series only. Confirmed via hardware.** | `011100` |
-| 29  | —        | ![](/pins/sw-29.svg) | Not to be used                | —                | —            | —                 |                                                            | `011101` |
-| 30  | —        | ![](/pins/sw-30.svg) | Not to be used                | —                | —            | —                 |                                                            | `011110` |
-| 31  | —        | ![](/pins/sw-31.svg) | Reserved                      | —                | —            | —                 |                                                            | `011111` |
-| 32  | —        | ![](/pins/sw-32.svg) | Not to be used                | —                | —            | —                 |                                                            | `100000` |
-| 33  | —        | ![](/pins/sw-33.svg) | Not to be used                | —                | —            | —                 |                                                            | `100001` |
-| 34  | —        | ![](/pins/sw-34.svg) | Not to be used                | —                | —            | —                 |                                                            | `100010` |
-| 35  | —        | ![](/pins/sw-35.svg) | Not to be used                | —                | —            | —                 |                                                            | `100011` |
-| 36  | —        | ![](/pins/sw-36.svg) | Not to be used                | —                | —            | —                 |                                                            | `100100` |
-| 37  | —        | ![](/pins/sw-37.svg) | Not to be used                | —                | —            | —                 |                                                            | `100101` |
-| 38  | —        | ![](/pins/sw-38.svg) | Not to be used                | —                | —            | —                 |                                                            | `100110` |
-| 39  | —        | ![](/pins/sw-39.svg) | Not to be used                | —                | —            | —                 |                                                            | `100111` |
-| 40  | —        | ![](/pins/sw-40.svg) | Not to be used                | —                | —            | —                 |                                                            | `101000` |
-| 41  | —        | ![](/pins/sw-41.svg) | Not to be used                | —                | —            | —                 |                                                            | `101001` |
-| 42  | —        | ![](/pins/sw-42.svg) | Not to be used                | —                | —            | —                 |                                                            | `101010` |
-| 43  | —        | ![](/pins/sw-43.svg) | Not to be used                | —                | —            | —                 |                                                            | `101011` |
-| 44  | —        | ![](/pins/sw-44.svg) | Not to be used                | —                | —            | —                 |                                                            | `101100` |
-| 45  | 365      | ![](/pins/sw-45.svg) | White Paper Label 102×51mm    | 102×51mm         | DK-11240     | Paper, die-cut    | QL-1050/1060N only                                         | `101101` |
-| 46  | 366      | ![](/pins/sw-46.svg) | White Paper Label 102×152mm   | 102×152mm        | DK-11241     | Paper, die-cut    | QL-1050/1060N only                                         | `101110` |
-| 47  | —        | ![](/pins/sw-47.svg) | Not to be used                | —                | —            | —                 |                                                            | `101111` |
-| 48  | —        | ![](/pins/sw-48.svg) | Not to be used                | —                | —            | —                 |                                                            | `110000` |
-| 49  | —        | ![](/pins/sw-49.svg) | Reserved                      | —                | —            | —                 |                                                            | `110001` |
-| 50  | —        | ![](/pins/sw-50.svg) | Not to be used                | —                | —            | —                 |                                                            | `110010` |
-| 51  | —        | ![](/pins/sw-51.svg) | Not to be used                | —                | —            | —                 |                                                            | `110011` |
-| 52  | —        | ![](/pins/sw-52.svg) | Not to be used                | —                | —            | —                 |                                                            | `110100` |
-| 53  | —        | ![](/pins/sw-53.svg) | Not to be used                | —                | —            | —                 |                                                            | `110101` |
-| 54  | —        | ![](/pins/sw-54.svg) | Not to be used                | —                | —            | —                 |                                                            | `110110` |
-| 55  | —        | ![](/pins/sw-55.svg) | Not to be used                | —                | —            | —                 |                                                            | `110111` |
-| 56  | —        | ![](/pins/sw-56.svg) | Not to be used                | —                | —            | —                 |                                                            | `111000` |
-| 57  | 260      | ![](/pins/sw-57.svg) | White Paper Tape 102mm        | 102mm continuous | DK-22243     | Paper, continuous | QL-1050/1060N only                                         | `111001` |
-| 58  | —        | ![](/pins/sw-58.svg) | Not to be used                | —                | —            | —                 |                                                            | `111010` |
-| 59  | —        | ![](/pins/sw-59.svg) | Not to be used                | —                | —            | —                 |                                                            | `111011` |
-| 60  | —        | ![](/pins/sw-60.svg) | Not to be used                | —                | —            | —                 |                                                            | `111100` |
-| 61  | —        | ![](/pins/sw-61.svg) | Not to be used                | —                | —            | —                 |                                                            | `111101` |
-| 62  | —        | ![](/pins/sw-62.svg) | Not to be used                | —                | —            | —                 |                                                            | `111110` |
-| 63  | —        | ![](/pins/sw-63.svg) | Reserved                      | —                | —            | —                 |                                                            | `111111` |
+| 0   | —        | ![](/brother-ql/pins/sw-00.svg) | No media                      | —                | —            | —                 |                                                            | `000000` |
+| 1   | 271      | ![](/brother-ql/pins/sw-01.svg) | Standard Address Label        | 29×90mm          | DK-11201     | Paper, die-cut    |                                                            | `000001` |
+| 2   | 272      | ![](/brother-ql/pins/sw-02.svg) | Large Address Label           | 38×90mm          | DK-11208     | Paper, die-cut    |                                                            | `000010` |
+| 3   | 274      | ![](/brother-ql/pins/sw-03.svg) | Small Address Label           | 62×29mm          | DK-11209     | Paper, die-cut    |                                                            | `000011` |
+| 4   | 275      | ![](/brother-ql/pins/sw-04.svg) | Shipping Label                | 62×100mm         | DK-11202     | Paper, die-cut    |                                                            | `000100` |
+| 5   | 269      | ![](/brother-ql/pins/sw-05.svg) | Multi Purpose Label           | 17×54mm          | DK-11204     | Paper, die-cut    |                                                            | `000101` |
+| 6   | 270      | ![](/brother-ql/pins/sw-06.svg) | File Folder Label             | 17×87mm          | DK-11203     | Paper, die-cut    |                                                            | `000110` |
+| 7   | 273      | ![](/brother-ql/pins/sw-07.svg) | CD/DVD Label                  | 58mm Ø           | DK-11207     | Paper, die-cut    | Round, masked center                                       | `000111` |
+| 8   | —        | ![](/brother-ql/pins/sw-08.svg) | Reserved                      | —                | —            | —                 |                                                            | `001000` |
+| 9   | —        | ![](/brother-ql/pins/sw-09.svg) | Reserved                      | —                | —            | —                 |                                                            | `001001` |
+| 10  | —        | ![](/brother-ql/pins/sw-10.svg) | Reserved                      | —                | —            | —                 |                                                            | `001010` |
+| 11  | —        | ![](/brother-ql/pins/sw-11.svg) | Reserved                      | —                | —            | —                 |                                                            | `001011` |
+| 12  | 370      | ![](/brother-ql/pins/sw-12.svg) | Square Paper Label            | 23×23mm          | DK-11221     | Paper, die-cut    |                                                            | `001100` |
+| 13  | —        | ![](/brother-ql/pins/sw-13.svg) | Reserved                      | —                | —            | —                 |                                                            | `001101` |
+| 14  | —        | ![](/brother-ql/pins/sw-14.svg) | Not to be used                | —                | —            | —                 |                                                            | `001110` |
+| 15  | —        | ![](/brother-ql/pins/sw-15.svg) | Not to be used                | —                | —            | —                 |                                                            | `001111` |
+| 16  | —        | ![](/brother-ql/pins/sw-16.svg) | Not to be used                | —                | —            | —                 |                                                            | `010000` |
+| 17  | 362      | ![](/brother-ql/pins/sw-17.svg) | Round Paper Label 12mm        | 12mm Ø           | DK-11219     | Paper, die-cut    |                                                            | `010001` |
+| 18  | 363      | ![](/brother-ql/pins/sw-18.svg) | Round Paper Label 24mm        | 24mm Ø           | DK-11218     | Paper, die-cut    |                                                            | `010010` |
+| 19  | —        | ![](/brother-ql/pins/sw-19.svg) | Not to be used                | —                | —            | —                 |                                                            | `010011` |
+| 20  | 258      | ![](/brother-ql/pins/sw-20.svg) | White Paper Tape 29mm         | 29mm continuous  | DK-22210     | Paper, continuous |                                                            | `010100` |
+| 21  | 259      | ![](/brother-ql/pins/sw-21.svg) | White Paper Tape 62mm         | 62mm continuous  | DK-22205     | Paper, continuous | Also: DK-44205 (removable), DK-44605 (removable yellow)    | `010101` |
+| 22  | —        | ![](/brother-ql/pins/sw-22.svg) | White Film Tape 29mm          | 29mm continuous  | DK-22211     | Film, continuous  |                                                            | `010110` |
+| 23  | —        | ![](/brother-ql/pins/sw-23.svg) | White Film Tape 62mm          | 62mm continuous  | DK-22212     | Film, continuous  |                                                            | `010111` |
+| 24  | —        | ![](/brother-ql/pins/sw-24.svg) | Yellow Film Tape 62mm         | 62mm continuous  | DK-22606     | Film, continuous  |                                                            | `011000` |
+| 25  | —        | ![](/brother-ql/pins/sw-25.svg) | Clear Film Tape 62mm          | 62mm continuous  | DK-22113     | Film, continuous  |                                                            | `011001` |
+| 26  | 257      | ![](/brother-ql/pins/sw-26.svg) | White Paper Tape 12mm         | 12mm continuous  | DK-22214     | Paper, continuous |                                                            | `011010` |
+| 27  | 262      | ![](/brother-ql/pins/sw-27.svg) | White Paper Tape 50mm         | 50mm continuous  | DK-22223     | Paper, continuous |                                                            | `011011` |
+| 28  | **251**  | ![](/brother-ql/pins/sw-28.svg) | **Two-color Paper Tape 62mm** | 62mm continuous  | **DK-22251** | Paper, continuous | **Black+red. QL-800 series only. Confirmed via hardware.** | `011100` |
+| 29  | —        | ![](/brother-ql/pins/sw-29.svg) | Not to be used                | —                | —            | —                 |                                                            | `011101` |
+| 30  | —        | ![](/brother-ql/pins/sw-30.svg) | Not to be used                | —                | —            | —                 |                                                            | `011110` |
+| 31  | —        | ![](/brother-ql/pins/sw-31.svg) | Reserved                      | —                | —            | —                 |                                                            | `011111` |
+| 32  | —        | ![](/brother-ql/pins/sw-32.svg) | Not to be used                | —                | —            | —                 |                                                            | `100000` |
+| 33  | —        | ![](/brother-ql/pins/sw-33.svg) | Not to be used                | —                | —            | —                 |                                                            | `100001` |
+| 34  | —        | ![](/brother-ql/pins/sw-34.svg) | Not to be used                | —                | —            | —                 |                                                            | `100010` |
+| 35  | —        | ![](/brother-ql/pins/sw-35.svg) | Not to be used                | —                | —            | —                 |                                                            | `100011` |
+| 36  | —        | ![](/brother-ql/pins/sw-36.svg) | Not to be used                | —                | —            | —                 |                                                            | `100100` |
+| 37  | —        | ![](/brother-ql/pins/sw-37.svg) | Not to be used                | —                | —            | —                 |                                                            | `100101` |
+| 38  | —        | ![](/brother-ql/pins/sw-38.svg) | Not to be used                | —                | —            | —                 |                                                            | `100110` |
+| 39  | —        | ![](/brother-ql/pins/sw-39.svg) | Not to be used                | —                | —            | —                 |                                                            | `100111` |
+| 40  | —        | ![](/brother-ql/pins/sw-40.svg) | Not to be used                | —                | —            | —                 |                                                            | `101000` |
+| 41  | —        | ![](/brother-ql/pins/sw-41.svg) | Not to be used                | —                | —            | —                 |                                                            | `101001` |
+| 42  | —        | ![](/brother-ql/pins/sw-42.svg) | Not to be used                | —                | —            | —                 |                                                            | `101010` |
+| 43  | —        | ![](/brother-ql/pins/sw-43.svg) | Not to be used                | —                | —            | —                 |                                                            | `101011` |
+| 44  | —        | ![](/brother-ql/pins/sw-44.svg) | Not to be used                | —                | —            | —                 |                                                            | `101100` |
+| 45  | 365      | ![](/brother-ql/pins/sw-45.svg) | White Paper Label 102×51mm    | 102×51mm         | DK-11240     | Paper, die-cut    | QL-1050/1060N only                                         | `101101` |
+| 46  | 366      | ![](/brother-ql/pins/sw-46.svg) | White Paper Label 102×152mm   | 102×152mm        | DK-11241     | Paper, die-cut    | QL-1050/1060N only                                         | `101110` |
+| 47  | —        | ![](/brother-ql/pins/sw-47.svg) | Not to be used                | —                | —            | —                 |                                                            | `101111` |
+| 48  | —        | ![](/brother-ql/pins/sw-48.svg) | Not to be used                | —                | —            | —                 |                                                            | `110000` |
+| 49  | —        | ![](/brother-ql/pins/sw-49.svg) | Reserved                      | —                | —            | —                 |                                                            | `110001` |
+| 50  | —        | ![](/brother-ql/pins/sw-50.svg) | Not to be used                | —                | —            | —                 |                                                            | `110010` |
+| 51  | —        | ![](/brother-ql/pins/sw-51.svg) | Not to be used                | —                | —            | —                 |                                                            | `110011` |
+| 52  | —        | ![](/brother-ql/pins/sw-52.svg) | Not to be used                | —                | —            | —                 |                                                            | `110100` |
+| 53  | —        | ![](/brother-ql/pins/sw-53.svg) | Not to be used                | —                | —            | —                 |                                                            | `110101` |
+| 54  | —        | ![](/brother-ql/pins/sw-54.svg) | Not to be used                | —                | —            | —                 |                                                            | `110110` |
+| 55  | —        | ![](/brother-ql/pins/sw-55.svg) | Not to be used                | —                | —            | —                 |                                                            | `110111` |
+| 56  | —        | ![](/brother-ql/pins/sw-56.svg) | Not to be used                | —                | —            | —                 |                                                            | `111000` |
+| 57  | 260      | ![](/brother-ql/pins/sw-57.svg) | White Paper Tape 102mm        | 102mm continuous | DK-22243     | Paper, continuous | QL-1050/1060N only                                         | `111001` |
+| 58  | —        | ![](/brother-ql/pins/sw-58.svg) | Not to be used                | —                | —            | —                 |                                                            | `111010` |
+| 59  | —        | ![](/brother-ql/pins/sw-59.svg) | Not to be used                | —                | —            | —                 |                                                            | `111011` |
+| 60  | —        | ![](/brother-ql/pins/sw-60.svg) | Not to be used                | —                | —            | —                 |                                                            | `111100` |
+| 61  | —        | ![](/brother-ql/pins/sw-61.svg) | Not to be used                | —                | —            | —                 |                                                            | `111101` |
+| 62  | —        | ![](/brother-ql/pins/sw-62.svg) | Not to be used                | —                | —            | —                 |                                                            | `111110` |
+| 63  | —        | ![](/brother-ql/pins/sw-63.svg) | Reserved                      | —                | —            | —                 |                                                            | `111111` |
 
 ## Physical pin layout (top view, pins in device)
 
-![Pin layout](/pins/pin-layout.svg)
+![Pin layout](/brother-ql/pins/pin-layout.svg)
 
 ```
 ④  ③

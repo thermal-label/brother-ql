@@ -96,7 +96,7 @@ Chrome 61+ or Edge 79+, served over HTTPS or `localhost`.
 That's normal. udev rules, ipp-usb conflicts, Editor Lite mode, and
 the DK-22251 media ID catch most people.
 
-**→ [See the troubleshooting guide](/troubleshooting)** — problems are
+**→ [See the troubleshooting guide](./troubleshooting)** — problems are
 grouped by platform with step-by-step fixes.
 :::
 

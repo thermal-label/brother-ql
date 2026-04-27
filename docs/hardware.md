@@ -60,7 +60,7 @@ The print head is fixed width. The label stock determines how many pins are acti
 
 ## Label media
 
-See [Media](/media) for the full label and roll reference, including media IDs, DK codes, print area dimensions, and CAS switch pin patterns.
+See [Media](./media) for the full label and roll reference, including media IDs, DK codes, print area dimensions, and CAS switch pin patterns.
 
 ## Editor Lite mode
 

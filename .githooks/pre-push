@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Regenerate docs/api/ via typedoc and abort the push if it differs from
+# what's committed. Keeps the org docs site in sync with the latest API
+# without making contributors remember to run `pnpm docs:api` manually.
+#
+# Bypass with `git push --no-verify` only if the diff is genuinely
+# unrelated to your push (and then please open an issue).
+
+set -euo pipefail
+
+cd "$(git rev-parse --show-toplevel)"
+
+if ! command -v pnpm >/dev/null 2>&1; then
+  echo "[pre-push] pnpm not found — skipping docs:api regeneration" >&2
+  exit 0
+fi
+
+echo "[pre-push] regenerating docs/api via typedoc…" >&2
+pnpm run --silent docs:api >/dev/null
+
+if ! git diff --quiet -- docs/api; then
+  echo >&2
+  echo "[pre-push] docs/api/ is out of date — typedoc produced changes." >&2
+  echo "[pre-push] Re-stage the regenerated files and push again:" >&2
+  echo "[pre-push]   git add docs/api && git commit -m 'Regenerate API docs' && git push" >&2
+  exit 1
+fi
+
+echo "[pre-push] docs/api up to date." >&2
+exit 0

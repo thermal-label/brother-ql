@@ -13,7 +13,7 @@ pnpm add @thermal-label/brother-ql-core
 ```
 
 ::: tip Looking for byte-level details?
-The [Protocol reference](/protocol) documents the exact USB byte
+The [Protocol reference](./protocol) documents the exact USB byte
 sequences, raster row format, status response layout, and a porting
 checklist for other languages.
 :::
@@ -152,5 +152,5 @@ status.editorLiteMode; // brother-ql extension
 
 ## Media IDs
 
-See the [hardware reference](/hardware#label-media) for the full
+See the [hardware reference](./hardware#label-media) for the full
 table of media IDs, sizes, DK product codes, and print-area geometry.

@@ -6,7 +6,7 @@ this driver. It is written for developers porting the driver to new languages,
 debugging hardware issues, or extending the existing packages.
 
 ::: tip Related page
-[Core](/core) documents the TypeScript API (`encodeJob`, `parseStatus`, etc.)
+[Core](./core) documents the TypeScript API (`encodeJob`, `parseStatus`, etc.)
 that generates the byte streams described here.
 :::
 
