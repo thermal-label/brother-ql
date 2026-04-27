@@ -1,6 +1,6 @@
 [**Documentation**](../../README.md)
 
-***
+---
 
 [Documentation](../../packages.md) / @thermal-label/brother-ql-node
 
@@ -83,45 +83,13 @@ MIT © Mannes Brak
 
 ## Classes
 
+- [BrotherQLDiscovery](classes/BrotherQLDiscovery.md)
 - [BrotherQLPrinter](classes/BrotherQLPrinter.md)
-- [PrinterError](classes/PrinterError.md)
-- [TcpTransport](classes/TcpTransport.md)
-- [UnsupportedOperationError](classes/UnsupportedOperationError.md)
-- [UsbTransport](classes/UsbTransport.md)
 
 ## Interfaces
 
-- [DeviceDescriptor](interfaces/DeviceDescriptor.md)
-- [ImagePrintOptions](interfaces/ImagePrintOptions.md)
-- [JobOptions](interfaces/JobOptions.md)
-- [LabelBitmap](interfaces/LabelBitmap.md)
-- [MediaDescriptor](interfaces/MediaDescriptor.md)
-- [OpenOptions](interfaces/OpenOptions.md)
-- [PageData](interfaces/PageData.md)
-- [PageOptions](interfaces/PageOptions.md)
-- [PrinterInfo](interfaces/PrinterInfo.md)
-- [PrinterStatus](interfaces/PrinterStatus.md)
-- [RawImageData](interfaces/RawImageData.md)
-- [TextPrintOptions](interfaces/TextPrintOptions.md)
-- [Transport](interfaces/Transport.md)
-
-## Type Aliases
-
-- [MediaType](type-aliases/MediaType.md)
+- [BrotherQLOpenOptions](interfaces/BrotherQLOpenOptions.md)
 
 ## Variables
 
-- [DEVICES](variables/DEVICES.md)
-- [MEDIA](variables/MEDIA.md)
-
-## Functions
-
-- [encodeJob](functions/encodeJob.md)
-- [findDevice](functions/findDevice.md)
-- [findMedia](functions/findMedia.md)
-- [findMediaByWidth](functions/findMediaByWidth.md)
-- [listPrinters](functions/listPrinters.md)
-- [openPrinter](functions/openPrinter.md)
-- [openPrinterTcp](functions/openPrinterTcp.md)
-- [renderImage](functions/renderImage.md)
-- [renderText](functions/renderText.md)
+- [discovery](variables/discovery.md)

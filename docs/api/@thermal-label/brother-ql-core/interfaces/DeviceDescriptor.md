@@ -1,105 +1,83 @@
 [**Documentation**](../../../README.md)
 
-***
+---
 
 [Documentation](../../../packages.md) / [@thermal-label/brother-ql-core](../README.md) / DeviceDescriptor
 
 # Interface: DeviceDescriptor
 
-Defined in: packages/core/src/types.ts:8
+Defined in: node_modules/.pnpm/@thermal-label+contracts@0.2.0/node_modules/@thermal-label/contracts/dist/device.d.ts:49
+
+Static description of a supported printer model.
+
+Each driver's device registry extends this with family-specific fields
+(head geometry, cutter support, compression, etc.). Structural typing
+means any superset is accepted wherever `DeviceDescriptor` is expected.
+
+## Extended by
+
+- [`BrotherQLDevice`](BrotherQLDevice.md)
 
 ## Properties
 
-### autocut
+### bluetooth?
 
-> **autocut**: `boolean`
+> `optional` **bluetooth?**: `BluetoothConfig`
 
-Defined in: packages/core/src/types.ts:17
+Defined in: node_modules/.pnpm/@thermal-label+contracts@0.2.0/node_modules/@thermal-label/contracts/dist/device.d.ts:71
 
-***
+BLE connection parameters. Present only when `transports` includes
+`'web-bluetooth'`.
 
-### bluetooth
+---
 
-> **bluetooth**: `boolean`
+### family
 
-Defined in: packages/core/src/types.ts:16
+> **family**: `string`
 
-***
+Defined in: node_modules/.pnpm/@thermal-label+contracts@0.2.0/node_modules/@thermal-label/contracts/dist/device.d.ts:64
 
-### bytesPerRow
+Driver family this device belongs to, e.g. `'brother-ql'`.
 
-> **bytesPerRow**: `number`
-
-Defined in: packages/core/src/types.ts:13
-
-***
-
-### compression
-
-> **compression**: `boolean`
-
-Defined in: packages/core/src/types.ts:18
-
-***
-
-### editorLite
-
-> **editorLite**: `boolean`
-
-Defined in: packages/core/src/types.ts:19
-
-***
-
-### headPins
-
-> **headPins**: [`HeadWidth`](../type-aliases/HeadWidth.md)
-
-Defined in: packages/core/src/types.ts:12
-
-***
-
-### massStoragePid?
-
-> `optional` **massStoragePid?**: `number`
-
-Defined in: packages/core/src/types.ts:20
-
-***
+---
 
 ### name
 
 > **name**: `string`
 
-Defined in: packages/core/src/types.ts:9
+Defined in: node_modules/.pnpm/@thermal-label+contracts@0.2.0/node_modules/@thermal-label/contracts/dist/device.d.ts:51
 
-***
+Human-readable model name, e.g. `"Brother QL-820NWB"`.
 
-### network
+---
 
-> **network**: [`NetworkSupport`](../type-aliases/NetworkSupport.md)
+### pid?
 
-Defined in: packages/core/src/types.ts:15
+> `optional` **pid?**: `number`
 
-***
+Defined in: node_modules/.pnpm/@thermal-label+contracts@0.2.0/node_modules/@thermal-label/contracts/dist/device.d.ts:62
 
-### pid
+USB Product ID. Required when `transports` includes `'usb'` or `'webusb'`.
+Undefined for network-only printers.
 
-> **pid**: `number`
+---
 
-Defined in: packages/core/src/types.ts:11
+### transports
 
-***
+> **transports**: [`TransportType`](../type-aliases/TransportType.md)[]
 
-### twoColor
+Defined in: node_modules/.pnpm/@thermal-label+contracts@0.2.0/node_modules/@thermal-label/contracts/dist/device.d.ts:66
 
-> **twoColor**: `boolean`
+Supported transport types for this device.
 
-Defined in: packages/core/src/types.ts:14
+---
 
-***
+### vid?
 
-### vid
+> `optional` **vid?**: `number`
 
-> **vid**: `number`
+Defined in: node_modules/.pnpm/@thermal-label+contracts@0.2.0/node_modules/@thermal-label/contracts/dist/device.d.ts:57
 
-Defined in: packages/core/src/types.ts:10
+USB Vendor ID. Required when `transports` includes `'usb'` or `'webusb'`.
+Undefined for network-only printers (e.g. a LabelWriter 550 Turbo
+accessed purely over Ethernet).

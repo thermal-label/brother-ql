@@ -1,30 +1,41 @@
 [**Documentation**](../../../README.md)
 
-***
+---
 
 [Documentation](../../../packages.md) / [@thermal-label/brother-ql-web](../README.md) / WebBrotherQLPrinter
 
 # Class: WebBrotherQLPrinter
 
-Defined in: packages/web/src/printer.ts:26
+Defined in: [printer.ts:53](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/web/src/printer.ts#L53)
+
+WebUSB `PrinterAdapter` for Brother QL printers.
+
+Mirrors the node driver's behaviour — `renderMultiPlaneImage()` runs
+internally when the resolved media carries a `palette`, and
+`pickRotation` auto-rotates landscape input on media tagged
+`defaultOrientation: 'horizontal'`.
+
+## Implements
+
+- [`PrinterAdapter`](../../brother-ql-core/interfaces/PrinterAdapter.md)
 
 ## Constructors
 
 ### Constructor
 
-> **new WebBrotherQLPrinter**(`device`, `descriptor`): `WebBrotherQLPrinter`
+> **new WebBrotherQLPrinter**(`device`, `transport`): `WebBrotherQLPrinter`
 
-Defined in: packages/web/src/printer.ts:30
+Defined in: [printer.ts:60](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/web/src/printer.ts#L60)
 
 #### Parameters
 
 ##### device
 
-`USBDevice`
+[`BrotherQLDevice`](../../brother-ql-core/interfaces/BrotherQLDevice.md)
 
-##### descriptor
+##### transport
 
-[`DeviceDescriptor`](../interfaces/DeviceDescriptor.md)
+[`Transport`](../../brother-ql-core/interfaces/Transport.md)
 
 #### Returns
 
@@ -32,182 +43,223 @@ Defined in: packages/web/src/printer.ts:30
 
 ## Properties
 
-### descriptor
-
-> `readonly` **descriptor**: [`DeviceDescriptor`](../interfaces/DeviceDescriptor.md)
-
-Defined in: packages/web/src/printer.ts:28
-
-***
-
 ### device
 
-> `readonly` **device**: `USBDevice`
+> `readonly` **device**: [`BrotherQLDevice`](../../brother-ql-core/interfaces/BrotherQLDevice.md)
 
-Defined in: packages/web/src/printer.ts:27
+Defined in: [printer.ts:55](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/web/src/printer.ts#L55)
 
-## Methods
+The device descriptor for the connected printer.
 
-### disconnect()
+Useful for logging, diagnostics, and displaying VID/PID. Undefined
+if the connection was established without device matching (e.g. a
+raw TCP connection to a known IP).
 
-> **disconnect**(): `Promise`\<`void`\>
+#### Implementation of
 
-Defined in: packages/web/src/printer.ts:129
+[`PrinterAdapter`](../../brother-ql-core/interfaces/PrinterAdapter.md).[`device`](../../brother-ql-core/interfaces/PrinterAdapter.md#device)
 
-#### Returns
+---
 
-`Promise`\<`void`\>
+### family
 
-***
+> `readonly` **family**: `"brother-ql"`
 
-### getStatus()
+Defined in: [printer.ts:54](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/web/src/printer.ts#L54)
 
-> **getStatus**(): `Promise`\<[`PrinterStatus`](../interfaces/PrinterStatus.md)\>
+Driver family identifier, e.g. `'brother-ql'` or `'labelwriter'`.
 
-Defined in: packages/web/src/printer.ts:39
+#### Implementation of
 
-#### Returns
+[`PrinterAdapter`](../../brother-ql-core/interfaces/PrinterAdapter.md).[`family`](../../brother-ql-core/interfaces/PrinterAdapter.md#family)
 
-`Promise`\<[`PrinterStatus`](../interfaces/PrinterStatus.md)\>
+## Accessors
 
-***
+### connected
 
-### isConnected()
+#### Get Signature
 
-> **isConnected**(): `boolean`
+> **get** **connected**(): `boolean`
 
-Defined in: packages/web/src/printer.ts:35
+Defined in: [printer.ts:69](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/web/src/printer.ts#L69)
 
-#### Returns
+Whether the printer is currently connected.
+
+##### Returns
 
 `boolean`
 
-***
+Whether the printer is currently connected.
+
+#### Implementation of
+
+[`PrinterAdapter`](../../brother-ql-core/interfaces/PrinterAdapter.md).[`connected`](../../brother-ql-core/interfaces/PrinterAdapter.md#connected)
+
+---
+
+### model
+
+#### Get Signature
+
+> **get** **model**(): `string`
+
+Defined in: [printer.ts:65](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/web/src/printer.ts#L65)
+
+Human-readable model name from the driver's device registry.
+
+##### Returns
+
+`string`
+
+Human-readable model name from the driver's device registry.
+
+#### Implementation of
+
+[`PrinterAdapter`](../../brother-ql-core/interfaces/PrinterAdapter.md).[`model`](../../brother-ql-core/interfaces/PrinterAdapter.md#model)
+
+## Methods
+
+### close()
+
+> **close**(): `Promise`\<`void`\>
+
+Defined in: [printer.ts:136](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/web/src/printer.ts#L136)
+
+Close the connection. Always call in `finally` blocks.
+
+#### Returns
+
+`Promise`\<`void`\>
+
+#### Implementation of
+
+[`PrinterAdapter`](../../brother-ql-core/interfaces/PrinterAdapter.md).[`close`](../../brother-ql-core/interfaces/PrinterAdapter.md#close)
+
+---
+
+### createPreview()
+
+> **createPreview**(`image`, `options?`): `Promise`\<[`PreviewResult`](../../brother-ql-core/interfaces/PreviewResult.md)\>
+
+Defined in: [printer.ts:117](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/web/src/printer.ts#L117)
+
+Generate a preview showing how this printer would reproduce the
+design on the given media. Returns separated 1bpp planes with
+display colours.
+
+The driver uses its own colour-splitting logic (the same code that
+`print()` uses internally) to produce the planes. The consuming app
+renders whatever planes come back without needing to know the
+splitting rules.
+
+For offline preview without a live connection, use the static
+`createPreviewOffline()` function exported from the driver's
+`*-core` package instead.
+
+#### Parameters
+
+##### image
+
+[`RawImageData`](../../brother-ql-core/interfaces/RawImageData.md)
+
+— full RGBA, typically from `designer.render()`.
+
+##### options?
+
+[`PreviewOptions`](../../brother-ql-core/interfaces/PreviewOptions.md)
+
+— optional media override. If media is omitted, uses
+detected media from the last `getStatus()`. If no status is
+available, the driver defaults to single-colour at the printer's
+native head width and sets `PreviewResult.assumed = true`.
+
+#### Returns
+
+`Promise`\<[`PreviewResult`](../../brother-ql-core/interfaces/PreviewResult.md)\>
+
+#### Implementation of
+
+[`PrinterAdapter`](../../brother-ql-core/interfaces/PrinterAdapter.md).[`createPreview`](../../brother-ql-core/interfaces/PrinterAdapter.md#createpreview)
+
+---
+
+### getStatus()
+
+> **getStatus**(): `Promise`\<[`BrotherQLStatus`](../../brother-ql-core/interfaces/BrotherQLStatus.md)\>
+
+Defined in: [printer.ts:128](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/web/src/printer.ts#L128)
+
+Query printer status including detected media.
+
+#### Returns
+
+`Promise`\<[`BrotherQLStatus`](../../brother-ql-core/interfaces/BrotherQLStatus.md)\>
+
+#### Implementation of
+
+[`PrinterAdapter`](../../brother-ql-core/interfaces/PrinterAdapter.md).[`getStatus`](../../brother-ql-core/interfaces/PrinterAdapter.md#getstatus)
+
+---
 
 ### print()
 
-> **print**(`pages`, `options?`): `Promise`\<`void`\>
+> **print**(`image`, `media?`, `options?`): `Promise`\<`void`\>
 
-Defined in: packages/web/src/printer.ts:46
+Defined in: [printer.ts:73](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/web/src/printer.ts#L73)
+
+Print from a full-colour RGBA image.
+
+The driver converts to its native format internally:
+
+- Single-colour media (`media.palette` undefined) — threshold/dither
+  RGBA to a single 1bpp plane via `renderImage`.
+- Multi-ink media (`media.palette` defined) — split into planes via
+  `renderMultiPlaneImage` using that palette.
+
+**Orientation:** drivers compute the rotation via `pickRotation`
+(see `./orientation.ts`) — the input image is treated as the
+intended visual; the driver auto-rotates landscape input on media
+tagged `defaultOrientation: 'horizontal'`.
+
+**Multi-ink splitting:** the palette on the media descriptor names
+every ink the driver should classify pixels into; the contracts
+package does not pick "red" or "black" — those facts live with the
+media entry.
+
+**Batch printing:** call `print()` once per label. The driver
+handles job framing internally (e.g. Brother QL page-break commands
+between sequential `print()` calls within the same session).
 
 #### Parameters
 
-##### pages
+##### image
 
-[`PageData`](../interfaces/PageData.md)[]
+[`RawImageData`](../../brother-ql-core/interfaces/RawImageData.md)
+
+— full RGBA, typically from `designer.render()`.
+
+##### media?
+
+[`MediaDescriptor`](../../brother-ql-core/interfaces/MediaDescriptor.md)
+
+— which media to print on. Determines dimensions,
+margins, and colour mode. If omitted, uses detected media from
+the last `getStatus()`.
 
 ##### options?
 
-[`JobOptions`](../interfaces/JobOptions.md)
+[`BrotherQLPrintOptions`](../../brother-ql-core/interfaces/BrotherQLPrintOptions.md)
+
+— per-call options (copies, density, etc.).
 
 #### Returns
 
 `Promise`\<`void`\>
 
-***
+#### Throws
 
-### printImage()
+MediaNotSpecifiedError if no media is known.
 
-> **printImage**(`imageData`, `media`, `options?`): `Promise`\<`void`\>
+#### Implementation of
 
-Defined in: packages/web/src/printer.ts:67
-
-#### Parameters
-
-##### imageData
-
-`ImageData`
-
-##### media
-
-[`MediaDescriptor`](../interfaces/MediaDescriptor.md)
-
-##### options?
-
-[`ImagePrintOptions`](../interfaces/ImagePrintOptions.md)
-
-#### Returns
-
-`Promise`\<`void`\>
-
-***
-
-### printImageURL()
-
-> **printImageURL**(`url`, `media`, `options?`): `Promise`\<`void`\>
-
-Defined in: packages/web/src/printer.ts:89
-
-#### Parameters
-
-##### url
-
-`string`
-
-##### media
-
-[`MediaDescriptor`](../interfaces/MediaDescriptor.md)
-
-##### options?
-
-[`ImagePrintOptions`](../interfaces/ImagePrintOptions.md)
-
-#### Returns
-
-`Promise`\<`void`\>
-
-***
-
-### printText()
-
-> **printText**(`text`, `media`, `options?`): `Promise`\<`void`\>
-
-Defined in: packages/web/src/printer.ts:51
-
-#### Parameters
-
-##### text
-
-`string`
-
-##### media
-
-[`MediaDescriptor`](../interfaces/MediaDescriptor.md)
-
-##### options?
-
-[`TextPrintOptions`](../interfaces/TextPrintOptions.md)
-
-#### Returns
-
-`Promise`\<`void`\>
-
-***
-
-### printTwoColor()
-
-> **printTwoColor**(`blackImageData`, `redImageData`, `media`, `options?`): `Promise`\<`void`\>
-
-Defined in: packages/web/src/printer.ts:101
-
-#### Parameters
-
-##### blackImageData
-
-`ImageData`
-
-##### redImageData
-
-`ImageData`
-
-##### media
-
-[`MediaDescriptor`](../interfaces/MediaDescriptor.md)
-
-##### options?
-
-[`PageOptions`](../interfaces/PageOptions.md)
-
-#### Returns
-
-`Promise`\<`void`\>
+[`PrinterAdapter`](../../brother-ql-core/interfaces/PrinterAdapter.md).[`print`](../../brother-ql-core/interfaces/PrinterAdapter.md#print)

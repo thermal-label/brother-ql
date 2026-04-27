@@ -84,5 +84,4 @@ These are printer class PIDs' paired mass storage alternatives. They should neve
 | `0x20AA` | QL-1100 (mass storage)    |
 | `0x20AB` | QL-1110NWB (mass storage) |
 
-
 <!--@include: ./_status-fragment.md-->

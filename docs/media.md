@@ -19,8 +19,8 @@ raster protocol.
 
 Bits column is `[SW5][SW4][SW3][SW2][SW1][SW0]` — the binary value equals the SW number.
 
-| SW  | Media ID | Pins                 | Media type                    | Size             | DK code      | Material          | Notes                                                      | Bits     |
-| --- | -------- | -------------------- | ----------------------------- | ---------------- | ------------ | ----------------- | ---------------------------------------------------------- | -------- |
+| SW  | Media ID | Pins                            | Media type                    | Size             | DK code      | Material          | Notes                                                      | Bits     |
+| --- | -------- | ------------------------------- | ----------------------------- | ---------------- | ------------ | ----------------- | ---------------------------------------------------------- | -------- |
 | 0   | —        | ![](/brother-ql/pins/sw-00.svg) | No media                      | —                | —            | —                 |                                                            | `000000` |
 | 1   | 271      | ![](/brother-ql/pins/sw-01.svg) | Standard Address Label        | 29×90mm          | DK-11201     | Paper, die-cut    |                                                            | `000001` |
 | 2   | 272      | ![](/brother-ql/pins/sw-02.svg) | Large Address Label           | 38×90mm          | DK-11208     | Paper, die-cut    |                                                            | `000010` |
