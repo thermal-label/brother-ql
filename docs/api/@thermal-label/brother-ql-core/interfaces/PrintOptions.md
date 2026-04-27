@@ -1,12 +1,12 @@
 [**Documentation**](../../../README.md)
 
----
+***
 
 [Documentation](../../../packages.md) / [@thermal-label/brother-ql-core](../README.md) / PrintOptions
 
 # Interface: PrintOptions
 
-Defined in: node_modules/.pnpm/@thermal-label+contracts@0.2.0/node_modules/@thermal-label/contracts/dist/status.d.ts:8
+Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/status.d.ts:8
 
 Options for a single `PrinterAdapter.print()` call.
 
@@ -23,17 +23,17 @@ accepts any superset wherever `PrintOptions` is consumed.
 
 > `optional` **copies?**: `number`
 
-Defined in: node_modules/.pnpm/@thermal-label+contracts@0.2.0/node_modules/@thermal-label/contracts/dist/status.d.ts:10
+Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/status.d.ts:10
 
 Number of copies to print. Default 1.
 
----
+***
 
 ### density?
 
 > `optional` **density?**: `string`
 
-Defined in: node_modules/.pnpm/@thermal-label+contracts@0.2.0/node_modules/@thermal-label/contracts/dist/status.d.ts:20
+Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/status.d.ts:20
 
 Driver-specific density setting.
 

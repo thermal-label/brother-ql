@@ -1,12 +1,12 @@
 [**Documentation**](../../../README.md)
 
----
+***
 
 [Documentation](../../../packages.md) / [@thermal-label/brother-ql-core](../README.md) / BrotherQLMedia
 
 # Interface: BrotherQLMedia
 
-Defined in: [packages/core/src/types.ts:49](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/core/src/types.ts#L49)
+Defined in: [packages/core/src/types.ts:49](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/core/src/types.ts#L49)
 
 Brother QL media descriptor.
 
@@ -24,7 +24,7 @@ multi-plane mode — only DK-22251 declares one in the registry.
 
 > `optional` **cornerRadiusMm?**: `number`
 
-Defined in: node_modules/.pnpm/@thermal-label+contracts@0.2.0/node_modules/@thermal-label/contracts/dist/media.d.ts:126
+Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/media.d.ts:126
 
 Corner radius (mm) of die-cut labels with rounded corners.
 
@@ -36,13 +36,13 @@ rounded rectangle degenerates to a circle.
 
 [`MediaDescriptor`](MediaDescriptor.md).[`cornerRadiusMm`](MediaDescriptor.md#cornerradiusmm)
 
----
+***
 
 ### defaultOrientation?
 
 > `optional` **defaultOrientation?**: `"horizontal"` \| `"vertical"`
 
-Defined in: node_modules/.pnpm/@thermal-label+contracts@0.2.0/node_modules/@thermal-label/contracts/dist/media.d.ts:100
+Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/media.d.ts:100
 
 Hint for how the user is expected to author content for this media.
 Drives the auto-rotate decision in `print()`:
@@ -60,23 +60,23 @@ Drives the auto-rotate decision in `print()`:
 
 [`MediaDescriptor`](MediaDescriptor.md).[`defaultOrientation`](MediaDescriptor.md#defaultorientation)
 
----
+***
 
 ### dieCutMaskedAreaDots?
 
 > `optional` **dieCutMaskedAreaDots?**: `number`
 
-Defined in: [packages/core/src/types.ts:56](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/core/src/types.ts#L56)
+Defined in: [packages/core/src/types.ts:56](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/core/src/types.ts#L56)
 
 Die-cut masked area in dots (registration windows).
 
----
+***
 
 ### heightMm?
 
 > `optional` **heightMm?**: `number`
 
-Defined in: node_modules/.pnpm/@thermal-label+contracts@0.2.0/node_modules/@thermal-label/contracts/dist/media.d.ts:67
+Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/media.d.ts:67
 
 Physical height/length in mm.
 
@@ -87,13 +87,13 @@ Physical height/length in mm.
 
 [`MediaDescriptor`](MediaDescriptor.md).[`heightMm`](MediaDescriptor.md#heightmm)
 
----
+***
 
 ### id
 
 > **id**: `number`
 
-Defined in: [packages/core/src/types.ts:50](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/core/src/types.ts#L50)
+Defined in: [packages/core/src/types.ts:50](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/core/src/types.ts#L50)
 
 Unique identifier within the driver family.
 
@@ -101,21 +101,21 @@ Unique identifier within the driver family.
 
 [`MediaDescriptor`](MediaDescriptor.md).[`id`](MediaDescriptor.md#id)
 
----
+***
 
 ### leftMarginPins
 
 > **leftMarginPins**: `number`
 
-Defined in: [packages/core/src/types.ts:53](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/core/src/types.ts#L53)
+Defined in: [packages/core/src/types.ts:53](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/core/src/types.ts#L53)
 
----
+***
 
 ### name
 
 > **name**: `string`
 
-Defined in: node_modules/.pnpm/@thermal-label+contracts@0.2.0/node_modules/@thermal-label/contracts/dist/media.d.ts:58
+Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/media.d.ts:58
 
 Human-readable name, e.g. `"62mm continuous"` or `"DK-22251"`.
 
@@ -123,13 +123,13 @@ Human-readable name, e.g. `"62mm continuous"` or `"DK-22251"`.
 
 [`MediaDescriptor`](MediaDescriptor.md).[`name`](MediaDescriptor.md#name)
 
----
+***
 
 ### palette?
 
 > `optional` **palette?**: readonly [`PaletteEntry`](PaletteEntry.md)[]
 
-Defined in: node_modules/.pnpm/@thermal-label+contracts@0.2.0/node_modules/@thermal-label/contracts/dist/media.d.ts:86
+Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/media.d.ts:86
 
 Inks this media supports, beyond the implicit white substrate.
 
@@ -145,21 +145,21 @@ For DK-22251 (the only multi-ink media we ship today):
 
 [`MediaDescriptor`](MediaDescriptor.md).[`palette`](MediaDescriptor.md#palette)
 
----
+***
 
 ### printAreaDots
 
 > **printAreaDots**: `number`
 
-Defined in: [packages/core/src/types.ts:52](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/core/src/types.ts#L52)
+Defined in: [packages/core/src/types.ts:52](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/core/src/types.ts#L52)
 
----
+***
 
 ### printMargins?
 
 > `optional` **printMargins?**: `object`
 
-Defined in: node_modules/.pnpm/@thermal-label+contracts@0.2.0/node_modules/@thermal-label/contracts/dist/media.d.ts:113
+Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/media.d.ts:113
 
 Insets (mm) inside the media bounds where the printer may clip a
 design (paper-feed tolerance, head edges, die-cut slack).
@@ -192,21 +192,21 @@ safe to design within.
 
 [`MediaDescriptor`](MediaDescriptor.md).[`printMargins`](MediaDescriptor.md#printmargins)
 
----
+***
 
 ### rightMarginPins
 
 > **rightMarginPins**: `number`
 
-Defined in: [packages/core/src/types.ts:54](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/core/src/types.ts#L54)
+Defined in: [packages/core/src/types.ts:54](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/core/src/types.ts#L54)
 
----
+***
 
 ### type
 
 > **type**: [`MediaType`](../type-aliases/MediaType.md)
 
-Defined in: [packages/core/src/types.ts:51](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/core/src/types.ts#L51)
+Defined in: [packages/core/src/types.ts:51](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/core/src/types.ts#L51)
 
 Media type classification — driver-specific string values.
 
@@ -217,13 +217,13 @@ Drivers may define additional values as needed.
 
 [`MediaDescriptor`](MediaDescriptor.md).[`type`](MediaDescriptor.md#type)
 
----
+***
 
 ### widthMm
 
 > **widthMm**: `number`
 
-Defined in: node_modules/.pnpm/@thermal-label+contracts@0.2.0/node_modules/@thermal-label/contracts/dist/media.d.ts:60
+Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/media.d.ts:60
 
 Physical width in mm.
 

@@ -1,12 +1,12 @@
 [**Documentation**](../../../README.md)
 
----
+***
 
 [Documentation](../../../packages.md) / [@thermal-label/brother-ql-node](../README.md) / BrotherQLDiscovery
 
 # Class: BrotherQLDiscovery
 
-Defined in: [packages/node/src/discovery.ts:87](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/node/src/discovery.ts#L87)
+Defined in: [packages/node/src/discovery.ts:87](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/node/src/discovery.ts#L87)
 
 `PrinterDiscovery` implementation for Brother QL printers.
 
@@ -36,7 +36,7 @@ them out of Editor Lite manually). Network printers open via
 
 > `readonly` **family**: `"brother-ql"` = `'brother-ql'`
 
-Defined in: [packages/node/src/discovery.ts:88](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/node/src/discovery.ts#L88)
+Defined in: [packages/node/src/discovery.ts:88](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/node/src/discovery.ts#L88)
 
 Driver family identifier — matches `DeviceDescriptor.family`.
 
@@ -50,7 +50,7 @@ Driver family identifier — matches `DeviceDescriptor.family`.
 
 > **listPrinters**(): `Promise`\<`DiscoveredPrinter`[]\>
 
-Defined in: [packages/node/src/discovery.ts:90](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/node/src/discovery.ts#L90)
+Defined in: [packages/node/src/discovery.ts:90](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/node/src/discovery.ts#L90)
 
 List connected printers on this driver's supported transports.
 
@@ -62,13 +62,13 @@ List connected printers on this driver's supported transports.
 
 `PrinterDiscovery.listPrinters`
 
----
+***
 
 ### openPrinter()
 
 > **openPrinter**(`options?`): `Promise`\<[`BrotherQLPrinter`](BrotherQLPrinter.md)\>
 
-Defined in: [packages/node/src/discovery.ts:100](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/node/src/discovery.ts#L100)
+Defined in: [packages/node/src/discovery.ts:100](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/node/src/discovery.ts#L100)
 
 Open a printer matching the given options.
 

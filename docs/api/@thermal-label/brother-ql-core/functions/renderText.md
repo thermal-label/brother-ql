@@ -1,6 +1,6 @@
 [**Documentation**](../../../README.md)
 
----
+***
 
 [Documentation](../../../packages.md) / [@thermal-label/brother-ql-core](../README.md) / renderText
 
@@ -8,7 +8,7 @@
 
 > **renderText**(`text`, `options?`): [`LabelBitmap`](../interfaces/LabelBitmap.md)
 
-Defined in: node_modules/.pnpm/@mbtech-nl+bitmap@1.2.1/node_modules/@mbtech-nl/bitmap/dist/font/render.d.ts:21
+Defined in: node\_modules/.pnpm/@mbtech-nl+bitmap@1.2.1/node\_modules/@mbtech-nl/bitmap/dist/font/render.d.ts:21
 
 Render an ASCII string into a packed 1bpp bitmap using the bundled font.
 
@@ -29,7 +29,7 @@ String to render. Must be non-empty.
 `TextRenderOptions`
 
 Font, scale factors, letter spacing, and invert flag.
-See TextRenderOptions.
+  See TextRenderOptions.
 
 ## Returns
 
@@ -40,7 +40,7 @@ A 1bpp `LabelBitmap` sized to fit the rendered text.
 ## Throws
 
 If `text` is empty, or if `scaleX`/`scaleY` is not a
-positive integer, or if `letterSpacing` is not a non-negative integer.
+  positive integer, or if `letterSpacing` is not a non-negative integer.
 
 ## Example
 

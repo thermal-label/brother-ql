@@ -1,6 +1,6 @@
 [**Documentation**](../../../README.md)
 
----
+***
 
 [Documentation](../../../packages.md) / [@thermal-label/brother-ql-core](../README.md) / renderImage
 
@@ -8,7 +8,7 @@
 
 > **renderImage**(`image`, `options?`): [`LabelBitmap`](../interfaces/LabelBitmap.md)
 
-Defined in: node_modules/.pnpm/@mbtech-nl+bitmap@1.2.1/node_modules/@mbtech-nl/bitmap/dist/image.d.ts:40
+Defined in: node\_modules/.pnpm/@mbtech-nl+bitmap@1.2.1/node\_modules/@mbtech-nl/bitmap/dist/image.d.ts:40
 
 Convert RGBA pixel data to a packed 1bpp bitmap.
 
@@ -41,13 +41,13 @@ See ImageRenderOptions.
 [`LabelBitmap`](../interfaces/LabelBitmap.md)
 
 A 1bpp `LabelBitmap` whose dimensions match the input (or are
-swapped when `rotate` is 90 or 270).
+  swapped when `rotate` is 90 or 270).
 
 ## Throws
 
 If image dimensions are zero or `data.length` does
-not match `width * height * 4`. Also if `gamma` is non-finite or
-non-positive, or if a custom `luminanceWeights` tuple has invalid values.
+  not match `width * height * 4`. Also if `gamma` is non-finite or
+  non-positive, or if a custom `luminanceWeights` tuple has invalid values.
 
 ## Examples
 

@@ -1,12 +1,12 @@
 [**Documentation**](../../../README.md)
 
----
+***
 
 [Documentation](../../../packages.md) / [@thermal-label/brother-ql-core](../README.md) / PaletteEntry
 
 # Interface: PaletteEntry
 
-Defined in: node_modules/.pnpm/@mbtech-nl+bitmap@1.2.1/node_modules/@mbtech-nl/bitmap/dist/types.d.ts:91
+Defined in: node\_modules/.pnpm/@mbtech-nl+bitmap@1.2.1/node\_modules/@mbtech-nl/bitmap/dist/types.d.ts:91
 
 One ink/foil colour the printer can place on the substrate.
 
@@ -20,14 +20,14 @@ the implicit substrate background and rejected by validation.
 
 > `readonly` **name**: `string`
 
-Defined in: node_modules/.pnpm/@mbtech-nl+bitmap@1.2.1/node_modules/@mbtech-nl/bitmap/dist/types.d.ts:92
+Defined in: node\_modules/.pnpm/@mbtech-nl+bitmap@1.2.1/node\_modules/@mbtech-nl/bitmap/dist/types.d.ts:92
 
----
+***
 
 ### rgb
 
 > `readonly` **rgb**: readonly \[`number`, `number`, `number`\]
 
-Defined in: node_modules/.pnpm/@mbtech-nl+bitmap@1.2.1/node_modules/@mbtech-nl/bitmap/dist/types.d.ts:94
+Defined in: node\_modules/.pnpm/@mbtech-nl+bitmap@1.2.1/node\_modules/@mbtech-nl/bitmap/dist/types.d.ts:94
 
 RGB tuple in 0..255.

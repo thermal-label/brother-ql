@@ -1,6 +1,6 @@
 [**Documentation**](../../../README.md)
 
----
+***
 
 [Documentation](../../../packages.md) / [@thermal-label/brother-ql-core](../README.md) / createPreviewOffline
 
@@ -8,7 +8,7 @@
 
 > **createPreviewOffline**(`image`, `media`): [`PreviewResult`](../interfaces/PreviewResult.md)
 
-Defined in: [packages/core/src/preview.ts:14](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/core/src/preview.ts#L14)
+Defined in: [packages/core/src/preview.ts:14](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/core/src/preview.ts#L14)
 
 Offline preview without a live printer connection.
 

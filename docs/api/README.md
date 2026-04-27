@@ -1,6 +1,6 @@
 **Documentation**
 
----
+***
 
 # @thermal-label/brother-ql
 
@@ -68,24 +68,24 @@ Full docs at **<https://thermal-label.github.io/brother-ql/>**.
 
 ## Packages
 
-| Package                          | Role                                                          |
-| -------------------------------- | ------------------------------------------------------------- |
+| Package | Role |
+|---|---|
 | `@thermal-label/brother-ql-core` | Protocol encoding, device + media registries. Browser + Node. |
-| `@thermal-label/brother-ql-node` | Node USB (libusb) and TCP (port 9100) transport.              |
-| `@thermal-label/brother-ql-web`  | Browser WebUSB transport.                                     |
+| `@thermal-label/brother-ql-node` | Node USB (libusb) and TCP (port 9100) transport. |
+| `@thermal-label/brother-ql-web` | Browser WebUSB transport. |
 
 The per-driver `*-cli` package was retired — use the unified
 [`thermal-label-cli`](https://www.npmjs.com/package/thermal-label-cli) instead.
 
 ## Compatibility
 
-|          |                                                                             |
-| -------- | --------------------------------------------------------------------------- |
-| Node     | ≥ 24                                                                        |
-| Browsers | Chrome / Edge 89+ (WebUSB), secure context (`https://` or `localhost`)      |
-| Linux    | typically needs a `udev` rule for `04F9:*` to access without `sudo`         |
-| Peers    | `@thermal-label/contracts`, `@thermal-label/transport`, `@mbtech-nl/bitmap` |
-| License  | MIT                                                                         |
+| | |
+|---|---|
+| Node | ≥ 24 |
+| Browsers | Chrome / Edge 89+ (WebUSB), secure context (`https://` or `localhost`) |
+| Linux | typically needs a `udev` rule for `04F9:*` to access without `sudo` |
+| Peers | `@thermal-label/contracts`, `@thermal-label/transport`, `@mbtech-nl/bitmap` |
+| License | MIT |
 
 Not affiliated with Brother. Trademarks belong to their owners.
 

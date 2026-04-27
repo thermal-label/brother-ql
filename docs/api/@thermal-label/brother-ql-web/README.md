@@ -1,6 +1,6 @@
 [**Documentation**](../../README.md)
 
----
+***
 
 [Documentation](../../packages.md) / @thermal-label/brother-ql-web
 
@@ -95,7 +95,7 @@ MIT © Mannes Brak
 
 ## Variables
 
-- [DEFAULT_FILTERS](variables/DEFAULT_FILTERS.md)
+- [DEFAULT\_FILTERS](variables/DEFAULT_FILTERS.md)
 
 ## Functions
 

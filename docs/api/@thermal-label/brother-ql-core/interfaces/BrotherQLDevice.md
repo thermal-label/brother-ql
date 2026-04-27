@@ -1,12 +1,12 @@
 [**Documentation**](../../../README.md)
 
----
+***
 
 [Documentation](../../../packages.md) / [@thermal-label/brother-ql-core](../README.md) / BrotherQLDevice
 
 # Interface: BrotherQLDevice
 
-Defined in: [packages/core/src/types.ts:27](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/core/src/types.ts#L27)
+Defined in: [packages/core/src/types.ts:27](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/core/src/types.ts#L27)
 
 Brother QL device descriptor.
 
@@ -30,15 +30,15 @@ dropped classic Bluetooth SPP — no serial route there.
 
 > **autocut**: `boolean`
 
-Defined in: [packages/core/src/types.ts:35](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/core/src/types.ts#L35)
+Defined in: [packages/core/src/types.ts:35](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/core/src/types.ts#L35)
 
----
+***
 
 ### bluetooth?
 
 > `optional` **bluetooth?**: `BluetoothConfig`
 
-Defined in: node_modules/.pnpm/@thermal-label+contracts@0.2.0/node_modules/@thermal-label/contracts/dist/device.d.ts:71
+Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/device.d.ts:71
 
 BLE connection parameters. Present only when `transports` includes
 `'web-bluetooth'`.
@@ -47,37 +47,37 @@ BLE connection parameters. Present only when `transports` includes
 
 [`DeviceDescriptor`](DeviceDescriptor.md).[`bluetooth`](DeviceDescriptor.md#bluetooth)
 
----
+***
 
 ### bytesPerRow
 
 > **bytesPerRow**: `number`
 
-Defined in: [packages/core/src/types.ts:32](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/core/src/types.ts#L32)
+Defined in: [packages/core/src/types.ts:32](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/core/src/types.ts#L32)
 
----
+***
 
 ### compression
 
 > **compression**: `boolean`
 
-Defined in: [packages/core/src/types.ts:36](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/core/src/types.ts#L36)
+Defined in: [packages/core/src/types.ts:36](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/core/src/types.ts#L36)
 
----
+***
 
 ### editorLite
 
 > **editorLite**: `boolean`
 
-Defined in: [packages/core/src/types.ts:37](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/core/src/types.ts#L37)
+Defined in: [packages/core/src/types.ts:37](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/core/src/types.ts#L37)
 
----
+***
 
 ### family
 
 > **family**: `"brother-ql"`
 
-Defined in: [packages/core/src/types.ts:28](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/core/src/types.ts#L28)
+Defined in: [packages/core/src/types.ts:28](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/core/src/types.ts#L28)
 
 Driver family this device belongs to, e.g. `'brother-ql'`.
 
@@ -85,31 +85,31 @@ Driver family this device belongs to, e.g. `'brother-ql'`.
 
 [`DeviceDescriptor`](DeviceDescriptor.md).[`family`](DeviceDescriptor.md#family)
 
----
+***
 
 ### headPins
 
 > **headPins**: [`HeadWidth`](../type-aliases/HeadWidth.md)
 
-Defined in: [packages/core/src/types.ts:31](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/core/src/types.ts#L31)
+Defined in: [packages/core/src/types.ts:31](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/core/src/types.ts#L31)
 
----
+***
 
 ### massStoragePid?
 
 > `optional` **massStoragePid?**: `number`
 
-Defined in: [packages/core/src/types.ts:39](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/core/src/types.ts#L39)
+Defined in: [packages/core/src/types.ts:39](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/core/src/types.ts#L39)
 
 Alternate PID seen when the printer is in Editor Lite mass-storage mode.
 
----
+***
 
 ### name
 
 > **name**: `string`
 
-Defined in: node_modules/.pnpm/@thermal-label+contracts@0.2.0/node_modules/@thermal-label/contracts/dist/device.d.ts:51
+Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/device.d.ts:51
 
 Human-readable model name, e.g. `"Brother QL-820NWB"`.
 
@@ -117,21 +117,21 @@ Human-readable model name, e.g. `"Brother QL-820NWB"`.
 
 [`DeviceDescriptor`](DeviceDescriptor.md).[`name`](DeviceDescriptor.md#name)
 
----
+***
 
 ### network
 
 > **network**: [`NetworkSupport`](../type-aliases/NetworkSupport.md)
 
-Defined in: [packages/core/src/types.ts:34](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/core/src/types.ts#L34)
+Defined in: [packages/core/src/types.ts:34](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/core/src/types.ts#L34)
 
----
+***
 
 ### pid
 
 > **pid**: `number`
 
-Defined in: [packages/core/src/types.ts:30](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/core/src/types.ts#L30)
+Defined in: [packages/core/src/types.ts:30](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/core/src/types.ts#L30)
 
 USB Product ID. Required when `transports` includes `'usb'` or `'webusb'`.
 Undefined for network-only printers.
@@ -140,13 +140,13 @@ Undefined for network-only printers.
 
 [`DeviceDescriptor`](DeviceDescriptor.md).[`pid`](DeviceDescriptor.md#pid)
 
----
+***
 
 ### transports
 
 > **transports**: [`TransportType`](../type-aliases/TransportType.md)[]
 
-Defined in: node_modules/.pnpm/@thermal-label+contracts@0.2.0/node_modules/@thermal-label/contracts/dist/device.d.ts:66
+Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/device.d.ts:66
 
 Supported transport types for this device.
 
@@ -154,21 +154,21 @@ Supported transport types for this device.
 
 [`DeviceDescriptor`](DeviceDescriptor.md).[`transports`](DeviceDescriptor.md#transports)
 
----
+***
 
 ### twoColor
 
 > **twoColor**: `boolean`
 
-Defined in: [packages/core/src/types.ts:33](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/core/src/types.ts#L33)
+Defined in: [packages/core/src/types.ts:33](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/core/src/types.ts#L33)
 
----
+***
 
 ### vid
 
 > **vid**: `number`
 
-Defined in: [packages/core/src/types.ts:29](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/core/src/types.ts#L29)
+Defined in: [packages/core/src/types.ts:29](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/core/src/types.ts#L29)
 
 USB Vendor ID. Required when `transports` includes `'usb'` or `'webusb'`.
 Undefined for network-only printers (e.g. a LabelWriter 550 Turbo

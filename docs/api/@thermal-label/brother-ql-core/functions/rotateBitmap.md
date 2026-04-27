@@ -1,6 +1,6 @@
 [**Documentation**](../../../README.md)
 
----
+***
 
 [Documentation](../../../packages.md) / [@thermal-label/brother-ql-core](../README.md) / rotateBitmap
 
@@ -8,7 +8,7 @@
 
 > **rotateBitmap**(`bitmap`, `degrees`): [`LabelBitmap`](../interfaces/LabelBitmap.md)
 
-Defined in: node_modules/.pnpm/@mbtech-nl+bitmap@1.2.1/node_modules/@mbtech-nl/bitmap/dist/transform.d.ts:31
+Defined in: node\_modules/.pnpm/@mbtech-nl+bitmap@1.2.1/node\_modules/@mbtech-nl/bitmap/dist/transform.d.ts:31
 
 Rotate a bitmap clockwise by 90, 180, or 270 degrees.
 

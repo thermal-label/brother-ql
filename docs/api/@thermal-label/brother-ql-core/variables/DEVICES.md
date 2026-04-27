@@ -1,6 +1,6 @@
 [**Documentation**](../../../README.md)
 
----
+***
 
 [Documentation](../../../packages.md) / [@thermal-label/brother-ql-core](../README.md) / DEVICES
 
@@ -8,1002 +8,1002 @@
 
 > `const` **DEVICES**: `object`
 
-Defined in: [packages/core/src/devices.ts:5](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/core/src/devices.ts#L5)
+Defined in: [packages/core/src/devices.ts:5](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/core/src/devices.ts#L5)
 
 ## Type Declaration
 
-### QL_1050
+### QL\_1050
 
-> `readonly` **QL_1050**: `object`
+> `readonly` **QL\_1050**: `object`
 
-#### QL_1050.autocut
+#### QL\_1050.autocut
 
 > `readonly` **autocut**: `true` = `true`
 
-#### QL_1050.bytesPerRow
+#### QL\_1050.bytesPerRow
 
 > `readonly` **bytesPerRow**: `162` = `162`
 
-#### QL_1050.compression
+#### QL\_1050.compression
 
 > `readonly` **compression**: `true` = `true`
 
-#### QL_1050.editorLite
+#### QL\_1050.editorLite
 
 > `readonly` **editorLite**: `false` = `false`
 
-#### QL_1050.family
+#### QL\_1050.family
 
 > `readonly` **family**: `"brother-ql"` = `'brother-ql'`
 
-#### QL_1050.headPins
+#### QL\_1050.headPins
 
 > `readonly` **headPins**: `1296` = `1296`
 
-#### QL_1050.name
+#### QL\_1050.name
 
 > `readonly` **name**: `"QL-1050"` = `'QL-1050'`
 
-#### QL_1050.network
+#### QL\_1050.network
 
 > `readonly` **network**: `"none"` = `'none'`
 
-#### QL_1050.pid
+#### QL\_1050.pid
 
 > `readonly` **pid**: `8231` = `0x2027`
 
-#### QL_1050.transports
+#### QL\_1050.transports
 
 > `readonly` **transports**: \[`"usb"`, `"webusb"`\]
 
-#### QL_1050.twoColor
+#### QL\_1050.twoColor
 
 > `readonly` **twoColor**: `false` = `false`
 
-#### QL_1050.vid
+#### QL\_1050.vid
 
 > `readonly` **vid**: `1273` = `0x04f9`
 
-### QL_1060N
+### QL\_1060N
 
-> `readonly` **QL_1060N**: `object`
+> `readonly` **QL\_1060N**: `object`
 
-#### QL_1060N.autocut
+#### QL\_1060N.autocut
 
 > `readonly` **autocut**: `true` = `true`
 
-#### QL_1060N.bytesPerRow
+#### QL\_1060N.bytesPerRow
 
 > `readonly` **bytesPerRow**: `162` = `162`
 
-#### QL_1060N.compression
+#### QL\_1060N.compression
 
 > `readonly` **compression**: `true` = `true`
 
-#### QL_1060N.editorLite
+#### QL\_1060N.editorLite
 
 > `readonly` **editorLite**: `false` = `false`
 
-#### QL_1060N.family
+#### QL\_1060N.family
 
 > `readonly` **family**: `"brother-ql"` = `'brother-ql'`
 
-#### QL_1060N.headPins
+#### QL\_1060N.headPins
 
 > `readonly` **headPins**: `1296` = `1296`
 
-#### QL_1060N.name
+#### QL\_1060N.name
 
 > `readonly` **name**: `"QL-1060N"` = `'QL-1060N'`
 
-#### QL_1060N.network
+#### QL\_1060N.network
 
 > `readonly` **network**: `"wired"` = `'wired'`
 
-#### QL_1060N.pid
+#### QL\_1060N.pid
 
 > `readonly` **pid**: `8232` = `0x2028`
 
-#### QL_1060N.transports
+#### QL\_1060N.transports
 
 > `readonly` **transports**: \[`"usb"`, `"webusb"`, `"tcp"`\]
 
-#### QL_1060N.twoColor
+#### QL\_1060N.twoColor
 
 > `readonly` **twoColor**: `false` = `false`
 
-#### QL_1060N.vid
+#### QL\_1060N.vid
 
 > `readonly` **vid**: `1273` = `0x04f9`
 
-### QL_1100
+### QL\_1100
 
-> `readonly` **QL_1100**: `object`
+> `readonly` **QL\_1100**: `object`
 
-#### QL_1100.autocut
+#### QL\_1100.autocut
 
 > `readonly` **autocut**: `true` = `true`
 
-#### QL_1100.bytesPerRow
+#### QL\_1100.bytesPerRow
 
 > `readonly` **bytesPerRow**: `162` = `162`
 
-#### QL_1100.compression
+#### QL\_1100.compression
 
 > `readonly` **compression**: `true` = `true`
 
-#### QL_1100.editorLite
+#### QL\_1100.editorLite
 
 > `readonly` **editorLite**: `true` = `true`
 
-#### QL_1100.family
+#### QL\_1100.family
 
 > `readonly` **family**: `"brother-ql"` = `'brother-ql'`
 
-#### QL_1100.headPins
+#### QL\_1100.headPins
 
 > `readonly` **headPins**: `1296` = `1296`
 
-#### QL_1100.massStoragePid
+#### QL\_1100.massStoragePid
 
 > `readonly` **massStoragePid**: `8362` = `0x20aa`
 
-#### QL_1100.name
+#### QL\_1100.name
 
 > `readonly` **name**: `"QL-1100"` = `'QL-1100'`
 
-#### QL_1100.network
+#### QL\_1100.network
 
 > `readonly` **network**: `"none"` = `'none'`
 
-#### QL_1100.pid
+#### QL\_1100.pid
 
 > `readonly` **pid**: `8360` = `0x20a8`
 
-#### QL_1100.transports
+#### QL\_1100.transports
 
 > `readonly` **transports**: \[`"usb"`, `"webusb"`\]
 
-#### QL_1100.twoColor
+#### QL\_1100.twoColor
 
 > `readonly` **twoColor**: `false` = `false`
 
-#### QL_1100.vid
+#### QL\_1100.vid
 
 > `readonly` **vid**: `1273` = `0x04f9`
 
-### QL_1110NWB
+### QL\_1110NWB
 
-> `readonly` **QL_1110NWB**: `object`
+> `readonly` **QL\_1110NWB**: `object`
 
-#### QL_1110NWB.autocut
+#### QL\_1110NWB.autocut
 
 > `readonly` **autocut**: `true` = `true`
 
-#### QL_1110NWB.bytesPerRow
+#### QL\_1110NWB.bytesPerRow
 
 > `readonly` **bytesPerRow**: `162` = `162`
 
-#### QL_1110NWB.compression
+#### QL\_1110NWB.compression
 
 > `readonly` **compression**: `true` = `true`
 
-#### QL_1110NWB.editorLite
+#### QL\_1110NWB.editorLite
 
 > `readonly` **editorLite**: `true` = `true`
 
-#### QL_1110NWB.family
+#### QL\_1110NWB.family
 
 > `readonly` **family**: `"brother-ql"` = `'brother-ql'`
 
-#### QL_1110NWB.headPins
+#### QL\_1110NWB.headPins
 
 > `readonly` **headPins**: `1296` = `1296`
 
-#### QL_1110NWB.massStoragePid
+#### QL\_1110NWB.massStoragePid
 
 > `readonly` **massStoragePid**: `8363` = `0x20ab`
 
-#### QL_1110NWB.name
+#### QL\_1110NWB.name
 
 > `readonly` **name**: `"QL-1110NWB"` = `'QL-1110NWB'`
 
-#### QL_1110NWB.network
+#### QL\_1110NWB.network
 
 > `readonly` **network**: `"wifi+wired"` = `'wifi+wired'`
 
-#### QL_1110NWB.pid
+#### QL\_1110NWB.pid
 
 > `readonly` **pid**: `8361` = `0x20a9`
 
-#### QL_1110NWB.transports
+#### QL\_1110NWB.transports
 
 > `readonly` **transports**: \[`"usb"`, `"webusb"`, `"tcp"`\]
 
-#### QL_1110NWB.twoColor
+#### QL\_1110NWB.twoColor
 
 > `readonly` **twoColor**: `false` = `false`
 
-#### QL_1110NWB.vid
+#### QL\_1110NWB.vid
 
 > `readonly` **vid**: `1273` = `0x04f9`
 
-### QL_1115NWB
+### QL\_1115NWB
 
-> `readonly` **QL_1115NWB**: `object`
+> `readonly` **QL\_1115NWB**: `object`
 
-#### QL_1115NWB.autocut
+#### QL\_1115NWB.autocut
 
 > `readonly` **autocut**: `true` = `true`
 
-#### QL_1115NWB.bytesPerRow
+#### QL\_1115NWB.bytesPerRow
 
 > `readonly` **bytesPerRow**: `162` = `162`
 
-#### QL_1115NWB.compression
+#### QL\_1115NWB.compression
 
 > `readonly` **compression**: `true` = `true`
 
-#### QL_1115NWB.editorLite
+#### QL\_1115NWB.editorLite
 
 > `readonly` **editorLite**: `true` = `true`
 
-#### QL_1115NWB.family
+#### QL\_1115NWB.family
 
 > `readonly` **family**: `"brother-ql"` = `'brother-ql'`
 
-#### QL_1115NWB.headPins
+#### QL\_1115NWB.headPins
 
 > `readonly` **headPins**: `1296` = `1296`
 
-#### QL_1115NWB.name
+#### QL\_1115NWB.name
 
 > `readonly` **name**: `"QL-1115NWB"` = `'QL-1115NWB'`
 
-#### QL_1115NWB.network
+#### QL\_1115NWB.network
 
 > `readonly` **network**: `"wifi+wired"` = `'wifi+wired'`
 
-#### QL_1115NWB.pid
+#### QL\_1115NWB.pid
 
 > `readonly` **pid**: `8364` = `0x20ac`
 
-#### QL_1115NWB.transports
+#### QL\_1115NWB.transports
 
 > `readonly` **transports**: \[`"usb"`, `"webusb"`, `"tcp"`\]
 
-#### QL_1115NWB.twoColor
+#### QL\_1115NWB.twoColor
 
 > `readonly` **twoColor**: `false` = `false`
 
-#### QL_1115NWB.vid
+#### QL\_1115NWB.vid
 
 > `readonly` **vid**: `1273` = `0x04f9`
 
-### QL_500
+### QL\_500
 
-> `readonly` **QL_500**: `object`
+> `readonly` **QL\_500**: `object`
 
-#### QL_500.autocut
+#### QL\_500.autocut
 
 > `readonly` **autocut**: `false` = `false`
 
-#### QL_500.bytesPerRow
+#### QL\_500.bytesPerRow
 
 > `readonly` **bytesPerRow**: `90` = `90`
 
-#### QL_500.compression
+#### QL\_500.compression
 
 > `readonly` **compression**: `false` = `false`
 
-#### QL_500.editorLite
+#### QL\_500.editorLite
 
 > `readonly` **editorLite**: `false` = `false`
 
-#### QL_500.family
+#### QL\_500.family
 
 > `readonly` **family**: `"brother-ql"` = `'brother-ql'`
 
-#### QL_500.headPins
+#### QL\_500.headPins
 
 > `readonly` **headPins**: `720` = `720`
 
-#### QL_500.name
+#### QL\_500.name
 
 > `readonly` **name**: `"QL-500"` = `'QL-500'`
 
-#### QL_500.network
+#### QL\_500.network
 
 > `readonly` **network**: `"none"` = `'none'`
 
-#### QL_500.pid
+#### QL\_500.pid
 
 > `readonly` **pid**: `8211` = `0x2013`
 
-#### QL_500.transports
+#### QL\_500.transports
 
 > `readonly` **transports**: \[`"usb"`, `"webusb"`\]
 
-#### QL_500.twoColor
+#### QL\_500.twoColor
 
 > `readonly` **twoColor**: `false` = `false`
 
-#### QL_500.vid
+#### QL\_500.vid
 
 > `readonly` **vid**: `1273` = `0x04f9`
 
-### QL_550
+### QL\_550
 
-> `readonly` **QL_550**: `object`
+> `readonly` **QL\_550**: `object`
 
-#### QL_550.autocut
+#### QL\_550.autocut
 
 > `readonly` **autocut**: `false` = `false`
 
-#### QL_550.bytesPerRow
+#### QL\_550.bytesPerRow
 
 > `readonly` **bytesPerRow**: `90` = `90`
 
-#### QL_550.compression
+#### QL\_550.compression
 
 > `readonly` **compression**: `false` = `false`
 
-#### QL_550.editorLite
+#### QL\_550.editorLite
 
 > `readonly` **editorLite**: `false` = `false`
 
-#### QL_550.family
+#### QL\_550.family
 
 > `readonly` **family**: `"brother-ql"` = `'brother-ql'`
 
-#### QL_550.headPins
+#### QL\_550.headPins
 
 > `readonly` **headPins**: `720` = `720`
 
-#### QL_550.name
+#### QL\_550.name
 
 > `readonly` **name**: `"QL-550"` = `'QL-550'`
 
-#### QL_550.network
+#### QL\_550.network
 
 > `readonly` **network**: `"none"` = `'none'`
 
-#### QL_550.pid
+#### QL\_550.pid
 
 > `readonly` **pid**: `8214` = `0x2016`
 
-#### QL_550.transports
+#### QL\_550.transports
 
 > `readonly` **transports**: \[`"usb"`, `"webusb"`\]
 
-#### QL_550.twoColor
+#### QL\_550.twoColor
 
 > `readonly` **twoColor**: `false` = `false`
 
-#### QL_550.vid
+#### QL\_550.vid
 
 > `readonly` **vid**: `1273` = `0x04f9`
 
-### QL_560
+### QL\_560
 
-> `readonly` **QL_560**: `object`
+> `readonly` **QL\_560**: `object`
 
-#### QL_560.autocut
+#### QL\_560.autocut
 
 > `readonly` **autocut**: `true` = `true`
 
-#### QL_560.bytesPerRow
+#### QL\_560.bytesPerRow
 
 > `readonly` **bytesPerRow**: `90` = `90`
 
-#### QL_560.compression
+#### QL\_560.compression
 
 > `readonly` **compression**: `false` = `false`
 
-#### QL_560.editorLite
+#### QL\_560.editorLite
 
 > `readonly` **editorLite**: `false` = `false`
 
-#### QL_560.family
+#### QL\_560.family
 
 > `readonly` **family**: `"brother-ql"` = `'brother-ql'`
 
-#### QL_560.headPins
+#### QL\_560.headPins
 
 > `readonly` **headPins**: `720` = `720`
 
-#### QL_560.name
+#### QL\_560.name
 
 > `readonly` **name**: `"QL-560"` = `'QL-560'`
 
-#### QL_560.network
+#### QL\_560.network
 
 > `readonly` **network**: `"none"` = `'none'`
 
-#### QL_560.pid
+#### QL\_560.pid
 
 > `readonly` **pid**: `8216` = `0x2018`
 
-#### QL_560.transports
+#### QL\_560.transports
 
 > `readonly` **transports**: \[`"usb"`, `"webusb"`\]
 
-#### QL_560.twoColor
+#### QL\_560.twoColor
 
 > `readonly` **twoColor**: `false` = `false`
 
-#### QL_560.vid
+#### QL\_560.vid
 
 > `readonly` **vid**: `1273` = `0x04f9`
 
-### QL_570
+### QL\_570
 
-> `readonly` **QL_570**: `object`
+> `readonly` **QL\_570**: `object`
 
-#### QL_570.autocut
+#### QL\_570.autocut
 
 > `readonly` **autocut**: `true` = `true`
 
-#### QL_570.bytesPerRow
+#### QL\_570.bytesPerRow
 
 > `readonly` **bytesPerRow**: `90` = `90`
 
-#### QL_570.compression
+#### QL\_570.compression
 
 > `readonly` **compression**: `true` = `true`
 
-#### QL_570.editorLite
+#### QL\_570.editorLite
 
 > `readonly` **editorLite**: `false` = `false`
 
-#### QL_570.family
+#### QL\_570.family
 
 > `readonly` **family**: `"brother-ql"` = `'brother-ql'`
 
-#### QL_570.headPins
+#### QL\_570.headPins
 
 > `readonly` **headPins**: `720` = `720`
 
-#### QL_570.name
+#### QL\_570.name
 
 > `readonly` **name**: `"QL-570"` = `'QL-570'`
 
-#### QL_570.network
+#### QL\_570.network
 
 > `readonly` **network**: `"none"` = `'none'`
 
-#### QL_570.pid
+#### QL\_570.pid
 
 > `readonly` **pid**: `8217` = `0x2019`
 
-#### QL_570.transports
+#### QL\_570.transports
 
 > `readonly` **transports**: \[`"usb"`, `"webusb"`\]
 
-#### QL_570.twoColor
+#### QL\_570.twoColor
 
 > `readonly` **twoColor**: `false` = `false`
 
-#### QL_570.vid
+#### QL\_570.vid
 
 > `readonly` **vid**: `1273` = `0x04f9`
 
-### QL_580N
+### QL\_580N
 
-> `readonly` **QL_580N**: `object`
+> `readonly` **QL\_580N**: `object`
 
-#### QL_580N.autocut
+#### QL\_580N.autocut
 
 > `readonly` **autocut**: `true` = `true`
 
-#### QL_580N.bytesPerRow
+#### QL\_580N.bytesPerRow
 
 > `readonly` **bytesPerRow**: `90` = `90`
 
-#### QL_580N.compression
+#### QL\_580N.compression
 
 > `readonly` **compression**: `true` = `true`
 
-#### QL_580N.editorLite
+#### QL\_580N.editorLite
 
 > `readonly` **editorLite**: `false` = `false`
 
-#### QL_580N.family
+#### QL\_580N.family
 
 > `readonly` **family**: `"brother-ql"` = `'brother-ql'`
 
-#### QL_580N.headPins
+#### QL\_580N.headPins
 
 > `readonly` **headPins**: `720` = `720`
 
-#### QL_580N.name
+#### QL\_580N.name
 
 > `readonly` **name**: `"QL-580N"` = `'QL-580N'`
 
-#### QL_580N.network
+#### QL\_580N.network
 
 > `readonly` **network**: `"wired"` = `'wired'`
 
-#### QL_580N.pid
+#### QL\_580N.pid
 
 > `readonly` **pid**: `8219` = `0x201b`
 
-#### QL_580N.transports
+#### QL\_580N.transports
 
 > `readonly` **transports**: \[`"usb"`, `"webusb"`, `"tcp"`\]
 
-#### QL_580N.twoColor
+#### QL\_580N.twoColor
 
 > `readonly` **twoColor**: `false` = `false`
 
-#### QL_580N.vid
+#### QL\_580N.vid
 
 > `readonly` **vid**: `1273` = `0x04f9`
 
-### QL_600
+### QL\_600
 
-> `readonly` **QL_600**: `object`
+> `readonly` **QL\_600**: `object`
 
-#### QL_600.autocut
+#### QL\_600.autocut
 
 > `readonly` **autocut**: `true` = `true`
 
-#### QL_600.bytesPerRow
+#### QL\_600.bytesPerRow
 
 > `readonly` **bytesPerRow**: `90` = `90`
 
-#### QL_600.compression
+#### QL\_600.compression
 
 > `readonly` **compression**: `true` = `true`
 
-#### QL_600.editorLite
+#### QL\_600.editorLite
 
 > `readonly` **editorLite**: `false` = `false`
 
-#### QL_600.family
+#### QL\_600.family
 
 > `readonly` **family**: `"brother-ql"` = `'brother-ql'`
 
-#### QL_600.headPins
+#### QL\_600.headPins
 
 > `readonly` **headPins**: `720` = `720`
 
-#### QL_600.name
+#### QL\_600.name
 
 > `readonly` **name**: `"QL-600"` = `'QL-600'`
 
-#### QL_600.network
+#### QL\_600.network
 
 > `readonly` **network**: `"none"` = `'none'`
 
-#### QL_600.pid
+#### QL\_600.pid
 
 > `readonly` **pid**: `8448` = `0x2100`
 
-#### QL_600.transports
+#### QL\_600.transports
 
 > `readonly` **transports**: \[`"usb"`, `"webusb"`\]
 
-#### QL_600.twoColor
+#### QL\_600.twoColor
 
 > `readonly` **twoColor**: `false` = `false`
 
-#### QL_600.vid
+#### QL\_600.vid
 
 > `readonly` **vid**: `1273` = `0x04f9`
 
-### QL_650TD
+### QL\_650TD
 
-> `readonly` **QL_650TD**: `object`
+> `readonly` **QL\_650TD**: `object`
 
-#### QL_650TD.autocut
+#### QL\_650TD.autocut
 
 > `readonly` **autocut**: `true` = `true`
 
-#### QL_650TD.bytesPerRow
+#### QL\_650TD.bytesPerRow
 
 > `readonly` **bytesPerRow**: `90` = `90`
 
-#### QL_650TD.compression
+#### QL\_650TD.compression
 
 > `readonly` **compression**: `true` = `true`
 
-#### QL_650TD.editorLite
+#### QL\_650TD.editorLite
 
 > `readonly` **editorLite**: `false` = `false`
 
-#### QL_650TD.family
+#### QL\_650TD.family
 
 > `readonly` **family**: `"brother-ql"` = `'brother-ql'`
 
-#### QL_650TD.headPins
+#### QL\_650TD.headPins
 
 > `readonly` **headPins**: `720` = `720`
 
-#### QL_650TD.name
+#### QL\_650TD.name
 
 > `readonly` **name**: `"QL-650TD"` = `'QL-650TD'`
 
-#### QL_650TD.network
+#### QL\_650TD.network
 
 > `readonly` **network**: `"none"` = `'none'`
 
-#### QL_650TD.pid
+#### QL\_650TD.pid
 
 > `readonly` **pid**: `8220` = `0x201c`
 
-#### QL_650TD.transports
+#### QL\_650TD.transports
 
 > `readonly` **transports**: \[`"usb"`, `"webusb"`\]
 
-#### QL_650TD.twoColor
+#### QL\_650TD.twoColor
 
 > `readonly` **twoColor**: `false` = `false`
 
-#### QL_650TD.vid
+#### QL\_650TD.vid
 
 > `readonly` **vid**: `1273` = `0x04f9`
 
-### QL_700
+### QL\_700
 
-> `readonly` **QL_700**: `object`
+> `readonly` **QL\_700**: `object`
 
-#### QL_700.autocut
+#### QL\_700.autocut
 
 > `readonly` **autocut**: `true` = `true`
 
-#### QL_700.bytesPerRow
+#### QL\_700.bytesPerRow
 
 > `readonly` **bytesPerRow**: `90` = `90`
 
-#### QL_700.compression
+#### QL\_700.compression
 
 > `readonly` **compression**: `true` = `true`
 
-#### QL_700.editorLite
+#### QL\_700.editorLite
 
 > `readonly` **editorLite**: `true` = `true`
 
-#### QL_700.family
+#### QL\_700.family
 
 > `readonly` **family**: `"brother-ql"` = `'brother-ql'`
 
-#### QL_700.headPins
+#### QL\_700.headPins
 
 > `readonly` **headPins**: `720` = `720`
 
-#### QL_700.name
+#### QL\_700.name
 
 > `readonly` **name**: `"QL-700"` = `'QL-700'`
 
-#### QL_700.network
+#### QL\_700.network
 
 > `readonly` **network**: `"none"` = `'none'`
 
-#### QL_700.pid
+#### QL\_700.pid
 
 > `readonly` **pid**: `8258` = `0x2042`
 
-#### QL_700.transports
+#### QL\_700.transports
 
 > `readonly` **transports**: \[`"usb"`, `"webusb"`\]
 
-#### QL_700.twoColor
+#### QL\_700.twoColor
 
 > `readonly` **twoColor**: `false` = `false`
 
-#### QL_700.vid
+#### QL\_700.vid
 
 > `readonly` **vid**: `1273` = `0x04f9`
 
-### QL_710W
+### QL\_710W
 
-> `readonly` **QL_710W**: `object`
+> `readonly` **QL\_710W**: `object`
 
-#### QL_710W.autocut
+#### QL\_710W.autocut
 
 > `readonly` **autocut**: `true` = `true`
 
-#### QL_710W.bytesPerRow
+#### QL\_710W.bytesPerRow
 
 > `readonly` **bytesPerRow**: `90` = `90`
 
-#### QL_710W.compression
+#### QL\_710W.compression
 
 > `readonly` **compression**: `true` = `true`
 
-#### QL_710W.editorLite
+#### QL\_710W.editorLite
 
 > `readonly` **editorLite**: `true` = `true`
 
-#### QL_710W.family
+#### QL\_710W.family
 
 > `readonly` **family**: `"brother-ql"` = `'brother-ql'`
 
-#### QL_710W.headPins
+#### QL\_710W.headPins
 
 > `readonly` **headPins**: `720` = `720`
 
-#### QL_710W.name
+#### QL\_710W.name
 
 > `readonly` **name**: `"QL-710W"` = `'QL-710W'`
 
-#### QL_710W.network
+#### QL\_710W.network
 
 > `readonly` **network**: `"wifi"` = `'wifi'`
 
-#### QL_710W.pid
+#### QL\_710W.pid
 
 > `readonly` **pid**: `8260` = `0x2044`
 
-#### QL_710W.transports
+#### QL\_710W.transports
 
 > `readonly` **transports**: \[`"usb"`, `"webusb"`, `"tcp"`\]
 
-#### QL_710W.twoColor
+#### QL\_710W.twoColor
 
 > `readonly` **twoColor**: `false` = `false`
 
-#### QL_710W.vid
+#### QL\_710W.vid
 
 > `readonly` **vid**: `1273` = `0x04f9`
 
-### QL_720NW
+### QL\_720NW
 
-> `readonly` **QL_720NW**: `object`
+> `readonly` **QL\_720NW**: `object`
 
-#### QL_720NW.autocut
+#### QL\_720NW.autocut
 
 > `readonly` **autocut**: `true` = `true`
 
-#### QL_720NW.bytesPerRow
+#### QL\_720NW.bytesPerRow
 
 > `readonly` **bytesPerRow**: `90` = `90`
 
-#### QL_720NW.compression
+#### QL\_720NW.compression
 
 > `readonly` **compression**: `true` = `true`
 
-#### QL_720NW.editorLite
+#### QL\_720NW.editorLite
 
 > `readonly` **editorLite**: `false` = `false`
 
-#### QL_720NW.family
+#### QL\_720NW.family
 
 > `readonly` **family**: `"brother-ql"` = `'brother-ql'`
 
-#### QL_720NW.headPins
+#### QL\_720NW.headPins
 
 > `readonly` **headPins**: `720` = `720`
 
-#### QL_720NW.name
+#### QL\_720NW.name
 
 > `readonly` **name**: `"QL-720NW"` = `'QL-720NW'`
 
-#### QL_720NW.network
+#### QL\_720NW.network
 
 > `readonly` **network**: `"wired"` = `'wired'`
 
-#### QL_720NW.pid
+#### QL\_720NW.pid
 
 > `readonly` **pid**: `8261` = `0x2045`
 
-#### QL_720NW.transports
+#### QL\_720NW.transports
 
 > `readonly` **transports**: \[`"usb"`, `"webusb"`, `"tcp"`\]
 
-#### QL_720NW.twoColor
+#### QL\_720NW.twoColor
 
 > `readonly` **twoColor**: `false` = `false`
 
-#### QL_720NW.vid
+#### QL\_720NW.vid
 
 > `readonly` **vid**: `1273` = `0x04f9`
 
-### QL_800
+### QL\_800
 
-> `readonly` **QL_800**: `object`
+> `readonly` **QL\_800**: `object`
 
-#### QL_800.autocut
+#### QL\_800.autocut
 
 > `readonly` **autocut**: `true` = `true`
 
-#### QL_800.bytesPerRow
+#### QL\_800.bytesPerRow
 
 > `readonly` **bytesPerRow**: `90` = `90`
 
-#### QL_800.compression
+#### QL\_800.compression
 
 > `readonly` **compression**: `true` = `true`
 
-#### QL_800.editorLite
+#### QL\_800.editorLite
 
 > `readonly` **editorLite**: `true` = `true`
 
-#### QL_800.family
+#### QL\_800.family
 
 > `readonly` **family**: `"brother-ql"` = `'brother-ql'`
 
-#### QL_800.headPins
+#### QL\_800.headPins
 
 > `readonly` **headPins**: `720` = `720`
 
-#### QL_800.name
+#### QL\_800.name
 
 > `readonly` **name**: `"QL-800"` = `'QL-800'`
 
-#### QL_800.network
+#### QL\_800.network
 
 > `readonly` **network**: `"none"` = `'none'`
 
-#### QL_800.pid
+#### QL\_800.pid
 
 > `readonly` **pid**: `8347` = `0x209b`
 
-#### QL_800.transports
+#### QL\_800.transports
 
 > `readonly` **transports**: \[`"usb"`, `"webusb"`\]
 
-#### QL_800.twoColor
+#### QL\_800.twoColor
 
 > `readonly` **twoColor**: `true` = `true`
 
-#### QL_800.vid
+#### QL\_800.vid
 
 > `readonly` **vid**: `1273` = `0x04f9`
 
-### QL_810W
+### QL\_810W
 
-> `readonly` **QL_810W**: `object`
+> `readonly` **QL\_810W**: `object`
 
-#### QL_810W.autocut
+#### QL\_810W.autocut
 
 > `readonly` **autocut**: `true` = `true`
 
-#### QL_810W.bytesPerRow
+#### QL\_810W.bytesPerRow
 
 > `readonly` **bytesPerRow**: `90` = `90`
 
-#### QL_810W.compression
+#### QL\_810W.compression
 
 > `readonly` **compression**: `true` = `true`
 
-#### QL_810W.editorLite
+#### QL\_810W.editorLite
 
 > `readonly` **editorLite**: `true` = `true`
 
-#### QL_810W.family
+#### QL\_810W.family
 
 > `readonly` **family**: `"brother-ql"` = `'brother-ql'`
 
-#### QL_810W.headPins
+#### QL\_810W.headPins
 
 > `readonly` **headPins**: `720` = `720`
 
-#### QL_810W.name
+#### QL\_810W.name
 
 > `readonly` **name**: `"QL-810W"` = `'QL-810W'`
 
-#### QL_810W.network
+#### QL\_810W.network
 
 > `readonly` **network**: `"wifi"` = `'wifi'`
 
-#### QL_810W.pid
+#### QL\_810W.pid
 
 > `readonly` **pid**: `8348` = `0x209c`
 
-#### QL_810W.transports
+#### QL\_810W.transports
 
 > `readonly` **transports**: \[`"usb"`, `"webusb"`, `"tcp"`\]
 
-#### QL_810W.twoColor
+#### QL\_810W.twoColor
 
 > `readonly` **twoColor**: `true` = `true`
 
-#### QL_810W.vid
+#### QL\_810W.vid
 
 > `readonly` **vid**: `1273` = `0x04f9`
 
-### QL_820NWB
+### QL\_820NWB
 
-> `readonly` **QL_820NWB**: `object`
+> `readonly` **QL\_820NWB**: `object`
 
-#### QL_820NWB.autocut
+#### QL\_820NWB.autocut
 
 > `readonly` **autocut**: `true` = `true`
 
-#### QL_820NWB.bytesPerRow
+#### QL\_820NWB.bytesPerRow
 
 > `readonly` **bytesPerRow**: `90` = `90`
 
-#### QL_820NWB.compression
+#### QL\_820NWB.compression
 
 > `readonly` **compression**: `true` = `true`
 
-#### QL_820NWB.editorLite
+#### QL\_820NWB.editorLite
 
 > `readonly` **editorLite**: `true` = `true`
 
-#### QL_820NWB.family
+#### QL\_820NWB.family
 
 > `readonly` **family**: `"brother-ql"` = `'brother-ql'`
 
-#### QL_820NWB.headPins
+#### QL\_820NWB.headPins
 
 > `readonly` **headPins**: `720` = `720`
 
-#### QL_820NWB.name
+#### QL\_820NWB.name
 
 > `readonly` **name**: `"QL-820NWB"` = `'QL-820NWB'`
 
-#### QL_820NWB.network
+#### QL\_820NWB.network
 
 > `readonly` **network**: `"wifi+wired"` = `'wifi+wired'`
 
-#### QL_820NWB.pid
+#### QL\_820NWB.pid
 
 > `readonly` **pid**: `8359` = `0x20a7`
 
-#### QL_820NWB.transports
+#### QL\_820NWB.transports
 
 > `readonly` **transports**: \[`"usb"`, `"webusb"`, `"tcp"`, `"serial"`, `"web-serial"`\]
 
-#### QL_820NWB.twoColor
+#### QL\_820NWB.twoColor
 
 > `readonly` **twoColor**: `true` = `true`
 
-#### QL_820NWB.vid
+#### QL\_820NWB.vid
 
 > `readonly` **vid**: `1273` = `0x04f9`
 
-### QL_820NWBc
+### QL\_820NWBc
 
-> `readonly` **QL_820NWBc**: `object`
+> `readonly` **QL\_820NWBc**: `object`
 
-#### QL_820NWBc.autocut
+#### QL\_820NWBc.autocut
 
 > `readonly` **autocut**: `true` = `true`
 
-#### QL_820NWBc.bytesPerRow
+#### QL\_820NWBc.bytesPerRow
 
 > `readonly` **bytesPerRow**: `90` = `90`
 
-#### QL_820NWBc.compression
+#### QL\_820NWBc.compression
 
 > `readonly` **compression**: `true` = `true`
 
-#### QL_820NWBc.editorLite
+#### QL\_820NWBc.editorLite
 
 > `readonly` **editorLite**: `true` = `true`
 
-#### QL_820NWBc.family
+#### QL\_820NWBc.family
 
 > `readonly` **family**: `"brother-ql"` = `'brother-ql'`
 
-#### QL_820NWBc.headPins
+#### QL\_820NWBc.headPins
 
 > `readonly` **headPins**: `720` = `720`
 
-#### QL_820NWBc.name
+#### QL\_820NWBc.name
 
 > `readonly` **name**: `"QL-820NWBc"` = `'QL-820NWBc'`
 
-#### QL_820NWBc.network
+#### QL\_820NWBc.network
 
 > `readonly` **network**: `"wifi+wired"` = `'wifi+wired'`
 
-#### QL_820NWBc.pid
+#### QL\_820NWBc.pid
 
 > `readonly` **pid**: `8349` = `0x209d`
 
-#### QL_820NWBc.transports
+#### QL\_820NWBc.transports
 
 > `readonly` **transports**: \[`"usb"`, `"webusb"`, `"tcp"`, `"serial"`, `"web-serial"`\]
 
-#### QL_820NWBc.twoColor
+#### QL\_820NWBc.twoColor
 
 > `readonly` **twoColor**: `true` = `true`
 
-#### QL_820NWBc.vid
+#### QL\_820NWBc.vid
 
 > `readonly` **vid**: `1273` = `0x04f9`

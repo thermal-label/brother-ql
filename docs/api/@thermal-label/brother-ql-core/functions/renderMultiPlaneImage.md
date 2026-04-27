@@ -1,6 +1,6 @@
 [**Documentation**](../../../README.md)
 
----
+***
 
 [Documentation](../../../packages.md) / [@thermal-label/brother-ql-core](../README.md) / renderMultiPlaneImage
 
@@ -8,7 +8,7 @@
 
 > **renderMultiPlaneImage**(`image`, `options`): `Record`\<`string`, [`LabelBitmap`](../interfaces/LabelBitmap.md)\>
 
-Defined in: node_modules/.pnpm/@mbtech-nl+bitmap@1.2.1/node_modules/@mbtech-nl/bitmap/dist/multiplane.d.ts:44
+Defined in: node\_modules/.pnpm/@mbtech-nl+bitmap@1.2.1/node\_modules/@mbtech-nl/bitmap/dist/multiplane.d.ts:44
 
 Convert RGBA pixel data into one 1bpp `LabelBitmap` per palette entry.
 
@@ -47,15 +47,15 @@ See MultiPlaneRenderOptions.
 `Record`\<`string`, [`LabelBitmap`](../interfaces/LabelBitmap.md)\>
 
 A record keyed by palette entry name; each value is the 1bpp
-plane for that ink colour. Dimensions match the input (or are swapped
-when `rotate` is 90 or 270).
+  plane for that ink colour. Dimensions match the input (or are swapped
+  when `rotate` is 90 or 270).
 
 ## Throws
 
 On empty palette, > 254 entries, duplicate plane
-names or `rgb` tuples, name `'white'`, `rgb` outside `[0, 255]` or
-non-integer, `rgb` exactly `[255, 255, 255]`, zero-dimension image,
-or `data.length` mismatch.
+  names or `rgb` tuples, name `'white'`, `rgb` outside `[0, 255]` or
+  non-integer, `rgb` exactly `[255, 255, 255]`, zero-dimension image,
+  or `data.length` mismatch.
 
 ## Example
 

@@ -1,12 +1,12 @@
 [**Documentation**](../../../README.md)
 
----
+***
 
 [Documentation](../../../packages.md) / [@thermal-label/brother-ql-core](../README.md) / Transport
 
 # Interface: Transport
 
-Defined in: node_modules/.pnpm/@thermal-label+contracts@0.2.0/node_modules/@thermal-label/contracts/dist/transport.d.ts:8
+Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/transport.d.ts:8
 
 A bidirectional byte channel to a printer.
 
@@ -20,7 +20,7 @@ interface and never touch platform APIs directly.
 
 > `readonly` **connected**: `boolean`
 
-Defined in: node_modules/.pnpm/@thermal-label+contracts@0.2.0/node_modules/@thermal-label/contracts/dist/transport.d.ts:34
+Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/transport.d.ts:34
 
 Whether the transport is currently connected.
 
@@ -30,7 +30,7 @@ Whether the transport is currently connected.
 
 > **close**(): `Promise`\<`void`\>
 
-Defined in: node_modules/.pnpm/@thermal-label+contracts@0.2.0/node_modules/@thermal-label/contracts/dist/transport.d.ts:32
+Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/transport.d.ts:32
 
 Close the connection.
 
@@ -40,13 +40,13 @@ Always safe to call multiple times. Always `await` the result.
 
 `Promise`\<`void`\>
 
----
+***
 
 ### read()
 
 > **read**(`length`, `timeout?`): `Promise`\<`Uint8Array`\>
 
-Defined in: node_modules/.pnpm/@thermal-label+contracts@0.2.0/node_modules/@thermal-label/contracts/dist/transport.d.ts:26
+Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/transport.d.ts:26
 
 Read bytes from the printer.
 
@@ -81,13 +81,13 @@ TransportTimeoutError on timeout.
 
 TransportClosedError if the transport is closed mid-read.
 
----
+***
 
 ### write()
 
 > **write**(`data`): `Promise`\<`void`\>
 
-Defined in: node_modules/.pnpm/@thermal-label+contracts@0.2.0/node_modules/@thermal-label/contracts/dist/transport.d.ts:10
+Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/transport.d.ts:10
 
 Send bytes to the printer.
 

@@ -1,6 +1,6 @@
 [**Documentation**](../../../README.md)
 
----
+***
 
 [Documentation](../../../packages.md) / [@thermal-label/brother-ql-core](../README.md) / pickRotation
 
@@ -8,7 +8,7 @@
 
 > **pickRotation**(`image`, `media`, `familyDirection`, `override?`): `0` \| `90` \| `180` \| `270`
 
-Defined in: node_modules/.pnpm/@thermal-label+contracts@0.2.0/node_modules/@thermal-label/contracts/dist/orientation.d.ts:32
+Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/orientation.d.ts:32
 
 Pick the rotation value to pass to `renderImage` / `renderMultiPlaneImage`.
 
@@ -55,7 +55,7 @@ Driver family's rotation direction.
 `0` \| `"auto"` \| `90` \| `180` \| `270`
 
 Caller's per-print override. `'auto'` means
-"use the heuristic" (same as omitted).
+                        "use the heuristic" (same as omitted).
 
 ## Returns
 

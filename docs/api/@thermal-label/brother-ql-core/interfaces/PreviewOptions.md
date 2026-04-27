@@ -1,12 +1,12 @@
 [**Documentation**](../../../README.md)
 
----
+***
 
 [Documentation](../../../packages.md) / [@thermal-label/brother-ql-core](../README.md) / PreviewOptions
 
 # Interface: PreviewOptions
 
-Defined in: node_modules/.pnpm/@thermal-label+contracts@0.2.0/node_modules/@thermal-label/contracts/dist/preview.d.ts:10
+Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/preview.d.ts:10
 
 Options for `PrinterAdapter.createPreview()`.
 
@@ -20,7 +20,7 @@ own options, not on this cross-family interface.
 
 > `optional` **media?**: [`MediaDescriptor`](MediaDescriptor.md)
 
-Defined in: node_modules/.pnpm/@thermal-label+contracts@0.2.0/node_modules/@thermal-label/contracts/dist/preview.d.ts:23
+Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/preview.d.ts:23
 
 Override detected media. Use when:
 

@@ -1,6 +1,6 @@
 [**Documentation**](../../README.md)
 
----
+***
 
 [Documentation](../../packages.md) / @thermal-label/brother-ql-core
 
@@ -67,11 +67,11 @@ MIT © Mannes Brak
 
 ## Variables
 
-- [DEFAULT_MEDIA](variables/DEFAULT_MEDIA.md)
+- [DEFAULT\_MEDIA](variables/DEFAULT_MEDIA.md)
 - [DEVICES](variables/DEVICES.md)
 - [MEDIA](variables/MEDIA.md)
-- [ROTATE_DIRECTION](variables/ROTATE_DIRECTION.md)
-- [STATUS_REQUEST](variables/STATUS_REQUEST.md)
+- [ROTATE\_DIRECTION](variables/ROTATE_DIRECTION.md)
+- [STATUS\_REQUEST](variables/STATUS_REQUEST.md)
 
 ## Functions
 

@@ -1,6 +1,6 @@
 [**Documentation**](README.md)
 
----
+***
 
 # Documentation
 

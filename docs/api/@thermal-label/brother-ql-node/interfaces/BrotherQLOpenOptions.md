@@ -1,12 +1,12 @@
 [**Documentation**](../../../README.md)
 
----
+***
 
 [Documentation](../../../packages.md) / [@thermal-label/brother-ql-node](../README.md) / BrotherQLOpenOptions
 
 # Interface: BrotherQLOpenOptions
 
-Defined in: [packages/node/src/discovery.ts:16](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/node/src/discovery.ts#L16)
+Defined in: [packages/node/src/discovery.ts:16](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/node/src/discovery.ts#L16)
 
 Driver-specific `openPrinter` options.
 
@@ -25,7 +25,7 @@ RFCOMM ignores it, but `serialport` requires a value.
 
 > `optional` **baudRate?**: `number`
 
-Defined in: [packages/node/src/discovery.ts:24](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/node/src/discovery.ts#L24)
+Defined in: [packages/node/src/discovery.ts:24](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/node/src/discovery.ts#L24)
 
 Baud rate override; defaults to 9600.
 
@@ -33,13 +33,13 @@ Baud rate override; defaults to 9600.
 
 `OpenOptions.baudRate`
 
----
+***
 
 ### host?
 
 > `optional` **host?**: `string`
 
-Defined in: node_modules/.pnpm/@thermal-label+contracts@0.2.0/node_modules/@thermal-label/contracts/dist/discovery.d.ts:38
+Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/discovery.d.ts:38
 
 TCP host (IP or hostname).
 
@@ -47,25 +47,25 @@ TCP host (IP or hostname).
 
 `OpenOptions.host`
 
----
+***
 
 ### path?
 
 > `optional` **path?**: `string`
 
-Defined in: [packages/node/src/discovery.ts:22](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/node/src/discovery.ts#L22)
+Defined in: [packages/node/src/discovery.ts:22](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/node/src/discovery.ts#L22)
 
 Serial device path — e.g. `/dev/rfcomm0` (Linux) or `COM3`
 (Windows) after pairing the printer via the OS Bluetooth
 settings. Mutually exclusive with `host` and the USB fields.
 
----
+***
 
 ### pid?
 
 > `optional` **pid?**: `number`
 
-Defined in: node_modules/.pnpm/@thermal-label+contracts@0.2.0/node_modules/@thermal-label/contracts/dist/discovery.d.ts:34
+Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/discovery.d.ts:34
 
 Match by USB Product ID.
 
@@ -73,13 +73,13 @@ Match by USB Product ID.
 
 `OpenOptions.pid`
 
----
+***
 
 ### port?
 
 > `optional` **port?**: `number`
 
-Defined in: node_modules/.pnpm/@thermal-label+contracts@0.2.0/node_modules/@thermal-label/contracts/dist/discovery.d.ts:40
+Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/discovery.d.ts:40
 
 TCP port. Default 9100.
 
@@ -87,13 +87,13 @@ TCP port. Default 9100.
 
 `OpenOptions.port`
 
----
+***
 
 ### serialNumber?
 
 > `optional` **serialNumber?**: `string`
 
-Defined in: node_modules/.pnpm/@thermal-label+contracts@0.2.0/node_modules/@thermal-label/contracts/dist/discovery.d.ts:36
+Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/discovery.d.ts:36
 
 Match by USB / mDNS serial number.
 
@@ -101,13 +101,13 @@ Match by USB / mDNS serial number.
 
 `OpenOptions.serialNumber`
 
----
+***
 
 ### serialPath?
 
 > `optional` **serialPath?**: `string`
 
-Defined in: node_modules/.pnpm/@thermal-label+contracts@0.2.0/node_modules/@thermal-label/contracts/dist/discovery.d.ts:45
+Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/discovery.d.ts:45
 
 Serial port path. Examples: `/dev/rfcomm0` (Linux, Bluetooth SPP),
 `/dev/ttyUSB0` (Linux, USB-serial adapter), `COM3` (Windows).
@@ -116,13 +116,13 @@ Serial port path. Examples: `/dev/rfcomm0` (Linux, Bluetooth SPP),
 
 `OpenOptions.serialPath`
 
----
+***
 
 ### vid?
 
 > `optional` **vid?**: `number`
 
-Defined in: node_modules/.pnpm/@thermal-label+contracts@0.2.0/node_modules/@thermal-label/contracts/dist/discovery.d.ts:32
+Defined in: node\_modules/.pnpm/@thermal-label+contracts@0.2.0/node\_modules/@thermal-label/contracts/dist/discovery.d.ts:32
 
 Match by USB Vendor ID.
 

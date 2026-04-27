@@ -1,12 +1,12 @@
 [**Documentation**](../../../README.md)
 
----
+***
 
 [Documentation](../../../packages.md) / [@thermal-label/brother-ql-node](../README.md) / BrotherQLPrinter
 
 # Class: BrotherQLPrinter
 
-Defined in: [packages/node/src/printer.ts:64](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/node/src/printer.ts#L64)
+Defined in: [packages/node/src/printer.ts:64](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/node/src/printer.ts#L64)
 
 Node.js driver for Brother QL label printers.
 
@@ -34,7 +34,7 @@ with `options.rotate`.
 
 > **new BrotherQLPrinter**(`device`, `transport`, `transportType`): `BrotherQLPrinter`
 
-Defined in: [packages/node/src/printer.ts:72](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/node/src/printer.ts#L72)
+Defined in: [packages/node/src/printer.ts:72](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/node/src/printer.ts#L72)
 
 #### Parameters
 
@@ -60,7 +60,7 @@ Defined in: [packages/node/src/printer.ts:72](https://github.com/thermal-label/b
 
 > `readonly` **device**: [`BrotherQLDevice`](../../brother-ql-core/interfaces/BrotherQLDevice.md)
 
-Defined in: [packages/node/src/printer.ts:66](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/node/src/printer.ts#L66)
+Defined in: [packages/node/src/printer.ts:66](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/node/src/printer.ts#L66)
 
 The device descriptor for the connected printer.
 
@@ -72,13 +72,13 @@ raw TCP connection to a known IP).
 
 [`PrinterAdapter`](../../brother-ql-core/interfaces/PrinterAdapter.md).[`device`](../../brother-ql-core/interfaces/PrinterAdapter.md#device)
 
----
+***
 
 ### family
 
 > `readonly` **family**: `"brother-ql"`
 
-Defined in: [packages/node/src/printer.ts:65](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/node/src/printer.ts#L65)
+Defined in: [packages/node/src/printer.ts:65](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/node/src/printer.ts#L65)
 
 Driver family identifier, e.g. `'brother-ql'` or `'labelwriter'`.
 
@@ -86,13 +86,13 @@ Driver family identifier, e.g. `'brother-ql'` or `'labelwriter'`.
 
 [`PrinterAdapter`](../../brother-ql-core/interfaces/PrinterAdapter.md).[`family`](../../brother-ql-core/interfaces/PrinterAdapter.md#family)
 
----
+***
 
 ### transportType
 
 > `readonly` **transportType**: [`TransportType`](../../brother-ql-core/type-aliases/TransportType.md)
 
-Defined in: [packages/node/src/printer.ts:67](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/node/src/printer.ts#L67)
+Defined in: [packages/node/src/printer.ts:67](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/node/src/printer.ts#L67)
 
 ## Accessors
 
@@ -102,7 +102,7 @@ Defined in: [packages/node/src/printer.ts:67](https://github.com/thermal-label/b
 
 > **get** **connected**(): `boolean`
 
-Defined in: [packages/node/src/printer.ts:82](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/node/src/printer.ts#L82)
+Defined in: [packages/node/src/printer.ts:82](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/node/src/printer.ts#L82)
 
 Whether the printer is currently connected.
 
@@ -116,7 +116,7 @@ Whether the printer is currently connected.
 
 [`PrinterAdapter`](../../brother-ql-core/interfaces/PrinterAdapter.md).[`connected`](../../brother-ql-core/interfaces/PrinterAdapter.md#connected)
 
----
+***
 
 ### model
 
@@ -124,7 +124,7 @@ Whether the printer is currently connected.
 
 > **get** **model**(): `string`
 
-Defined in: [packages/node/src/printer.ts:78](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/node/src/printer.ts#L78)
+Defined in: [packages/node/src/printer.ts:78](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/node/src/printer.ts#L78)
 
 Human-readable model name from the driver's device registry.
 
@@ -144,7 +144,7 @@ Human-readable model name from the driver's device registry.
 
 > **close**(): `Promise`\<`void`\>
 
-Defined in: [packages/node/src/printer.ts:164](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/node/src/printer.ts#L164)
+Defined in: [packages/node/src/printer.ts:164](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/node/src/printer.ts#L164)
 
 Close the connection. Always call in `finally` blocks.
 
@@ -156,13 +156,13 @@ Close the connection. Always call in `finally` blocks.
 
 [`PrinterAdapter`](../../brother-ql-core/interfaces/PrinterAdapter.md).[`close`](../../brother-ql-core/interfaces/PrinterAdapter.md#close)
 
----
+***
 
 ### createPreview()
 
 > **createPreview**(`image`, `options?`): `Promise`\<[`PreviewResult`](../../brother-ql-core/interfaces/PreviewResult.md)\>
 
-Defined in: [packages/node/src/printer.ts:132](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/node/src/printer.ts#L132)
+Defined in: [packages/node/src/printer.ts:132](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/node/src/printer.ts#L132)
 
 Generate a preview showing how this printer would reproduce the
 design on the given media. Returns separated 1bpp planes with
@@ -190,9 +190,9 @@ For offline preview without a live connection, use the static
 [`PreviewOptions`](../../brother-ql-core/interfaces/PreviewOptions.md)
 
 — optional media override. If media is omitted, uses
-detected media from the last `getStatus()`. If no status is
-available, the driver defaults to single-colour at the printer's
-native head width and sets `PreviewResult.assumed = true`.
+  detected media from the last `getStatus()`. If no status is
+  available, the driver defaults to single-colour at the printer's
+  native head width and sets `PreviewResult.assumed = true`.
 
 #### Returns
 
@@ -202,13 +202,13 @@ native head width and sets `PreviewResult.assumed = true`.
 
 [`PrinterAdapter`](../../brother-ql-core/interfaces/PrinterAdapter.md).[`createPreview`](../../brother-ql-core/interfaces/PrinterAdapter.md#createpreview)
 
----
+***
 
 ### getStatus()
 
 > **getStatus**(): `Promise`\<[`BrotherQLStatus`](../../brother-ql-core/interfaces/BrotherQLStatus.md)\>
 
-Defined in: [packages/node/src/printer.ts:150](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/node/src/printer.ts#L150)
+Defined in: [packages/node/src/printer.ts:150](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/node/src/printer.ts#L150)
 
 Poll the status endpoint until 32 bytes are available.
 
@@ -224,13 +224,13 @@ delay up to `STATUS_POLL_ATTEMPTS` times.
 
 [`PrinterAdapter`](../../brother-ql-core/interfaces/PrinterAdapter.md).[`getStatus`](../../brother-ql-core/interfaces/PrinterAdapter.md#getstatus)
 
----
+***
 
 ### print()
 
 > **print**(`image`, `media?`, `options?`): `Promise`\<`void`\>
 
-Defined in: [packages/node/src/printer.ts:86](https://github.com/thermal-label/brother-ql/blob/b9cf9bb9ed69fab105b536392a59cd11110468d5/packages/node/src/printer.ts#L86)
+Defined in: [packages/node/src/printer.ts:86](https://github.com/thermal-label/brother-ql/blob/d0ec9fe85807f2ab345c5459dea92f1d08797936/packages/node/src/printer.ts#L86)
 
 Print from a full-colour RGBA image.
 
@@ -268,8 +268,8 @@ between sequential `print()` calls within the same session).
 [`MediaDescriptor`](../../brother-ql-core/interfaces/MediaDescriptor.md)
 
 — which media to print on. Determines dimensions,
-margins, and colour mode. If omitted, uses detected media from
-the last `getStatus()`.
+  margins, and colour mode. If omitted, uses detected media from
+  the last `getStatus()`.
 
 ##### options?
 
