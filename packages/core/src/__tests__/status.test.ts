@@ -9,6 +9,7 @@ function makeStatusBytes(
     mediaLengthMm: number;
     mediaTypeByte: number;
     statusType: number;
+    byte25: number;
   }>,
 ): Uint8Array {
   const bytes = new Uint8Array(32);
@@ -22,8 +23,47 @@ function makeStatusBytes(
   bytes[11] = overrides?.mediaTypeByte ?? 0x0a;
   bytes[17] = overrides?.mediaLengthMm ?? 0;
   bytes[18] = overrides?.statusType ?? 0x00;
+  bytes[25] = overrides?.byte25 ?? 0;
   return bytes;
 }
+
+/**
+ * Verbatim 32-byte captures from scripts/STATUS-CAPTURE.md. These lock
+ * in the byte-25 two-color flag against the registry — without them,
+ * the DK-22251/DK-22205 detection ambiguity could silently regress.
+ */
+function captureBytes(values: readonly number[]): Uint8Array {
+  if (values.length !== 32) throw new Error(`expected 32 bytes, got ${values.length.toString()}`);
+  return Uint8Array.from(values);
+}
+
+const CAPTURE_DK_22251 = captureBytes([
+  0x80, 0x20, 0x42, 0x34, 0x41, 0x30, 0x04, 0x00,
+  0x00, 0x00, 0x3e, 0x0a, 0x00, 0x00, 0x23, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x81, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+]);
+
+const CAPTURE_DK_22205 = captureBytes([
+  0x80, 0x20, 0x42, 0x34, 0x41, 0x30, 0x04, 0x00,
+  0x00, 0x00, 0x3e, 0x0a, 0x00, 0x00, 0x15, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+]);
+
+const CAPTURE_DK_11201 = captureBytes([
+  0x80, 0x20, 0x42, 0x34, 0x41, 0x30, 0x04, 0x00,
+  0x00, 0x00, 0x1d, 0x0b, 0x00, 0x00, 0x01, 0x00,
+  0x00, 0x5a, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+]);
+
+const CAPTURE_DK_22214 = captureBytes([
+  0x80, 0x20, 0x42, 0x34, 0x41, 0x30, 0x04, 0x00,
+  0x00, 0x00, 0x0c, 0x0a, 0x00, 0x00, 0x1a, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+]);
 
 describe('parseStatus', () => {
   it('throws on short input', () => {
@@ -94,6 +134,61 @@ describe('parseStatus', () => {
   it('editorLiteMode is on the BrotherQLStatus extension', () => {
     const status = parseStatus(makeStatusBytes());
     expect(status.editorLiteMode).toBe(false);
+  });
+
+  it('byte 25 bit 7 set → twoColorRoll=true and resolves to DK-22251', () => {
+    const status = parseStatus(
+      makeStatusBytes({ mediaWidthMm: 62, mediaTypeByte: 0x0a, byte25: 0x81 }),
+    );
+    expect(status.twoColorRoll).toBe(true);
+    expect(status.detectedMedia?.id).toBe(251);
+  });
+
+  it('byte 25 bit 7 clear → twoColorRoll=false and resolves to DK-22205', () => {
+    const status = parseStatus(
+      makeStatusBytes({ mediaWidthMm: 62, mediaTypeByte: 0x0a, byte25: 0x01 }),
+    );
+    expect(status.twoColorRoll).toBe(false);
+    expect(status.detectedMedia?.id).toBe(259);
+  });
+
+  it('twoColorRoll is omitted when no media is loaded', () => {
+    const status = parseStatus(makeStatusBytes({ mediaWidthMm: 0, mediaTypeByte: 0 }));
+    expect(status.twoColorRoll).toBeUndefined();
+  });
+});
+
+describe('parseStatus — real hardware captures', () => {
+  it('DK-22251 (62mm two-color continuous) resolves to id 251', () => {
+    const status = parseStatus(CAPTURE_DK_22251);
+    expect(status.mediaLoaded).toBe(true);
+    expect(status.detectedMedia?.id).toBe(251);
+    expect(status.twoColorRoll).toBe(true);
+    expect(status.errors).toEqual([]);
+  });
+
+  it('DK-22205 (62mm single-color continuous) resolves to id 259, NOT 251', () => {
+    const status = parseStatus(CAPTURE_DK_22205);
+    expect(status.mediaLoaded).toBe(true);
+    expect(status.detectedMedia?.id).toBe(259);
+    expect(status.twoColorRoll).toBe(false);
+    expect(status.errors).toEqual([]);
+  });
+
+  it('DK-11201 (29×90mm die-cut) resolves to id 271', () => {
+    const status = parseStatus(CAPTURE_DK_11201);
+    expect(status.mediaLoaded).toBe(true);
+    expect(status.detectedMedia?.id).toBe(271);
+    expect(status.twoColorRoll).toBe(false);
+    expect(status.errors).toEqual([]);
+  });
+
+  it('DK-22214 (12mm continuous) resolves to id 257', () => {
+    const status = parseStatus(CAPTURE_DK_22214);
+    expect(status.mediaLoaded).toBe(true);
+    expect(status.detectedMedia?.id).toBe(257);
+    expect(status.twoColorRoll).toBe(false);
+    expect(status.errors).toEqual([]);
   });
 });
 

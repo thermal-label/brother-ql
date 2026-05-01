@@ -26,7 +26,7 @@ export const MEDIA: Record<number, BrotherQLMedia> = {
   // Continuous length tape
   257: {
     id: 257,
-    name: '12mm continuous',
+    name: '12mm continuous (DK-22214)',
     type: 'continuous',
     widthMm: 12,
     printAreaDots: 106,
@@ -62,7 +62,7 @@ export const MEDIA: Record<number, BrotherQLMedia> = {
   },
   261: {
     id: 261,
-    name: '54mm continuous (DK-22214)',
+    name: '54mm continuous (DK-N55224)',
     type: 'continuous',
     widthMm: 54,
     printAreaDots: 590,

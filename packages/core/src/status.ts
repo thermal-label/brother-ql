@@ -37,6 +37,8 @@ const ERROR_INFO_2: { bit: number; code: string; message: string }[] = [
  *   byte 11 — media type (0x0A continuous, 0x0B die-cut)
  *   byte 17 — media length (mm), 0 for continuous
  *   byte 18 — status type (0x02 = error response)
+ *   byte 25 — bit 7 set when the loaded roll is two-color (DK-22251);
+ *             clear on single-color rolls. See scripts/STATUS-CAPTURE.md.
  *
  * `detectedMedia` is resolved against the media registry via
  * `findMediaByDimensions`. `editorLiteMode` is a driver-specific
@@ -57,6 +59,7 @@ export function parseStatus(bytes: Uint8Array): BrotherQLStatus {
   const mediaTypeByte = view.getUint8(11);
   const mediaLengthMm = view.getUint8(17);
   const statusType = view.getUint8(18);
+  const twoColorFlag = (view.getUint8(25) & 0x80) !== 0;
 
   const errors: PrinterError[] = [];
   for (const { bit, code, message } of ERROR_INFO_1) {
@@ -68,13 +71,14 @@ export function parseStatus(bytes: Uint8Array): BrotherQLStatus {
 
   const mediaLoaded = mediaWidthMm > 0 && mediaTypeByte !== 0;
   const detected = mediaLoaded
-    ? findMediaByDimensions(mediaWidthMm, mediaLengthMm, false)
+    ? findMediaByDimensions(mediaWidthMm, mediaLengthMm, twoColorFlag)
     : undefined;
 
   return {
     ready: errors.length === 0 && statusType !== 0x02,
     mediaLoaded,
     ...(detected === undefined ? {} : { detectedMedia: detected }),
+    ...(mediaLoaded ? { twoColorRoll: twoColorFlag } : {}),
     errors,
     editorLiteMode: false,
     rawBytes: bytes,

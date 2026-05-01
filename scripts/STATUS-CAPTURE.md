@@ -88,26 +88,74 @@ Captured: 2026-04-23 · Printer: QL-820NWBc (PID `0x209d`)
 [26–31] 0x00
 ```
 
-## Diff — what changed between the two rolls
+### DK-22205 — 62mm continuous (black on white)
+Captured: 2026-05-01 · Printer: QL-820NWBc (PID `0x209d`)
 
-| Byte | DK-22251        | DK-11201        | Hypothesis                                      |
-|-----:|:---------------:|:---------------:|-------------------------------------------------|
-|   10 | `0x3E` (62)     | `0x1D` (29)     | Media width — confirmed                         |
-|   11 | `0x0A`          | `0x0B`          | Continuous vs die-cut — confirmed               |
-|   14 | `0x23` (35)     | `0x01` (1)      | Unknown — tape cassette type code?              |
-|   17 | `0x00` (0)      | `0x5A` (90)     | Media length mm — confirmed                     |
-|   25 | `0x81` (10000001)| `0x01` (00000001)| Bit 7 = two-color flag? Needs DK-22205 to confirm |
+Disambiguating capture: same width and media type as DK-22251, differing only
+in color capability. Byte 25 bit 7 clear here (vs set on DK-22251) confirms
+bit 7 is the two-color flag, not a co-varying width/type artefact.
+
+```
+[00] 0x80  [01] 0x20  [02] 0x42  [03] 0x34  [04] 0x41
+[05] 0x30  [06] 0x04  [07] 0x00
+[08] 0x00  [09] 0x00                          ← no errors
+[10] 0x3E  ← 62 mm
+[11] 0x0A  ← continuous
+[12] 0x00  [13] 0x00
+[14] 0x15  ← ??
+[15] 0x00  [16] 0x00
+[17] 0x00  ← length 0 (continuous)
+[18] 0x00  [19] 0x00  [20] 0x00  [21] 0x00  [22] 0x00
+[23] 0x00  [24] 0x00
+[25] 0x01  ← bit 7 clear — single-color
+[26–31] 0x00
+```
+
+### DK-22214 — 12mm continuous (black on white)
+Captured: 2026-05-01 · Printer: QL-820NWBc (PID `0x209d`)
+
+Bonus capture — extends the byte-14 sample set.
+
+```
+[00] 0x80  [01] 0x20  [02] 0x42  [03] 0x34  [04] 0x41
+[05] 0x30  [06] 0x04  [07] 0x00
+[08] 0x00  [09] 0x00                          ← no errors
+[10] 0x0C  ← 12 mm
+[11] 0x0A  ← continuous
+[12] 0x00  [13] 0x00
+[14] 0x1A  ← ??
+[15] 0x00  [16] 0x00
+[17] 0x00  ← length 0 (continuous)
+[18] 0x00  [19] 0x00  [20] 0x00  [21] 0x00  [22] 0x00
+[23] 0x00  [24] 0x00
+[25] 0x01  ← bit 7 clear — single-color
+[26–31] 0x00
+```
+
+## Diff — what changed across captures
+
+| Byte | DK-22251           | DK-22205           | DK-22214           | DK-11201           | Conclusion                          |
+|-----:|:------------------:|:------------------:|:------------------:|:------------------:|-------------------------------------|
+|   10 | `0x3E` (62)        | `0x3E` (62)        | `0x0C` (12)        | `0x1D` (29)        | Media width mm — confirmed          |
+|   11 | `0x0A`             | `0x0A`             | `0x0A`             | `0x0B`             | Continuous vs die-cut — confirmed   |
+|   14 | `0x23` (35)        | `0x15` (21)        | `0x1A` (26)        | `0x01` (1)         | Per-SKU code — meaning unknown      |
+|   17 | `0x00` (0)         | `0x00` (0)         | `0x00` (0)         | `0x5A` (90)        | Media length mm — confirmed         |
+|   25 | `0x81` (10000001)  | `0x01` (00000001)  | `0x01` (00000001)  | `0x01` (00000001)  | **Bit 7 = two-color flag — confirmed** |
+
+Bit 7 of byte 25 splits cleanly: set on the only two-color roll, clear on
+three single-color rolls spanning two widths and both media types. Bit 0
+is set in all four captures (some always-on bit, ignore).
 
 ## What we still need
 
-To confirm whether byte [25] bit 7 reliably indicates two-color tape, we need at least one more data point: **a single-color continuous roll of the same width as DK-22251** — i.e. DK-22205 (62mm black on white). If byte [25] = `0x01` with DK-22205 loaded, the hypothesis is confirmed.
-
-Priority capture list (most useful first):
+The byte-25 two-color hypothesis is confirmed; no more captures are
+required for the bicolor-detection fix. Captures below remain
+nice-to-have for filling in byte-14 (per-SKU code, currently
+unexplained) and byte-17 cross-checks:
 
 | Roll       | Why useful                                                         |
 |------------|--------------------------------------------------------------------|
-| DK-22205   | 62mm single-color continuous — confirms byte [25] bit 7 hypothesis|
-| DK-22210   | 29mm continuous — gives us byte [14] for another continuous roll   |
+| DK-22210   | 29mm continuous — another byte [14] data point                     |
 | DK-11202   | 62×100mm die-cut — confirms byte [17] for a longer die-cut         |
 | DK-11204   | 17×54mm die-cut — smallest die-cut, confirms byte [17] = 54        |
 
@@ -115,4 +163,4 @@ Priority capture list (most useful first):
 
 1. **Status type is at byte [18], not byte [14]** — our code reads `bytes[14]` as status type but that byte is unknown/media-type-specific. Real status type is at `bytes[18]`.
 2. **Byte [17] (media length) is not parsed** — needed for die-cut auto-detection.
-3. **Byte [25] may encode two-color** — pending confirmation, but worth adding once confirmed.
+3. ~~**Byte [25] may encode two-color**~~ — confirmed (bit 7) by DK-22205 capture on 2026-05-01; fix tracked in `plans/backlog/fix-bicolor-detection.md`.
