@@ -130,7 +130,7 @@ describe('BrotherQLDiscovery', () => {
       usbOpen.mockResolvedValue(fakeTransport());
 
       const printer = await discovery.openPrinter();
-      expect(printer.device.pid).toBe(0x209d);
+      expect(printer.device.transports.usb?.pid).toBe('0x209d');
       expect(usbOpen).toHaveBeenCalledWith(0x04f9, 0x209d);
     });
 
@@ -142,7 +142,7 @@ describe('BrotherQLDiscovery', () => {
       usbOpen.mockResolvedValue(fakeTransport());
 
       const printer = await discovery.openPrinter({ vid: 0x04f9, pid: 0x209b });
-      expect(printer.device.pid).toBe(0x209b);
+      expect(printer.device.transports.usb?.pid).toBe('0x209b');
       expect(usbOpen).toHaveBeenCalledWith(0x04f9, 0x209b);
     });
 
@@ -154,7 +154,7 @@ describe('BrotherQLDiscovery', () => {
       usbOpen.mockResolvedValue(fakeTransport());
 
       const printer = await discovery.openPrinter({ serialNumber: 'SN-TARGET' });
-      expect(printer.device.pid).toBe(0x209d);
+      expect(printer.device.transports.usb?.pid).toBe('0x209d');
     });
 
     it('throws when no matching device is attached', async () => {

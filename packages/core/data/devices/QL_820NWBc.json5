@@ -2,16 +2,30 @@
 // We register only the `c` variant since it covers both names; users
 // looking up by PID will resolve correctly regardless of marketing label.
 {
+  key: 'QL_820NWBc',
   name: 'QL-820NWBc',
   family: 'brother-ql',
-  transports: ['usb', 'webusb', 'tcp', 'serial', 'web-serial'],
-  vid: 0x04f9,
-  pid: 0x209d,
-  headPins: 720,
-  bytesPerRow: 90,
-  twoColor: true,
-  network: 'wifi+wired',
-  autocut: true,
-  compression: true,
-  editorLite: true,
+  transports: {
+    usb: { vid: '0x04f9', pid: '0x209d' },
+    tcp: { port: 9100 },
+  },
+  engines: [
+    {
+      role: 'primary',
+      protocol: 'ql-raster',
+      dpi: 300,
+      headDots: 720,
+      mediaCompatibility: ['dk'],
+      capabilities: {
+        autocut: true,
+        mediaDetection: true,
+        twoColor: true,
+      },
+    },
+  ],
+  capabilities: {
+    editorLite: true,
+  },
+  hardwareQuirks: 'QL-820NWB and QL-820NWBc share PID 0x209d; this entry covers both marketing names. Bluetooth on this device is classic SPP (paired at the OS level via RFCOMM), not GATT — declared as the `bluetooth-spp` transport in a follow-up.',
+  support: { status: 'untested' },
 }

@@ -27,7 +27,6 @@ import type {
   Transport,
 } from '@thermal-label/brother-ql-core';
 import { MediaNotSpecifiedError } from '@thermal-label/contracts';
-import { buildUsbFilters } from '@thermal-label/transport';
 import { WebUsbTransport } from '@thermal-label/transport/web';
 
 const STATUS_BYTE_COUNT = 32;
@@ -138,7 +137,10 @@ export class WebBrotherQLPrinter implements PrinterAdapter {
   }
 }
 
-export const DEFAULT_FILTERS = buildUsbFilters(Object.values(DEVICES));
+export const DEFAULT_FILTERS: USBDeviceFilter[] = Object.values(DEVICES)
+  .map(d => d.transports.usb)
+  .filter((t): t is { vid: string; pid: string } => t !== undefined)
+  .map(t => ({ vendorId: parseInt(t.vid, 16), productId: parseInt(t.pid, 16) }));
 
 /**
  * Show the browser's USB picker and wrap the selected device.

@@ -38,8 +38,11 @@ const { DEVICES } = await import(CORE_DIST);
 // collide on 0x1002). The YAML's `name` only needs to match one of them.
 const devicesByPid = new Map();
 for (const dev of Object.values(DEVICES)) {
-  const list = devicesByPid.get(dev.pid);
-  if (list) list.push(dev); else devicesByPid.set(dev.pid, [dev]);
+  const usbPid = dev.transports?.usb?.pid;
+  if (typeof usbPid !== 'string') continue;
+  const numeric = parseInt(usbPid, 16);
+  const list = devicesByPid.get(numeric);
+  if (list) list.push(dev); else devicesByPid.set(numeric, [dev]);
 }
 
 let raw;
@@ -105,7 +108,18 @@ for (const [i, entry] of doc.devices.entries()) {
     if (typeof entry.transports !== 'object' || Array.isArray(entry.transports)) {
       fail(`${where}: transports must be a mapping`);
     } else {
-      const allowed = new Set(dev.transports);
+      // dev.transports is the new keyed object — derive a key set from it.
+      // Webusb / web-bluetooth / web-serial in YAML map to runtime impls of
+      // the underlying contracts transport keys; accept them when their
+      // base transport is declared.
+      const declared = new Set(Object.keys(dev.transports ?? {}));
+      const allowed = new Set(declared);
+      if (declared.has('usb')) allowed.add('webusb');
+      if (declared.has('serial') || declared.has('bluetooth-spp')) {
+        allowed.add('serial');
+        allowed.add('web-serial');
+      }
+      if (declared.has('bluetooth-gatt')) allowed.add('web-bluetooth');
       for (const [k, v] of Object.entries(entry.transports)) {
         if (!TRANSPORT_VALUES.has(k)) {
           fail(`${where}: transport "${k}" is not a known transport`);

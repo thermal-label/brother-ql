@@ -1,7 +1,8 @@
 import type { LabelBitmap } from '@mbtech-nl/bitmap';
 import type {
-  DeviceDescriptor,
+  DeviceEntry,
   MediaDescriptor,
+  PrintEngineCapabilities,
   PrintOptions,
   PrinterStatus,
 } from '@thermal-label/contracts';
@@ -9,35 +10,39 @@ import type {
 export type MediaType = 'continuous' | 'die-cut';
 export type HeadWidth = 720 | 1296;
 export type ColorMode = 'single' | 'two-color';
-export type NetworkSupport = 'none' | 'wifi' | 'wired' | 'wifi+wired';
 
 /**
- * Brother QL device descriptor.
+ * Brother-specific engine capabilities.
  *
- * Extends the contracts base with QL-specific fields: head geometry,
- * protocol feature flags, and the optional mass-storage PID for Editor
- * Lite mode.
+ * Extends the contracts-defined `PrintEngineCapabilities` (which
+ * carries the multi-vendor named flags `autocut` and `mediaDetection`)
+ * with the driver-side `twoColor` flag — Brother-only today, so it
+ * lands here via the contracts open index signature. Promote to a
+ * named contracts key when a second vendor implements the same
+ * capability with compatible semantics.
+ */
+export interface BrotherEngineCapabilities extends PrintEngineCapabilities {
+  /** Two-colour ribbon path — black + red plane raster encoding. */
+  twoColor?: boolean;
+}
+
+/**
+ * Brother QL device entry — alias for the contracts `DeviceEntry`
+ * shape. Re-exported under a driver-named type so consumers don't
+ * have to import contracts directly. Per-device chassis-level
+ * capabilities (`editorLite`, `massStoragePid`) ride on the open
+ * index signature of `DeviceEntry.capabilities`; engine-level flags
+ * (`autocut`, `mediaDetection`, `twoColor`) ride on
+ * `engines[].capabilities`.
  *
  * **Bluetooth on the QL-820NWB / 820NWBc**: not exposed over GATT.
- * Classic Bluetooth (SPP) is paired at the OS level; the kernel/driver
- * exposes an RFCOMM serial port, reachable via the `'serial'` transport
- * in Node.js and the `'web-serial'` transport in Chrome/Edge. macOS has
- * dropped classic Bluetooth SPP — no serial route there.
+ * Classic Bluetooth SPP is paired at the OS level — declared as the
+ * `bluetooth-spp` transport. The runtime's serial implementation
+ * satisfies that transport key by opening the OS-paired RFCOMM
+ * device path. macOS dropped classic Bluetooth SPP — no SPP route
+ * there.
  */
-export interface BrotherQLDevice extends DeviceDescriptor {
-  family: 'brother-ql';
-  vid: number;
-  pid: number;
-  headPins: HeadWidth;
-  bytesPerRow: number;
-  twoColor: boolean;
-  network: NetworkSupport;
-  autocut: boolean;
-  compression: boolean;
-  editorLite: boolean;
-  /** Alternate PID seen when the printer is in Editor Lite mass-storage mode. */
-  massStoragePid?: number;
-}
+export type BrotherQLDevice = DeviceEntry;
 
 /**
  * Brother QL media descriptor.

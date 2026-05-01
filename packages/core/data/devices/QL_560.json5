@@ -1,14 +1,22 @@
 {
+  key: 'QL_560',
   name: 'QL-560',
   family: 'brother-ql',
-  transports: ['usb', 'webusb'],
-  vid: 0x04f9,
-  pid: 0x2018,
-  headPins: 720,
-  bytesPerRow: 90,
-  twoColor: false,
-  network: 'none',
-  autocut: true,
-  compression: false,
-  editorLite: false,
+  transports: {
+    usb: { vid: '0x04f9', pid: '0x2018' },
+  },
+  engines: [
+    {
+      role: 'primary',
+      protocol: 'ql-raster',
+      dpi: 300,
+      headDots: 720,
+      mediaCompatibility: ['dk'],
+      capabilities: {
+        autocut: true,
+        mediaDetection: true,
+      },
+    },
+  ],
+  support: { status: 'untested' },
 }

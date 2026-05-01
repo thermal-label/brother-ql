@@ -1,15 +1,27 @@
 {
+  key: 'QL_1110NWB',
   name: 'QL-1110NWB',
   family: 'brother-ql',
-  transports: ['usb', 'webusb', 'tcp'],
-  vid: 0x04f9,
-  pid: 0x20a8,
-  headPins: 1296,
-  bytesPerRow: 162,
-  twoColor: false,
-  network: 'wifi+wired',
-  autocut: true,
-  compression: true,
-  editorLite: true,
-  massStoragePid: 0x20aa,
+  transports: {
+    usb: { vid: '0x04f9', pid: '0x20a8' },
+    tcp: { port: 9100 },
+  },
+  engines: [
+    {
+      role: 'primary',
+      protocol: 'ql-raster',
+      dpi: 300,
+      headDots: 1296,
+      mediaCompatibility: ['dk'],
+      capabilities: {
+        autocut: true,
+        mediaDetection: true,
+      },
+    },
+  ],
+  capabilities: {
+    editorLite: true,
+    massStoragePid: '0x20aa',
+  },
+  support: { status: 'untested' },
 }

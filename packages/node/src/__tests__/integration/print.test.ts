@@ -32,7 +32,7 @@ describe.skipIf(!INTEGRATION)('Integration: brother-ql', () => {
     const { MEDIA } = await import('@thermal-label/brother-ql-core');
     const printer = await discovery.openPrinter();
     try {
-      if (!printer.device.twoColor) {
+      if (!printer.device.engines[0]?.capabilities?.twoColor) {
         console.warn(`Skipping two-colour test: ${printer.device.name} is single-colour.`);
         return;
       }

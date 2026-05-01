@@ -1,4 +1,4 @@
-import { DEVICES, findDevice, isMassStorageMode } from '@thermal-label/brother-ql-core';
+import { DEVICES, findDevice, getUsbIds, isMassStorageMode } from '@thermal-label/brother-ql-core';
 import type { BrotherQLDevice } from '@thermal-label/brother-ql-core';
 import type { DiscoveredPrinter, OpenOptions, PrinterDiscovery } from '@thermal-label/contracts';
 import { SerialTransport, TcpTransport, UsbTransport } from '@thermal-label/transport/node';
@@ -100,30 +100,32 @@ export class BrotherQLDiscovery implements PrinterDiscovery {
   async openPrinter(options: BrotherQLOpenOptions = {}): Promise<BrotherQLPrinter> {
     if (options.path !== undefined) {
       const transport = await SerialTransport.open(options.path, options.baudRate);
-      // Serial (typically RFCOMM) carries no identifying metadata —
-      // fall back to the most capable descriptor with a serial
-      // transport tag. `getStatus()` still returns accurate
-      // detectedMedia regardless of which descriptor we attach.
-      const descriptor = Object.values(DEVICES).find(d =>
-        (d.transports as readonly string[]).includes('serial'),
-      );
-      /* v8 ignore next -- DEVICES always has QL_820NWBc with 'serial' in transports */
-      if (!descriptor) throw new Error('No serial-capable Brother QL descriptor found.');
+      // Serial (typically RFCOMM over OS-paired Bluetooth) carries no
+      // identifying metadata — attach the QL-820NWBc descriptor since
+      // it is the only entry that supports the `bluetooth-spp` transport.
+      // `getStatus()` still returns accurate detectedMedia regardless
+      // of which descriptor we attach. PR 4 of the contracts-shape
+      // migration declares `bluetooth-spp` honestly on QL-820NWBc and
+      // makes this lookup dynamic.
+      const descriptor = DEVICES.QL_820NWBc;
+      /* v8 ignore next -- the registry always carries QL_820NWBc */
+      if (!descriptor) throw new Error('No bluetooth-spp-capable Brother QL descriptor found.');
       return new BrotherQLPrinter(descriptor, transport, 'serial');
     }
 
     if (options.host !== undefined) {
       const transport = await TcpTransport.connect(options.host, options.port);
-      const descriptor = Object.values(DEVICES).find(d => d.network !== 'none');
-      /* v8 ignore next -- DEVICES always has network-capable entries */
+      const descriptor = Object.values(DEVICES).find(d => d.transports.tcp !== undefined);
+      /* v8 ignore next -- the registry always has TCP-capable entries */
       if (!descriptor) throw new Error('No network-capable Brother QL descriptor found.');
       return new BrotherQLPrinter(descriptor, transport, 'tcp');
     }
 
     const found = await enumerateUsbDevices();
     const match = found.find(entry => {
-      if (options.vid !== undefined && entry.descriptor.vid !== options.vid) return false;
-      if (options.pid !== undefined && entry.descriptor.pid !== options.pid) return false;
+      const ids = getUsbIds(entry.descriptor);
+      if (options.vid !== undefined && ids?.vid !== options.vid) return false;
+      if (options.pid !== undefined && ids?.pid !== options.pid) return false;
       if (options.serialNumber !== undefined && entry.serialNumber !== options.serialNumber)
         return false;
       return true;
@@ -131,7 +133,10 @@ export class BrotherQLDiscovery implements PrinterDiscovery {
 
     if (!match) throw new Error('No compatible Brother QL printer found.');
 
-    const transport = await UsbTransport.open(match.descriptor.vid, match.descriptor.pid);
+    const ids = getUsbIds(match.descriptor);
+    /* v8 ignore next -- USB-discovered devices always have USB transport */
+    if (!ids) throw new Error('Discovered device has no USB transport — should be unreachable.');
+    const transport = await UsbTransport.open(ids.vid, ids.pid);
     return new BrotherQLPrinter(match.descriptor, transport, 'usb');
   }
 }

@@ -1,15 +1,26 @@
 {
+  key: 'QL_1100',
   name: 'QL-1100',
   family: 'brother-ql',
-  transports: ['usb', 'webusb'],
-  vid: 0x04f9,
-  pid: 0x20a7,
-  headPins: 1296,
-  bytesPerRow: 162,
-  twoColor: false,
-  network: 'none',
-  autocut: true,
-  compression: true,
-  editorLite: true,
-  massStoragePid: 0x20a9,
+  transports: {
+    usb: { vid: '0x04f9', pid: '0x20a7' },
+  },
+  engines: [
+    {
+      role: 'primary',
+      protocol: 'ql-raster',
+      dpi: 300,
+      headDots: 1296,
+      mediaCompatibility: ['dk'],
+      capabilities: {
+        autocut: true,
+        mediaDetection: true,
+      },
+    },
+  ],
+  capabilities: {
+    editorLite: true,
+    massStoragePid: '0x20a9',
+  },
+  support: { status: 'untested' },
 }

@@ -8,11 +8,15 @@ export {
 } from '@mbtech-nl/bitmap';
 
 export type {
-  DeviceDescriptor,
+  DeviceEntry,
+  DeviceRegistry,
+  DeviceTransports,
   MediaDescriptor,
   PreviewOptions,
   PreviewPlane,
   PreviewResult,
+  PrintEngine,
+  PrintEngineCapabilities,
   PrintOptions,
   PrinterAdapter,
   PrinterError,
@@ -20,6 +24,7 @@ export type {
   RotateDirection,
   Transport,
   TransportType,
+  UsbTransport,
 } from '@thermal-label/contracts';
 
 export {
@@ -28,7 +33,7 @@ export {
   UnsupportedOperationError,
 } from '@thermal-label/contracts';
 
-export { DEVICES, findDevice, isMassStorageMode } from './devices.js';
+export { DEVICE_REGISTRY, DEVICES, findDevice, getUsbIds, isMassStorageMode } from './devices.js';
 export {
   DEFAULT_MEDIA,
   MEDIA,
@@ -42,6 +47,7 @@ export { parseStatus, STATUS_REQUEST } from './status.js';
 export { createPreviewOffline } from './preview.js';
 
 export type {
+  BrotherEngineCapabilities,
   BrotherQLDevice,
   BrotherQLMedia,
   BrotherQLPrintOptions,
@@ -50,7 +56,6 @@ export type {
   HeadWidth,
   JobOptions,
   MediaType,
-  NetworkSupport,
   PageData,
   PageOptions,
 } from './types.js';

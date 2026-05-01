@@ -1,14 +1,23 @@
 {
+  key: 'QL_1060N',
   name: 'QL-1060N',
   family: 'brother-ql',
-  transports: ['usb', 'webusb', 'tcp'],
-  vid: 0x04f9,
-  pid: 0x2028,
-  headPins: 1296,
-  bytesPerRow: 162,
-  twoColor: false,
-  network: 'wired',
-  autocut: true,
-  compression: true,
-  editorLite: false,
+  transports: {
+    usb: { vid: '0x04f9', pid: '0x2028' },
+    tcp: { port: 9100 },
+  },
+  engines: [
+    {
+      role: 'primary',
+      protocol: 'ql-raster',
+      dpi: 300,
+      headDots: 1296,
+      mediaCompatibility: ['dk'],
+      capabilities: {
+        autocut: true,
+        mediaDetection: true,
+      },
+    },
+  ],
+  support: { status: 'untested' },
 }

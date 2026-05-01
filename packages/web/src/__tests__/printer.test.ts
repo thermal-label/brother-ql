@@ -39,7 +39,7 @@ describe('WebBrotherQLPrinter', () => {
     const printer = await fromUSBDevice(device);
     expect(printer.family).toBe('brother-ql');
     expect(printer.model).toBe('QL-820NWBc');
-    expect(printer.device.twoColor).toBe(true);
+    expect(printer.device.engines[0]?.capabilities?.twoColor).toBe(true);
     expect(printer.connected).toBe(true);
   });
 
@@ -207,7 +207,7 @@ describe('requestPrinter', () => {
     const call = (requestDevice.mock.calls as unknown as [{ filters: USBDeviceFilter[] }][])[0]![0];
     const pids = call.filters.map(f => f.productId);
     for (const d of Object.values(DEVICES)) {
-      expect(pids).toContain(d.pid);
+      expect(pids).toContain(parseInt(d.transports.usb!.pid, 16));
     }
   });
 });

@@ -1,14 +1,27 @@
 {
+  key: 'QL_810W',
   name: 'QL-810W',
   family: 'brother-ql',
-  transports: ['usb', 'webusb', 'tcp'],
-  vid: 0x04f9,
-  pid: 0x209c,
-  headPins: 720,
-  bytesPerRow: 90,
-  twoColor: true,
-  network: 'wifi',
-  autocut: true,
-  compression: true,
-  editorLite: true,
+  transports: {
+    usb: { vid: '0x04f9', pid: '0x209c' },
+    tcp: { port: 9100 },
+  },
+  engines: [
+    {
+      role: 'primary',
+      protocol: 'ql-raster',
+      dpi: 300,
+      headDots: 720,
+      mediaCompatibility: ['dk'],
+      capabilities: {
+        autocut: true,
+        mediaDetection: true,
+        twoColor: true,
+      },
+    },
+  ],
+  capabilities: {
+    editorLite: true,
+  },
+  support: { status: 'untested' },
 }

@@ -1,14 +1,26 @@
 {
+  key: 'QL_700',
   name: 'QL-700',
   family: 'brother-ql',
-  transports: ['usb', 'webusb'],
-  vid: 0x04f9,
-  pid: 0x2042,
-  headPins: 720,
-  bytesPerRow: 90,
-  twoColor: false,
-  network: 'none',
-  autocut: true,
-  compression: true,
-  editorLite: true,
+  transports: {
+    usb: { vid: '0x04f9', pid: '0x2042' },
+  },
+  engines: [
+    {
+      role: 'primary',
+      protocol: 'ql-raster',
+      dpi: 300,
+      headDots: 720,
+      mediaCompatibility: ['dk'],
+      capabilities: {
+        autocut: true,
+        mediaDetection: true,
+      },
+    },
+  ],
+  capabilities: {
+    editorLite: true,
+  },
+  hardwareQuirks: 'Cassette-based media detection. Printer hard-rejects with an error code if the host job dimensions do not match the loaded DK cassette. Apps that compare detected vs selected media should switch to the matching cassette before sending.',
+  support: { status: 'untested' },
 }

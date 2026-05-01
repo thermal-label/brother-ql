@@ -1,26 +1,27 @@
 import { describe, it, expect } from 'vitest';
-import { DEVICES, findDevice, isMassStorageMode } from '../devices.js';
+import { DEVICES, findDevice, getUsbIds, isMassStorageMode } from '../devices.js';
 
 describe('findDevice', () => {
-  it('returns correct descriptor for QL-820NWBc (PID shared with QL-820NWB)', () => {
+  it('returns correct entry for QL-820NWBc (PID shared with QL-820NWB)', () => {
     const dev = findDevice(0x04f9, 0x209d);
     expect(dev).toBeDefined();
     expect(dev!.name).toBe('QL-820NWBc');
-    expect(dev!.twoColor).toBe(true);
+    expect(dev!.engines[0]?.capabilities?.twoColor).toBe(true);
   });
 
-  it('returns correct descriptor for QL-1100', () => {
+  it('returns correct entry for QL-1100', () => {
     const dev = findDevice(0x04f9, 0x20a7);
     expect(dev).toBeDefined();
     expect(dev!.name).toBe('QL-1100');
-    expect(dev!.headPins).toBe(1296);
+    expect(dev!.engines[0]?.headDots).toBe(1296);
   });
 
-  it('returns correct descriptor for QL-500', () => {
+  it('returns correct entry for QL-500', () => {
     const dev = findDevice(0x04f9, 0x2013);
     expect(dev).toBeDefined();
     expect(dev!.name).toBe('QL-500');
-    expect(dev!.autocut).toBe(false);
+    // QL-500 has no autocut — the capability flag is absent.
+    expect(dev!.engines[0]?.capabilities?.autocut).toBeUndefined();
   });
 
   it('returns undefined for unknown PID', () => {
@@ -47,24 +48,25 @@ describe('isMassStorageMode', () => {
 
   it('returns false for all printer-class PIDs', () => {
     for (const dev of Object.values(DEVICES)) {
-      expect(isMassStorageMode(dev.pid)).toBe(false);
+      const ids = getUsbIds(dev);
+      if (ids) expect(isMassStorageMode(ids.pid)).toBe(false);
     }
   });
 });
 
 describe('Device registry invariants', () => {
-  it('every two-color device has bytesPerRow 90', () => {
+  it('every two-color device has a 720-dot engine', () => {
     for (const dev of Object.values(DEVICES)) {
-      if (dev.twoColor) {
-        expect(dev.bytesPerRow).toBe(90);
+      if (dev.engines[0]?.capabilities?.twoColor) {
+        expect(dev.engines[0]?.headDots).toBe(720);
       }
     }
   });
 
-  it('every device with headPins 1296 has bytesPerRow 162', () => {
+  it('every device with headDots 1296 belongs to the QL-1xxx series', () => {
     for (const dev of Object.values(DEVICES)) {
-      if (dev.headPins === 1296) {
-        expect(dev.bytesPerRow).toBe(162);
+      if (dev.engines[0]?.headDots === 1296) {
+        expect(dev.name).toMatch(/^QL-1\d{3}/);
       }
     }
   });
@@ -75,17 +77,11 @@ describe('Device registry invariants', () => {
     }
   });
 
-  it('QL-820NWBc advertises serial/web-serial for OS-paired Bluetooth', () => {
-    const dev = DEVICES.QL_820NWBc;
-    expect(dev.transports).toContain('serial');
-    expect(dev.transports).toContain('web-serial');
-  });
-
-  it('no device descriptor declares web-bluetooth', () => {
-    // Bluetooth on the 820 series is classic SPP, not GATT — the
-    // serial transports cover it. See packages/core/src/types.ts.
+  it('every device declares a USB transport with hex-string vid+pid', () => {
     for (const dev of Object.values(DEVICES)) {
-      expect(dev.transports).not.toContain('web-bluetooth');
+      expect(dev.transports.usb).toBeDefined();
+      expect(dev.transports.usb!.vid).toMatch(/^0x[0-9a-f]+$/);
+      expect(dev.transports.usb!.pid).toMatch(/^0x[0-9a-f]+$/);
     }
   });
 });

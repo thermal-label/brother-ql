@@ -2,18 +2,18 @@
 // Aggregates packages/core/data/devices/*.json5 + packages/core/data/media.json5
 // into the runtime artifacts:
 //
-//   - data/devices.json — published JSON form of the device registry.
-//   - data/media.json   — published JSON form of the media registry.
+//   - data/devices.json — published JSON form of the DeviceRegistry,
+//     consumed by downstream tooling (validator, docs aggregator).
+//   - data/media.json   — published JSON form of the media list.
 //   - src/devices.generated.ts — typed re-export consumed by src/devices.ts.
 //   - src/media.generated.ts   — typed re-export consumed by src/media.ts.
 //
-// PR 1 of the contracts-shape migration: this is a pass-through
-// aggregator. Entries keep the legacy flat `BrotherQLDevice` /
-// `BrotherQLMedia` shape; the generated TS satisfies
-// `Record<string, BrotherQLDevice>` / `Record<number, BrotherQLMedia>`
-// so runtime behavior is byte-identical to the previous in-source
-// const. PR 2 swaps in the contracts `DeviceRegistry` shape and
-// adds shape validation here.
+// Invariants enforced before write: every entry has a string `key` matching
+// its filename, `family === 'brother-ql'`, `transports` is a keyed object
+// with valid USB hex strings, `engines[]` is non-empty with a known
+// `protocol` tag, USB PIDs are unique across the registry, and
+// `support.status` is one of the contracts values. Bad input fails the
+// build; nothing partial is written.
 
 import { readdirSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, join, resolve, basename } from 'node:path';
@@ -31,7 +31,10 @@ const DEVICES_TS = resolve(CORE_PKG, 'src/devices.generated.ts');
 const MEDIA_TS = resolve(CORE_PKG, 'src/media.generated.ts');
 
 const DRIVER = 'brother-ql';
-const SCHEMA_VERSION = 0;
+const SCHEMA_VERSION = 1;
+const KNOWN_PROTOCOLS = new Set(['ql-raster']);
+const STATUS_VALUES = new Set(['verified', 'partial', 'broken', 'untested']);
+const TRANSPORT_KEYS = new Set(['usb', 'tcp', 'serial', 'bluetooth-spp', 'bluetooth-gatt']);
 
 const errors = [];
 const fail = msg => errors.push(msg);
@@ -45,18 +48,22 @@ function loadDevices() {
     .filter(f => f.endsWith('.json5'))
     .sort();
 
-  const devices = {};
-  const seenPids = new Map();
+  const seenUsbPids = new Map();
+  const devices = [];
 
   for (const filename of files) {
     const path = join(DEVICES_DIR, filename);
-    const key = basename(filename, '.json5');
+    const expectedKey = basename(filename, '.json5');
     let entry;
     try {
       entry = readJson5(path);
     } catch (err) {
       fail(`${filename}: parse error — ${err.message}`);
       continue;
+    }
+
+    if (entry?.key !== expectedKey) {
+      fail(`${filename}: \`key\` must equal "${expectedKey}" (got ${JSON.stringify(entry?.key)})`);
     }
     if (typeof entry?.name !== 'string') {
       fail(`${filename}: missing string \`name\``);
@@ -65,14 +72,61 @@ function loadDevices() {
     if (entry.family !== DRIVER) {
       fail(`${filename}: family must be "${DRIVER}" (got ${JSON.stringify(entry.family)})`);
     }
-    if (typeof entry.pid !== 'number') {
-      fail(`${filename}: \`pid\` must be a number`);
+
+    const transports = entry.transports;
+    if (!transports || typeof transports !== 'object' || Array.isArray(transports)) {
+      fail(`${filename}: \`transports\` must be a keyed object`);
     } else {
-      const collision = seenPids.get(entry.pid);
-      if (collision) fail(`${filename}: pid ${entry.pid} already used by \`${collision}\``);
-      else seenPids.set(entry.pid, key);
+      for (const k of Object.keys(transports)) {
+        if (!TRANSPORT_KEYS.has(k)) {
+          fail(`${filename}: unknown transport key "${k}" (allowed: ${[...TRANSPORT_KEYS].join('|')})`);
+        }
+      }
+      if (transports.usb) {
+        const { vid, pid } = transports.usb;
+        if (typeof vid !== 'string' || !/^0x[0-9a-fA-F]+$/.test(vid)) {
+          fail(`${filename}: transports.usb.vid must be a hex string (got ${JSON.stringify(vid)})`);
+        }
+        if (typeof pid !== 'string' || !/^0x[0-9a-fA-F]+$/.test(pid)) {
+          fail(`${filename}: transports.usb.pid must be a hex string (got ${JSON.stringify(pid)})`);
+        }
+        const collision = seenUsbPids.get(pid);
+        if (collision) {
+          fail(`${filename}: USB pid ${pid} already used by \`${collision}\``);
+        } else if (typeof pid === 'string') {
+          seenUsbPids.set(pid, entry.key);
+        }
+      }
     }
-    devices[key] = entry;
+
+    if (!Array.isArray(entry.engines) || entry.engines.length === 0) {
+      fail(`${filename}: \`engines\` must be a non-empty array`);
+    } else {
+      for (const [i, eng] of entry.engines.entries()) {
+        if (typeof eng?.protocol !== 'string' || !KNOWN_PROTOCOLS.has(eng.protocol)) {
+          fail(
+            `${filename}: engines[${i}].protocol must be one of ${[...KNOWN_PROTOCOLS].join('|')} (got ${JSON.stringify(eng?.protocol)})`,
+          );
+        }
+        if (typeof eng?.headDots !== 'number') {
+          fail(`${filename}: engines[${i}].headDots must be a number`);
+        }
+        if (typeof eng?.dpi !== 'number') {
+          fail(`${filename}: engines[${i}].dpi must be a number`);
+        }
+        if (typeof eng?.role !== 'string') {
+          fail(`${filename}: engines[${i}].role must be a string`);
+        }
+      }
+    }
+
+    if (!entry.support || !STATUS_VALUES.has(entry.support.status)) {
+      fail(
+        `${filename}: \`support.status\` must be one of ${[...STATUS_VALUES].join('|')} (got ${JSON.stringify(entry.support?.status)})`,
+      );
+    }
+
+    devices.push(entry);
   }
 
   return devices;
@@ -125,19 +179,26 @@ const deviceRegistry = {
   driver: DRIVER,
   devices,
 };
-const mediaRegistry = {
-  schemaVersion: SCHEMA_VERSION,
-  driver: DRIVER,
-  media,
-};
 
 writeJson(DEVICES_OUT, deviceRegistry);
-writeJson(MEDIA_OUT, mediaRegistry);
+writeJson(MEDIA_OUT, { schemaVersion: SCHEMA_VERSION, driver: DRIVER, media });
 
 writeGeneratedTs(
   DEVICES_TS,
-  "import type { BrotherQLDevice } from './types.js';",
-  `export const DEVICES = ${JSON.stringify(devices, null, 2)} as const satisfies Record<string, BrotherQLDevice>;`,
+  "import type { DeviceRegistry } from '@thermal-label/contracts';\nimport type { BrotherQLDevice } from './types.js';",
+  `export const DEVICE_REGISTRY = ${JSON.stringify(deviceRegistry, null, 2)} as const satisfies DeviceRegistry;
+
+type DeviceKey = (typeof DEVICE_REGISTRY)['devices'][number]['key'];
+
+/**
+ * Per-key map of device entries. Built from the registry array via
+ * \`Object.fromEntries\`, but typed as \`Record<DeviceKey, BrotherQLDevice>\`
+ * so consumers can write \`DEVICES.QL_820NWBc\` and get a precise type
+ * back without literal narrowing leaking into engine capability access.
+ */
+export const DEVICES = Object.fromEntries(
+  DEVICE_REGISTRY.devices.map(d => [d.key, d]),
+) as unknown as Record<DeviceKey, BrotherQLDevice>;`,
 );
 
 const mediaObject = Object.fromEntries(media.map(m => [m.id, m]));
@@ -150,7 +211,6 @@ export const MEDIA: Record<number, BrotherQLMedia> = MEDIA_BY_ID;
 export const MEDIA_LIST: readonly BrotherQLMedia[] = Object.freeze(${JSON.stringify(media, null, 2)});`,
 );
 
-const deviceCount = Object.keys(devices).length;
 console.log(
-  `[compile-data] OK — ${deviceCount} devices, ${media.length} media entries → data/devices.json, data/media.json`,
+  `[compile-data] OK — ${devices.length} devices, ${media.length} media entries → data/devices.json, data/media.json`,
 );

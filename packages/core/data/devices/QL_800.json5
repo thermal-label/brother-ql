@@ -1,14 +1,26 @@
 {
+  key: 'QL_800',
   name: 'QL-800',
   family: 'brother-ql',
-  transports: ['usb', 'webusb'],
-  vid: 0x04f9,
-  pid: 0x209b,
-  headPins: 720,
-  bytesPerRow: 90,
-  twoColor: true,
-  network: 'none',
-  autocut: true,
-  compression: true,
-  editorLite: true,
+  transports: {
+    usb: { vid: '0x04f9', pid: '0x209b' },
+  },
+  engines: [
+    {
+      role: 'primary',
+      protocol: 'ql-raster',
+      dpi: 300,
+      headDots: 720,
+      mediaCompatibility: ['dk'],
+      capabilities: {
+        autocut: true,
+        mediaDetection: true,
+        twoColor: true,
+      },
+    },
+  ],
+  capabilities: {
+    editorLite: true,
+  },
+  support: { status: 'untested' },
 }
