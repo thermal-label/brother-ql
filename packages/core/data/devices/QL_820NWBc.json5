@@ -8,6 +8,7 @@
   transports: {
     usb: { vid: '0x04f9', pid: '0x209d' },
     tcp: { port: 9100 },
+    'bluetooth-spp': { namePrefix: 'QL-820NWB' },
   },
   engines: [
     {
@@ -26,12 +27,13 @@
   capabilities: {
     editorLite: true,
   },
-  hardwareQuirks: 'QL-820NWB and QL-820NWBc share PID 0x209d; this entry covers both marketing names. Bluetooth on this device is classic SPP (paired at the OS level via RFCOMM), not GATT — declared as the `bluetooth-spp` transport in a follow-up.',
+  hardwareQuirks: 'QL-820NWB and QL-820NWBc share PID 0x209d; this entry covers both marketing names. Bluetooth on this device is classic SPP (paired at the OS level via RFCOMM), not GATT — the runtime serial implementation opens the OS-paired RFCOMM device path. macOS dropped classic Bluetooth SPP support so that route is unavailable there; Linux and Windows both work.',
   support: {
     status: 'verified',
     transports: {
       usb: 'verified',
       tcp: 'verified',
+      'bluetooth-spp': 'untested',
     },
     lastVerified: '2026-04-27',
     packageVersion: '0.2.1',

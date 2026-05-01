@@ -101,14 +101,14 @@ export class BrotherQLDiscovery implements PrinterDiscovery {
     if (options.path !== undefined) {
       const transport = await SerialTransport.open(options.path, options.baudRate);
       // Serial (typically RFCOMM over OS-paired Bluetooth) carries no
-      // identifying metadata — attach the QL-820NWBc descriptor since
-      // it is the only entry that supports the `bluetooth-spp` transport.
-      // `getStatus()` still returns accurate detectedMedia regardless
-      // of which descriptor we attach. PR 4 of the contracts-shape
-      // migration declares `bluetooth-spp` honestly on QL-820NWBc and
-      // makes this lookup dynamic.
-      const descriptor = DEVICES.QL_820NWBc;
-      /* v8 ignore next -- the registry always carries QL_820NWBc */
+      // identifying metadata — attach any descriptor that declares the
+      // `bluetooth-spp` transport. `getStatus()` returns accurate
+      // detectedMedia regardless of which descriptor we attach, but
+      // the descriptor's `name` is what surfaces in logs.
+      const descriptor = Object.values(DEVICES).find(
+        d => d.transports['bluetooth-spp'] !== undefined,
+      );
+      /* v8 ignore next -- the registry carries QL_820NWBc with bluetooth-spp */
       if (!descriptor) throw new Error('No bluetooth-spp-capable Brother QL descriptor found.');
       return new BrotherQLPrinter(descriptor, transport, 'serial');
     }
