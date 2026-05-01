@@ -82,7 +82,13 @@ These are printer class PIDs' paired mass storage alternatives. They should neve
 
 | PID      | Device                    |
 | -------- | ------------------------- |
-| `0x20AA` | QL-1100 (mass storage)    |
-| `0x20AB` | QL-1110NWB (mass storage) |
+| `0x20A9` | QL-1100 (mass storage)    |
+| `0x20AA` | QL-1110NWB (mass storage) |
+| `0x20AC` | QL-1115NWB (mass storage) |
 
-<!--@include: ./_status-fragment.md-->
+The verification status surfaced in the table above is stored in
+each device's `support` block in `packages/core/data/devices/<KEY>.json5`.
+Contributors file reports via the
+[Hardware verification issue template](https://github.com/thermal-label/brother-ql/issues/new?template=hardware_verification.yml);
+maintainers transcribe the accepted reports into the device's
+`support.reports` array on merge.

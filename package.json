@@ -15,7 +15,6 @@
     "format": "prettier --write packages docs",
     "typecheck": "pnpm -r run typecheck",
     "docs:api": "typedoc",
-    "validate:hardware-status": "node scripts/validate-hardware-status.mjs",
     "prepare": "node -e \"try{require('node:child_process').execSync('git config core.hooksPath .githooks',{stdio:'ignore'})}catch{}\"",
     "changeset": "changeset",
     "version": "changeset version",

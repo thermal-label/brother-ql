@@ -27,5 +27,25 @@
     editorLite: true,
   },
   hardwareQuirks: 'QL-820NWB and QL-820NWBc share PID 0x209d; this entry covers both marketing names. Bluetooth on this device is classic SPP (paired at the OS level via RFCOMM), not GATT — declared as the `bluetooth-spp` transport in a follow-up.',
-  support: { status: 'untested' },
+  support: {
+    status: 'verified',
+    transports: {
+      usb: 'verified',
+      tcp: 'verified',
+    },
+    lastVerified: '2026-04-27',
+    packageVersion: '0.2.1',
+    quirks: 'Reference test device. Two-colour printing on DK-22251 confirmed, auto-cut works on USB and TCP, WebUSB demo prints correctly. The QL-820NWB and QL-820NWBc share PID 0x209d; this entry covers both marketing names.',
+    reports: [
+      {
+        issue: 0,
+        reporter: '@mannes',
+        date: '2026-04-27',
+        result: 'verified',
+        os: 'Linux',
+        selfVerified: true,
+        notes: 'Bench verification by the maintainer at the time of seeding this entry. Issue #0 is a placeholder — replace with the real issue number when a public verification report is filed.',
+      },
+    ],
+  },
 }
