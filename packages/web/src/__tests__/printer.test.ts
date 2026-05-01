@@ -34,24 +34,24 @@ function redRgba(
 }
 
 describe('WebBrotherQLPrinter', () => {
-  it('exposes adapter metadata for a QL-820NWB', async () => {
-    const device = createMockUSBDevice({ productId: 0x20a7 });
+  it('exposes adapter metadata for a QL-820NWBc', async () => {
+    const device = createMockUSBDevice({ productId: 0x209d });
     const printer = await fromUSBDevice(device);
     expect(printer.family).toBe('brother-ql');
-    expect(printer.model).toBe('QL-820NWB');
+    expect(printer.model).toBe('QL-820NWBc');
     expect(printer.device.twoColor).toBe(true);
     expect(printer.connected).toBe(true);
   });
 
   it('print() splits two-colour images when media carries a palette', async () => {
-    const device = createMockUSBDevice({ productId: 0x20a7 });
+    const device = createMockUSBDevice({ productId: 0x209d });
     const printer = await fromUSBDevice(device);
     await printer.print(redRgba(64, 64), MEDIA[251]);
     expect(device.__transfers.length).toBeGreaterThan(0);
   });
 
   it('createPreview() returns two planes on multi-ink media', async () => {
-    const device = createMockUSBDevice({ productId: 0x20a7 });
+    const device = createMockUSBDevice({ productId: 0x209d });
     const printer = await fromUSBDevice(device);
     const preview = await printer.createPreview(redRgba(64, 64), { media: MEDIA[251]! });
     expect(preview.planes.map(p => p.name)).toEqual(['black', 'red']);
@@ -59,7 +59,7 @@ describe('WebBrotherQLPrinter', () => {
   });
 
   it('createPreview() returns one plane on single-ink media', async () => {
-    const device = createMockUSBDevice({ productId: 0x20a7 });
+    const device = createMockUSBDevice({ productId: 0x209d });
     const printer = await fromUSBDevice(device);
     const preview = await printer.createPreview(solidRgba(64, 64), { media: MEDIA[259]! });
     expect(preview.planes).toHaveLength(1);
@@ -69,7 +69,7 @@ describe('WebBrotherQLPrinter', () => {
     const bytes = new Uint8Array(32);
     bytes[10] = 62;
     bytes[11] = 0x0a;
-    const device = createMockUSBDevice({ productId: 0x20a7, statusBytes: bytes });
+    const device = createMockUSBDevice({ productId: 0x209d, statusBytes: bytes });
     const printer = await fromUSBDevice(device);
     await printer.getStatus();
     const preview = await printer.createPreview(solidRgba(64, 64));
@@ -78,7 +78,7 @@ describe('WebBrotherQLPrinter', () => {
   });
 
   it('createPreview() falls back to DEFAULT_MEDIA with assumed=true', async () => {
-    const device = createMockUSBDevice({ productId: 0x20a7 });
+    const device = createMockUSBDevice({ productId: 0x209d });
     const printer = await fromUSBDevice(device);
     const preview = await printer.createPreview(solidRgba(64, 64));
     expect(preview.assumed).toBe(true);
@@ -86,7 +86,7 @@ describe('WebBrotherQLPrinter', () => {
   });
 
   it('close() releases the underlying USB device', async () => {
-    const device = createMockUSBDevice({ productId: 0x20a7 });
+    const device = createMockUSBDevice({ productId: 0x209d });
     const printer = await fromUSBDevice(device);
     await printer.close();
     expect(device.opened).toBe(false);
@@ -94,7 +94,7 @@ describe('WebBrotherQLPrinter', () => {
   });
 
   it('print() writes an encoded raster job for single-ink media', async () => {
-    const device = createMockUSBDevice({ productId: 0x20a7 });
+    const device = createMockUSBDevice({ productId: 0x209d });
     const printer = await fromUSBDevice(device);
     await printer.print(solidRgba(64, 64), MEDIA[259]);
     expect(device.__transfers.length).toBeGreaterThan(0);
@@ -105,11 +105,11 @@ describe('WebBrotherQLPrinter', () => {
     // 800×200 landscape RGBA — auto-rotate kicks in. Bypass with
     // `rotate: 0` for the comparison case; the auto path encodes more
     // raster rows so the total transfer is larger.
-    const autoDevice = createMockUSBDevice({ productId: 0x20a7 });
+    const autoDevice = createMockUSBDevice({ productId: 0x209d });
     const autoPrinter = await fromUSBDevice(autoDevice);
     await autoPrinter.print(solidRgba(800, 200), MEDIA[271]);
 
-    const bypassDevice = createMockUSBDevice({ productId: 0x20a7 });
+    const bypassDevice = createMockUSBDevice({ productId: 0x209d });
     const bypassPrinter = await fromUSBDevice(bypassDevice);
     await bypassPrinter.print(solidRgba(800, 200), MEDIA[271], { rotate: 0 });
 
@@ -132,7 +132,7 @@ describe('WebBrotherQLPrinter', () => {
   }
 
   it('print() horizontally mirrors the rendered bitmap (single-colour)', async () => {
-    const device = createMockUSBDevice({ productId: 0x20a7 });
+    const device = createMockUSBDevice({ productId: 0x209d });
     const printer = await fromUSBDevice(device);
     const data = new Uint8Array(16 * 4).fill(0xff);
     data[0] = 0;
@@ -145,7 +145,7 @@ describe('WebBrotherQLPrinter', () => {
   });
 
   it('print() splits the job into ≤1 KB OUT-pipe chunks (firmware flow-control)', async () => {
-    const device = createMockUSBDevice({ productId: 0x20a7 });
+    const device = createMockUSBDevice({ productId: 0x209d });
     const printer = await fromUSBDevice(device);
     await printer.print(solidRgba(696, 120), MEDIA[251]);
     expect(device.__transfers.length).toBeGreaterThan(1);
@@ -155,7 +155,7 @@ describe('WebBrotherQLPrinter', () => {
   });
 
   it('print() horizontally mirrors both planes on two-colour media', async () => {
-    const device = createMockUSBDevice({ productId: 0x20a7 });
+    const device = createMockUSBDevice({ productId: 0x209d });
     const printer = await fromUSBDevice(device);
     const data = new Uint8Array(16 * 4).fill(0xff);
     data[0] = 255;
@@ -169,7 +169,7 @@ describe('WebBrotherQLPrinter', () => {
   });
 
   it('print() throws MediaNotSpecifiedError when media is missing', async () => {
-    const device = createMockUSBDevice({ productId: 0x20a7 });
+    const device = createMockUSBDevice({ productId: 0x209d });
     const printer = await fromUSBDevice(device);
     await expect(printer.print(solidRgba(64, 64))).rejects.toBeInstanceOf(MediaNotSpecifiedError);
   });
@@ -178,7 +178,7 @@ describe('WebBrotherQLPrinter', () => {
     const bytes = new Uint8Array(32);
     bytes[10] = 62;
     bytes[11] = 0x0a;
-    const device = createMockUSBDevice({ productId: 0x20a7, statusBytes: bytes });
+    const device = createMockUSBDevice({ productId: 0x209d, statusBytes: bytes });
     const printer = await fromUSBDevice(device);
     const status = await printer.getStatus();
     expect(status.rawBytes.length).toBe(32);
@@ -194,7 +194,7 @@ describe('WebBrotherQLPrinter', () => {
 
 describe('requestPrinter', () => {
   it('passes the brother-ql VID/PIDs to navigator.usb.requestDevice', async () => {
-    const device = createMockUSBDevice({ productId: 0x20a7 });
+    const device = createMockUSBDevice({ productId: 0x209d });
     const requestDevice = vi.fn(() => Promise.resolve(device));
     Object.defineProperty(globalThis, 'navigator', {
       value: { usb: { requestDevice } },

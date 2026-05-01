@@ -4,27 +4,28 @@
 
 All devices share Vendor ID `0x04F9` (Brother Industries Ltd.) and use the same raster command protocol over USB Printer Class or TCP port 9100.
 
-| Device     | USB PID  | Head pins | Two-color | Network    | Status      |
-| ---------- | -------- | --------- | --------- | ---------- | ----------- |
-| QL-820NWB  | `0x20A7` | 720       | ✅        | WiFi + LAN | ✅ Verified |
-| QL-820NWBc | `0x209D` | 720       | ✅        | WiFi + LAN | ✅ Verified |
-| QL-800     | `0x209B` | 720       | ✅        | —          | 🟡 Expected |
-| QL-810W    | `0x209C` | 720       | ✅        | WiFi       | 🟡 Expected |
-| QL-700     | `0x2042` | 720       | —         | —          | 🟡 Expected |
-| QL-710W    | `0x2044` | 720       | —         | WiFi       | 🟡 Expected |
-| QL-720NW   | `0x2045` | 720       | —         | LAN        | 🟡 Expected |
-| QL-600     | `0x2100` | 720       | —         | —          | 🟡 Expected |
-| QL-580N    | `0x201B` | 720       | —         | LAN        | 🟡 Expected |
-| QL-570     | `0x2019` | 720       | —         | —          | 🟡 Expected |
-| QL-560     | `0x2018` | 720       | —         | —          | 🟡 Expected |
-| QL-550     | `0x2016` | 720       | —         | —          | 🟡 Expected |
-| QL-500     | `0x2013` | 720       | —         | —          | 🟡 Expected |
-| QL-650TD   | `0x201C` | 720       | —         | —          | 🟡 Expected |
-| QL-1050    | `0x2027` | 1296      | —         | —          | 🟡 Expected |
-| QL-1060N   | `0x2028` | 1296      | —         | LAN        | 🟡 Expected |
-| QL-1100    | `0x20A8` | 1296      | —         | —          | 🟡 Expected |
-| QL-1110NWB | `0x20A9` | 1296      | —         | WiFi + LAN | 🟡 Expected |
-| QL-1115NWB | `0x20AC` | 1296      | —         | WiFi + LAN | 🟡 Expected |
+| Device           | USB PID  | Head pins | Two-color | Network    | Status      |
+| ---------------- | -------- | --------- | --------- | ---------- | ----------- |
+| QL-820NWB(c)     | `0x209D` | 720       | ✅        | WiFi + LAN | ✅ Verified |
+| QL-800           | `0x209B` | 720       | ✅        | —          | 🟡 Expected |
+| QL-810W          | `0x209C` | 720       | ✅        | WiFi       | 🟡 Expected |
+| QL-700           | `0x2042` | 720       | —         | —          | 🟡 Expected |
+| QL-710W          | `0x2044` | 720       | —         | WiFi       | 🟡 Expected |
+| QL-720NW         | `0x2045` | 720       | —         | LAN        | 🟡 Expected |
+| QL-600           | `0x2100` | 720       | —         | —          | 🟡 Expected |
+| QL-580N          | `0x201B` | 720       | —         | LAN        | 🟡 Expected |
+| QL-570           | `0x2019` | 720       | —         | —          | 🟡 Expected |
+| QL-560           | `0x2018` | 720       | —         | —          | 🟡 Expected |
+| QL-550           | `0x2016` | 720       | —         | —          | 🟡 Expected |
+| QL-500           | `0x2013` | 720       | —         | —          | 🟡 Expected |
+| QL-650TD         | `0x201C` | 720       | —         | —          | 🟡 Expected |
+| QL-1050          | `0x2027` | 1296      | —         | —          | 🟡 Expected |
+| QL-1060N         | `0x2028` | 1296      | —         | LAN        | 🟡 Expected |
+| QL-1100          | `0x20A7` | 1296      | —         | —          | 🟡 Expected |
+| QL-1110NWB       | `0x20A8` | 1296      | —         | WiFi + LAN | 🟡 Expected |
+| QL-1115NWB       | `0x20AB` | 1296      | —         | WiFi + LAN | 🟡 Expected |
+
+The QL-820NWB and QL-820NWBc share PID `0x209D`; the `c` is a regional marketing variant with identical firmware.
 
 > Going further than the two-step CTA below? Follow the full
 > [verification checklist](./verification-checklist) — it covers TCP,

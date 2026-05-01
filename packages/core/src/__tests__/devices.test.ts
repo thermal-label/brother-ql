@@ -2,18 +2,18 @@ import { describe, it, expect } from 'vitest';
 import { DEVICES, findDevice, isMassStorageMode } from '../devices.js';
 
 describe('findDevice', () => {
-  it('returns correct descriptor for QL-820NWB', () => {
-    const dev = findDevice(0x04f9, 0x20a7);
-    expect(dev).toBeDefined();
-    expect(dev!.name).toBe('QL-820NWB');
-    expect(dev!.twoColor).toBe(true);
-  });
-
-  it('returns correct descriptor for QL-820NWBc', () => {
+  it('returns correct descriptor for QL-820NWBc (PID shared with QL-820NWB)', () => {
     const dev = findDevice(0x04f9, 0x209d);
     expect(dev).toBeDefined();
     expect(dev!.name).toBe('QL-820NWBc');
     expect(dev!.twoColor).toBe(true);
+  });
+
+  it('returns correct descriptor for QL-1100', () => {
+    const dev = findDevice(0x04f9, 0x20a7);
+    expect(dev).toBeDefined();
+    expect(dev!.name).toBe('QL-1100');
+    expect(dev!.headPins).toBe(1296);
   });
 
   it('returns correct descriptor for QL-500', () => {
@@ -28,17 +28,21 @@ describe('findDevice', () => {
   });
 
   it('returns undefined for unknown VID', () => {
-    expect(findDevice(0x1234, 0x20a7)).toBeUndefined();
+    expect(findDevice(0x1234, 0x209d)).toBeUndefined();
   });
 });
 
 describe('isMassStorageMode', () => {
-  it('returns true for 0x20AA (QL-1100 mass storage)', () => {
+  it('returns true for 0x20a9 (QL-1100 mass storage)', () => {
+    expect(isMassStorageMode(0x20a9)).toBe(true);
+  });
+
+  it('returns true for 0x20aa (QL-1110NWB mass storage)', () => {
     expect(isMassStorageMode(0x20aa)).toBe(true);
   });
 
-  it('returns true for 0x20AB (QL-1110NWB mass storage)', () => {
-    expect(isMassStorageMode(0x20ab)).toBe(true);
+  it('returns true for 0x20ac (QL-1115NWB mass storage)', () => {
+    expect(isMassStorageMode(0x20ac)).toBe(true);
   });
 
   it('returns false for all printer-class PIDs', () => {
@@ -71,12 +75,10 @@ describe('Device registry invariants', () => {
     }
   });
 
-  it('QL-820NWB(c) advertise serial/web-serial for OS-paired Bluetooth', () => {
-    for (const key of ['QL_820NWB', 'QL_820NWBc'] as const) {
-      const dev = DEVICES[key];
-      expect(dev.transports).toContain('serial');
-      expect(dev.transports).toContain('web-serial');
-    }
+  it('QL-820NWBc advertises serial/web-serial for OS-paired Bluetooth', () => {
+    const dev = DEVICES.QL_820NWBc;
+    expect(dev.transports).toContain('serial');
+    expect(dev.transports).toContain('web-serial');
   });
 
   it('no device descriptor declares web-bluetooth', () => {

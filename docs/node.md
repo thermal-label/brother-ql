@@ -62,7 +62,7 @@ const printer = await discovery.openPrinter();
 const specific = await discovery.openPrinter({ serialNumber: 'SN001234' });
 
 // Target by VID/PID
-const ql820 = await discovery.openPrinter({ pid: 0x20a7 });
+const ql820 = await discovery.openPrinter({ pid: 0x209d });
 ```
 
 `listPrinters()` skips printers in Editor Lite (mass-storage) mode —

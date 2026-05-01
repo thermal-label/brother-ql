@@ -107,7 +107,7 @@ export class BrotherQLDiscovery implements PrinterDiscovery {
       const descriptor = Object.values(DEVICES).find(d =>
         (d.transports as readonly string[]).includes('serial'),
       );
-      /* v8 ignore next -- DEVICES always has QL_820NWB with 'serial' in transports */
+      /* v8 ignore next -- DEVICES always has QL_820NWBc with 'serial' in transports */
       if (!descriptor) throw new Error('No serial-capable Brother QL descriptor found.');
       return new BrotherQLPrinter(descriptor, transport, 'serial');
     }

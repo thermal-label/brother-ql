@@ -58,23 +58,23 @@ function redRgba(
 describe('BrotherQLPrinter', () => {
   it('exposes adapter metadata', () => {
     const { transport } = makeTransport();
-    const printer = new BrotherQLPrinter(DEVICES.QL_820NWB, transport, 'usb');
+    const printer = new BrotherQLPrinter(DEVICES.QL_820NWBc, transport, 'usb');
     expect(printer.family).toBe('brother-ql');
-    expect(printer.model).toBe('QL-820NWB');
-    expect(printer.device).toBe(DEVICES.QL_820NWB);
+    expect(printer.model).toBe('QL-820NWBc');
+    expect(printer.device).toBe(DEVICES.QL_820NWBc);
     expect(printer.transportType).toBe('usb');
     expect(printer.connected).toBe(true);
   });
 
   it('print() throws MediaNotSpecifiedError without media or status', async () => {
     const { transport } = makeTransport();
-    const printer = new BrotherQLPrinter(DEVICES.QL_820NWB, transport, 'usb');
+    const printer = new BrotherQLPrinter(DEVICES.QL_820NWBc, transport, 'usb');
     await expect(printer.print(solidRgba(64, 64))).rejects.toBeInstanceOf(MediaNotSpecifiedError);
   });
 
   it('print() encodes a single-colour job for non-colour-capable media', async () => {
     const { transport, written } = makeTransport();
-    const printer = new BrotherQLPrinter(DEVICES.QL_820NWB, transport, 'usb');
+    const printer = new BrotherQLPrinter(DEVICES.QL_820NWBc, transport, 'usb');
     await printer.print(solidRgba(64, 64), MEDIA[259]);
     expect(written.length).toBeGreaterThan(0);
   });
@@ -95,7 +95,7 @@ describe('BrotherQLPrinter', () => {
 
   it('print() horizontally mirrors the rendered bitmap (single-colour)', async () => {
     const { transport, written } = makeTransport();
-    const printer = new BrotherQLPrinter(DEVICES.QL_820NWB, transport, 'usb');
+    const printer = new BrotherQLPrinter(DEVICES.QL_820NWBc, transport, 'usb');
     // 16×1 input, all white except the leftmost pixel = black.
     const data = new Uint8Array(16 * 4).fill(0xff);
     data[0] = 0;
@@ -118,7 +118,7 @@ describe('BrotherQLPrinter', () => {
     // bursts. Single libusb writes that exceed the buffer reliably hang
     // the QL-820NWBc firmware mid-print.
     const { transport, written } = makeTransport();
-    const printer = new BrotherQLPrinter(DEVICES.QL_820NWB, transport, 'usb');
+    const printer = new BrotherQLPrinter(DEVICES.QL_820NWBc, transport, 'usb');
     await printer.print(solidRgba(696, 120), MEDIA[251]);
     expect(written.length).toBeGreaterThan(1);
     for (const w of written) {
@@ -128,7 +128,7 @@ describe('BrotherQLPrinter', () => {
 
   it('print() horizontally mirrors both planes on two-colour media', async () => {
     const { transport, written } = makeTransport();
-    const printer = new BrotherQLPrinter(DEVICES.QL_820NWB, transport, 'usb');
+    const printer = new BrotherQLPrinter(DEVICES.QL_820NWBc, transport, 'usb');
     // 16×1 input. Leftmost pixel red, the rest white.
     const data = new Uint8Array(16 * 4).fill(0xff);
     data[0] = 255; // R
@@ -148,7 +148,7 @@ describe('BrotherQLPrinter', () => {
     bytes[10] = 62;
     bytes[11] = 0x0a;
     const { transport, written } = makeTransport(bytes);
-    const printer = new BrotherQLPrinter(DEVICES.QL_820NWB, transport, 'usb');
+    const printer = new BrotherQLPrinter(DEVICES.QL_820NWBc, transport, 'usb');
     await printer.getStatus();
     const before = written.length;
     await printer.print(solidRgba(64, 64));
@@ -159,7 +159,7 @@ describe('BrotherQLPrinter', () => {
 
   it('print() splits two-colour bitmap when media carries a palette', async () => {
     const { transport, written } = makeTransport();
-    const printer = new BrotherQLPrinter(DEVICES.QL_820NWB, transport, 'usb');
+    const printer = new BrotherQLPrinter(DEVICES.QL_820NWBc, transport, 'usb');
     await printer.print(redRgba(64, 64), MEDIA[251]);
     // Two-colour job header includes the expanded-mode byte sequence —
     // just assert a job was emitted; byte-level details are covered by
@@ -175,11 +175,11 @@ describe('BrotherQLPrinter', () => {
     // 800. Assert the explicit `rotate: 0` bypass produces a smaller job
     // than the default auto path.
     const { transport: autoTransport, written: autoWritten } = makeTransport();
-    const autoPrinter = new BrotherQLPrinter(DEVICES.QL_820NWB, autoTransport, 'usb');
+    const autoPrinter = new BrotherQLPrinter(DEVICES.QL_820NWBc, autoTransport, 'usb');
     await autoPrinter.print(solidRgba(800, 200), MEDIA[271]);
 
     const { transport: bypassTransport, written: bypassWritten } = makeTransport();
-    const bypassPrinter = new BrotherQLPrinter(DEVICES.QL_820NWB, bypassTransport, 'usb');
+    const bypassPrinter = new BrotherQLPrinter(DEVICES.QL_820NWBc, bypassTransport, 'usb');
     await bypassPrinter.print(solidRgba(800, 200), MEDIA[271], { rotate: 0 });
 
     const totalAuto = autoWritten.reduce((acc, b) => acc + b.length, 0);
@@ -189,7 +189,7 @@ describe('BrotherQLPrinter', () => {
 
   it('createPreview() returns two planes on multi-ink media', async () => {
     const { transport } = makeTransport();
-    const printer = new BrotherQLPrinter(DEVICES.QL_820NWB, transport, 'usb');
+    const printer = new BrotherQLPrinter(DEVICES.QL_820NWBc, transport, 'usb');
     const preview = await printer.createPreview(redRgba(64, 64), { media: MEDIA[251]! });
     expect(preview.planes.map(p => p.name)).toEqual(['black', 'red']);
     expect(preview.assumed).toBe(false);
@@ -197,7 +197,7 @@ describe('BrotherQLPrinter', () => {
 
   it('createPreview() returns one plane on single-ink media', async () => {
     const { transport } = makeTransport();
-    const printer = new BrotherQLPrinter(DEVICES.QL_820NWB, transport, 'usb');
+    const printer = new BrotherQLPrinter(DEVICES.QL_820NWBc, transport, 'usb');
     const preview = await printer.createPreview(solidRgba(64, 64), { media: MEDIA[259]! });
     expect(preview.planes).toHaveLength(1);
     expect(preview.planes[0]!.name).toBe('black');
@@ -205,7 +205,7 @@ describe('BrotherQLPrinter', () => {
 
   it('createPreview() falls back to DEFAULT_MEDIA with assumed=true', async () => {
     const { transport } = makeTransport();
-    const printer = new BrotherQLPrinter(DEVICES.QL_820NWB, transport, 'usb');
+    const printer = new BrotherQLPrinter(DEVICES.QL_820NWBc, transport, 'usb');
     const preview = await printer.createPreview(solidRgba(64, 64));
     expect(preview.assumed).toBe(true);
     expect(preview.media.id).toBe(259);
@@ -216,7 +216,7 @@ describe('BrotherQLPrinter', () => {
     bytes[10] = 62;
     bytes[11] = 0x0a;
     const { transport } = makeTransport(bytes);
-    const printer = new BrotherQLPrinter(DEVICES.QL_820NWB, transport, 'usb');
+    const printer = new BrotherQLPrinter(DEVICES.QL_820NWBc, transport, 'usb');
     await printer.getStatus();
     const preview = await printer.createPreview(solidRgba(64, 64));
     expect(preview.assumed).toBe(false);
@@ -228,7 +228,7 @@ describe('BrotherQLPrinter', () => {
     bytes[10] = 62;
     bytes[11] = 0x0a;
     const { transport } = makeTransport(bytes);
-    const printer = new BrotherQLPrinter(DEVICES.QL_820NWB, transport, 'usb');
+    const printer = new BrotherQLPrinter(DEVICES.QL_820NWBc, transport, 'usb');
 
     const status = await printer.getStatus();
     expect(status.rawBytes.length).toBe(32);
@@ -238,7 +238,7 @@ describe('BrotherQLPrinter', () => {
 
   it('close() awaits the transport', async () => {
     const { transport } = makeTransport();
-    const printer = new BrotherQLPrinter(DEVICES.QL_820NWB, transport, 'usb');
+    const printer = new BrotherQLPrinter(DEVICES.QL_820NWBc, transport, 'usb');
     await printer.close();
     // Dodge @typescript-eslint/unbound-method — the point is to verify
     // the mock was called, not to keep a `this`-bound reference.
@@ -257,7 +257,7 @@ describe('BrotherQLPrinter', () => {
       read: vi.fn(() => Promise.resolve(new Uint8Array(0))),
       close: vi.fn(() => Promise.resolve()),
     };
-    const printer = new BrotherQLPrinter(DEVICES.QL_820NWB, transport, 'usb');
+    const printer = new BrotherQLPrinter(DEVICES.QL_820NWBc, transport, 'usb');
     await expect(printer.getStatus()).rejects.toThrow(/did not respond to status request/);
   }, 10_000);
 });

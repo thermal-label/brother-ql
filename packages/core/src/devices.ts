@@ -1,22 +1,15 @@
 import type { BrotherQLDevice } from './types.js';
 
-const MASS_STORAGE_PIDS = new Set([0x20aa, 0x20ab]);
+// PIDs aligned to Linux usb-ids (gowdy.us / linux-usb.org):
+//   0x20a9 — QL-1100 mass storage
+//   0x20aa — QL-1110NWB mass storage
+//   0x20ac — QL-1115NWB mass storage
+const MASS_STORAGE_PIDS = new Set([0x20a9, 0x20aa, 0x20ac]);
 
 export const DEVICES = {
-  QL_820NWB: {
-    name: 'QL-820NWB',
-    family: 'brother-ql',
-    transports: ['usb', 'webusb', 'tcp', 'serial', 'web-serial'],
-    vid: 0x04f9,
-    pid: 0x20a7,
-    headPins: 720,
-    bytesPerRow: 90,
-    twoColor: true,
-    network: 'wifi+wired',
-    autocut: true,
-    compression: true,
-    editorLite: true,
-  },
+  // QL-820NWB and the regional QL-820NWBc variant share PID 0x209d.
+  // We register only the `c` variant since it covers both names; users
+  // looking up by PID will resolve correctly regardless of marketing label.
   QL_820NWBc: {
     name: 'QL-820NWBc',
     family: 'brother-ql',
@@ -204,7 +197,7 @@ export const DEVICES = {
     family: 'brother-ql',
     transports: ['usb', 'webusb'],
     vid: 0x04f9,
-    pid: 0x20a8,
+    pid: 0x20a7,
     headPins: 1296,
     bytesPerRow: 162,
     twoColor: false,
@@ -212,14 +205,14 @@ export const DEVICES = {
     autocut: true,
     compression: true,
     editorLite: true,
-    massStoragePid: 0x20aa,
+    massStoragePid: 0x20a9,
   },
   QL_1110NWB: {
     name: 'QL-1110NWB',
     family: 'brother-ql',
     transports: ['usb', 'webusb', 'tcp'],
     vid: 0x04f9,
-    pid: 0x20a9,
+    pid: 0x20a8,
     headPins: 1296,
     bytesPerRow: 162,
     twoColor: false,
@@ -227,14 +220,14 @@ export const DEVICES = {
     autocut: true,
     compression: true,
     editorLite: true,
-    massStoragePid: 0x20ab,
+    massStoragePid: 0x20aa,
   },
   QL_1115NWB: {
     name: 'QL-1115NWB',
     family: 'brother-ql',
     transports: ['usb', 'webusb', 'tcp'],
     vid: 0x04f9,
-    pid: 0x20ac,
+    pid: 0x20ab,
     headPins: 1296,
     bytesPerRow: 162,
     twoColor: false,
@@ -242,6 +235,7 @@ export const DEVICES = {
     autocut: true,
     compression: true,
     editorLite: true,
+    massStoragePid: 0x20ac,
   },
   QL_1050: {
     name: 'QL-1050',

@@ -36,7 +36,7 @@ thermal-label list
 ```
 
 **Expected:** your printer appears with the correct model name and
-PID, e.g. `QL-820NWB (0x20a7) — usb`.
+PID, e.g. `QL-820NWBc (0x209d) — usb`.
 
 If multiple printers are connected, all of them should appear.
 

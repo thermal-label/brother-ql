@@ -13,8 +13,8 @@ schemaVersion: 1
 driver: brother-ql
 
 devices:
-  - pid: 0x20a7
-    name: QL-820NWB
+  - pid: 0x209d
+    name: QL-820NWBc
     status: verified
     transports:
       usb: verified
@@ -25,6 +25,8 @@ devices:
     notes: |
       Reference test device. Two-colour printing on DK-22251 confirmed,
       auto-cut works on USB and TCP, WebUSB demo prints correctly.
+      The QL-820NWB and QL-820NWBc share PID 0x209d; this entry
+      covers both marketing names.
     reports:
       - issue: 0
         reporter: '@mannes'

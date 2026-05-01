@@ -44,10 +44,11 @@ in the browser.
 Models QL-700 and later have an **Editor Lite** hardware mode. When the green
 LED is lit, the device re-enumerates under different USB product IDs:
 
-| Normal PID | Editor Lite PID | Model     |
-| :--------: | :-------------: | --------- |
-|  `0x20a7`  |    `0x20aa`     | QL-820NWB |
-|  `0x2042`  |    `0x20ab`     | QL-700    |
+| Normal PID | Editor Lite PID | Model      |
+| :--------: | :-------------: | ---------- |
+|  `0x20a7`  |    `0x20a9`     | QL-1100    |
+|  `0x20a8`  |    `0x20aa`     | QL-1110NWB |
+|  `0x20ab`  |    `0x20ac`     | QL-1115NWB |
 
 In Editor Lite mode the printer presents a mass storage interface. Raster print
 commands are silently discarded. `listPrinters()` detects this and emits a
@@ -374,4 +375,4 @@ If you are implementing the protocol in another language or runtime:
 - [ ] End the last page with `0x1A`, not `0x0C`
 - [ ] Bitmaps are in print orientation: rows across the 720-dot print head width, columns along the feed direction
 - [ ] Query status with `1B 69 53` and read 32 bytes before printing to confirm media matches
-- [ ] Detect Editor Lite PIDs (`0x20aa`, `0x20ab`) and warn the user
+- [ ] Detect Editor Lite / mass-storage PIDs (`0x20a9`, `0x20aa`, `0x20ac`) and warn the user

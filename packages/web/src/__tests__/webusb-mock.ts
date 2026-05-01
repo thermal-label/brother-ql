@@ -42,7 +42,7 @@ export function createMockUSBDevice(overrides?: {
 
   const device = {
     vendorId: overrides?.vendorId ?? 0x04f9,
-    productId: overrides?.productId ?? 0x20a7,
+    productId: overrides?.productId ?? 0x209d,
     serialNumber: undefined,
     get opened() {
       return opened;
