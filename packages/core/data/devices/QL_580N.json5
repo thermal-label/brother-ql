@@ -1,0 +1,14 @@
+{
+  name: 'QL-580N',
+  family: 'brother-ql',
+  transports: ['usb', 'webusb', 'tcp'],
+  vid: 0x04f9,
+  pid: 0x201b,
+  headPins: 720,
+  bytesPerRow: 90,
+  twoColor: false,
+  network: 'wired',
+  autocut: true,
+  compression: true,
+  editorLite: false,
+}

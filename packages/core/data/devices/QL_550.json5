@@ -1,0 +1,14 @@
+{
+  name: 'QL-550',
+  family: 'brother-ql',
+  transports: ['usb', 'webusb'],
+  vid: 0x04f9,
+  pid: 0x2016,
+  headPins: 720,
+  bytesPerRow: 90,
+  twoColor: false,
+  network: 'none',
+  autocut: false,
+  compression: false,
+  editorLite: false,
+}

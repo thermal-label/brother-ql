@@ -1,0 +1,14 @@
+{
+  name: 'QL-1060N',
+  family: 'brother-ql',
+  transports: ['usb', 'webusb', 'tcp'],
+  vid: 0x04f9,
+  pid: 0x2028,
+  headPins: 1296,
+  bytesPerRow: 162,
+  twoColor: false,
+  network: 'wired',
+  autocut: true,
+  compression: true,
+  editorLite: false,
+}

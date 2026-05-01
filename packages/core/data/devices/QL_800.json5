@@ -1,0 +1,14 @@
+{
+  name: 'QL-800',
+  family: 'brother-ql',
+  transports: ['usb', 'webusb'],
+  vid: 0x04f9,
+  pid: 0x209b,
+  headPins: 720,
+  bytesPerRow: 90,
+  twoColor: true,
+  network: 'none',
+  autocut: true,
+  compression: true,
+  editorLite: true,
+}

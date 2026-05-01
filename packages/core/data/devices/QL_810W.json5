@@ -1,0 +1,14 @@
+{
+  name: 'QL-810W',
+  family: 'brother-ql',
+  transports: ['usb', 'webusb', 'tcp'],
+  vid: 0x04f9,
+  pid: 0x209c,
+  headPins: 720,
+  bytesPerRow: 90,
+  twoColor: true,
+  network: 'wifi',
+  autocut: true,
+  compression: true,
+  editorLite: true,
+}

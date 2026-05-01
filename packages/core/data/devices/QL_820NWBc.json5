@@ -1,0 +1,17 @@
+// QL-820NWB and the regional QL-820NWBc variant share PID 0x209d.
+// We register only the `c` variant since it covers both names; users
+// looking up by PID will resolve correctly regardless of marketing label.
+{
+  name: 'QL-820NWBc',
+  family: 'brother-ql',
+  transports: ['usb', 'webusb', 'tcp', 'serial', 'web-serial'],
+  vid: 0x04f9,
+  pid: 0x209d,
+  headPins: 720,
+  bytesPerRow: 90,
+  twoColor: true,
+  network: 'wifi+wired',
+  autocut: true,
+  compression: true,
+  editorLite: true,
+}

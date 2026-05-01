@@ -35,6 +35,8 @@
   "files": [
     "dist",
     "src",
+    "data/devices.json",
+    "data/media.json",
     "README.md"
   ],
   "engines": {
@@ -53,10 +55,11 @@
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "compile-data": "node ../../scripts/compile-data.mjs",
+    "build": "pnpm run compile-data && tsc -p tsconfig.json",
+    "typecheck": "pnpm run compile-data && tsc -p tsconfig.json --noEmit",
+    "test": "pnpm run compile-data && vitest run",
+    "test:coverage": "pnpm run compile-data && vitest run --coverage"
   },
   "dependencies": {
     "@mbtech-nl/bitmap": "^1.2.1",
@@ -66,6 +69,7 @@
     "@mbtech-nl/tsconfig": "^1.0.0",
     "@types/node": "^22.0.0",
     "@vitest/coverage-v8": "^2.1.9",
+    "json5": "^2.2.3",
     "typescript": "~5.5.0",
     "vitest": "^2.0.0"
   }

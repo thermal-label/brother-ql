@@ -1,0 +1,14 @@
+{
+  name: 'QL-1050',
+  family: 'brother-ql',
+  transports: ['usb', 'webusb'],
+  vid: 0x04f9,
+  pid: 0x2027,
+  headPins: 1296,
+  bytesPerRow: 162,
+  twoColor: false,
+  network: 'none',
+  autocut: true,
+  compression: true,
+  editorLite: false,
+}

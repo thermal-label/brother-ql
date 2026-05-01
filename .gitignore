@@ -7,3 +7,8 @@ docs/.vitepress/cache/
 *.tsbuildinfo
 .DS_Store
 .claude/
+
+# Build artifacts emitted by scripts/compile-data.mjs
+packages/*/src/*.generated.ts
+packages/*/data/devices.json
+packages/*/data/media.json
