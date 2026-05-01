@@ -1,15 +1,22 @@
 # Add Brother PT-P / PT-E series support
 
 > Extend this driver to cover Brother's PC-connectable P-touch line —
-> **PT-P750W, PT-P900W, PT-P950NW, PT-E550W** — alongside the QL
-> series it already supports. Background research shows these models
-> use the **same raster command family** as Brother QL, with
-> per-device variation that maps cleanly onto the feature-flag pattern
-> already in `BrotherQLDevice`.
+> **PT-E550W, PT-P750W, PT-P900, PT-P900W, PT-P950NW, PT-P910BT** —
+> alongside the QL series it already supports. Background research
+> shows these models use the **same raster command family** as
+> Brother QL, with per-device variation that maps cleanly onto the
+> contracts 0.3.0 device shape this driver migrated to in
+> `plans/implemented/migrate-to-contracts-shape.md`.
 >
-> This plan also covers the package rename from `brother-ql` →
-> `brother` so the scope reflects reality. Both parts ship in one
-> release because there is no good reason to do them separately.
+> The package + identifier rename (`brother-ql` → `brother`,
+> `BrotherQLDevice` → `BrotherDevice`) was originally bundled with
+> this work. It has been spun off into
+> `plans/backlog/rename-to-brother.md` and this plan no longer
+> depends on it. The current names (`@thermal-label/brother-ql-*`,
+> `BrotherQLDevice`, `family: 'brother-ql'`) are used throughout
+> the sections below; if the rename PR lands first, do a global
+> s/brother-ql/brother/ and s/BrotherQL/Brother/ across the new
+> artifacts before the first PR here.
 >
 > **Scope clarification (read first):** "Brother PT" in this plan
 > means the PC-connectable PT-P / PT-E lineup — the one Brother
@@ -24,19 +31,20 @@
 
 ## 1. Goals
 
-- Add the four PT-P / PT-E PC-connectable models to the device
-  registry, each printing successfully via USB and (where supported)
-  TCP.
-- Reuse the existing `protocol.ts` raster encoder; gate divergent
-  behaviour with new device-level feature flags.
-- Add Brother TZe tape catalogue to the media registry alongside the
-  existing DK-tape entries, with a clean separation so the two
-  catalogues don't cross-contaminate.
-- Rename the npm packages from `@thermal-label/brother-ql-*` to
-  `@thermal-label/brother-*` and the repo from `brother-ql` to
-  `brother`.
-- Honest hardware-status surface: PT models start as `🔲 Expected`
-  pending verification, same as the unverified QL models.
+- Add six PT-P / PT-E PC-connectable models to the device registry
+  in the contracts 0.3.0 shape (`engines[].protocol: 'pt-raster'`),
+  each printing successfully via USB and (where supported) TCP or
+  Bluetooth SPP.
+- Add a `pt-raster` protocol implementation alongside the existing
+  `ql-raster` in `src/protocols.ts`. Reuse PackBits compression and
+  the status-response parser; gate the per-protocol differences
+  (feed-margin, expanded-mode pre-amble, two-colour invalidate-byte
+  count) inside the `pt-raster` module rather than as registry flags.
+- Add the TZe and HSe tape catalogues to `data/media.json5` alongside
+  the existing DK entries, gated by a new `tapeSystem` discriminator
+  so QL lookups never return TZe entries and vice versa.
+- Honest support surface: every new entry ships with
+  `support: { status: 'untested' }` until a hardware report is filed.
 
 ---
 
@@ -74,83 +82,57 @@ maintainers don't re-litigate it.
 
 ## 3. Package rename
 
-Rename `@thermal-label/brother-ql-{core,node,web}` →
-`@thermal-label/brother-{core,node,web}`. Repo follows.
-
-- We're at 0.x — semver makes no promises and the deprecation cost is
-  one paragraph in the npm README.
-- `npm deprecate @thermal-label/brother-ql-core "Renamed to @thermal-label/brother-core; install that instead."` for each of the three packages, pointing to the new name.
-- README and `docs/index.md` get a one-paragraph "previously known as
-  brother-ql" pointer with install-rename instructions.
-- `BrotherQLDevice` / `BrotherQLMedia` / `BrotherQLStatus` /
-  `BrotherQLPrintOptions` / `BrotherQLPrinter` rename to
-  `BrotherDevice` / `BrotherMedia` / `BrotherStatus` /
-  `BrotherPrintOptions` / `BrotherPrinter`. `family: 'brother-ql'`
-  becomes `family: 'brother'`. CLI driver-detection convention follows.
-- Single release: `0.3.x` (last brother-ql) → `0.4.0` (first brother).
-  No transitional dual-publish; the deprecate notice is the migration
-  path.
+Spun off into `plans/backlog/rename-to-brother.md`. That plan owns
+the npm-package, TypeScript-identifier, GitHub-repo, and docs-site
+rename and is independent of the PT-series work. This plan keeps the
+current names; the rename can land before, after, or never without
+blocking PT-series support.
 
 ---
 
 ## 4. Schema additions
 
-Two new feature flags on `BrotherDevice`, plus a model-line
-discriminator. All other existing fields stay.
+The contracts 0.3.0 shape (landed in `migrate-to-contracts-shape.md`)
+already carries `engines[].dpi`, `engines[].headDots`,
+`engines[].mediaCompatibility`, and an open
+`engines[].capabilities` index signature. Most of what the prior
+revision of this plan added at the device level is already there;
+the genuinely new bits are smaller.
+
+### 4.1 What lands on the registry
+
+**Engine-level capability extension.** `BrotherEngineCapabilities`
+(in `packages/core/src/types.ts`) gains one driver-side flag for the
+PT lineup:
 
 ```ts
-// packages/core/src/types.ts
-
-export type BrotherLine = 'ql' | 'ql-wide' | 'pt-p' | 'pt-e';
-export type HeadPins = 128 | 560 | 720 | 1296;
-export type Dpi = 180 | 300 | 360;
-export type HighResDpi = 360 | 720;
-
-export interface BrotherDevice extends DeviceDescriptor {
-  family: 'brother';
-  vid: number;
-  pid: number;
-  /** Which Brother model line this belongs to. Drives form-factor and
-   *  catalogue selection in the encoder + media lookup. */
-  line: BrotherLine;
-  headPins: HeadPins;
-  bytesPerRow: number;
-  /** Print head density along the head axis (horizontal). QL family
-   *  is 300; PT 128-pin family is 180; PT 560-pin family is 360. */
-  dpi: Dpi;
-  /** Optional high-resolution mode along the feed axis (vertical).
-   *  When the user opts in via `BrotherPrintOptions.highRes`, the
-   *  encoder sets ESC i K bit 6, duplicates each raster line, and
-   *  doubles the feed margins. PT models support 2× their `dpi`
-   *  here; QL models don't expose this and leave it unset. */
-  highResDpi?: HighResDpi;
-  twoColor: boolean;
-  network: NetworkSupport;
-  autocut: boolean;
-  compression: boolean;
-  editorLite: boolean;
-  /** `ESC i a` (mode setting) supported. PT models accept it; some
-   *  legacy QLs (QL-500/550/560/570/700) reject it. Defaults true. */
-  modeSetting: boolean;
-  /** `ESC i K` (expanded mode) supported. Used to enable two-colour
-   *  + cut-at-end + high-res. Defaults true. */
-  expandedMode: boolean;
-  /** Number of `0x00` bytes to send for the invalidate prefix. 200
-   *  for most models; 400 for QL-800 series (two-colour pre-amble). */
-  invalidateBytes: number;
-  /** Alternate PID seen when the printer is in Editor Lite
-   *  mass-storage mode. */
-  massStoragePid?: number;
+export interface BrotherEngineCapabilities extends PrintEngineCapabilities {
+  /** Two-colour ribbon path — black + red plane raster encoding. (existing) */
+  twoColor?: boolean;
+  /**
+   * Doubled-density mode along the feed axis. PT-E550W / PT-P750W
+   * carry `360`; PT-P900 series carries `720`. Undefined on QL and
+   * legacy models that don't support `ESC i K` bit 6. The encoder
+   * branches on this when `BrotherQLPrintOptions.highRes` is set.
+   */
+  highResDpi?: 360 | 720;
 }
 ```
 
-**Default values** for existing QL entries: `line: 'ql' | 'ql-wide'`,
-`dpi: 300`, `highResDpi: undefined`, `modeSetting: true`,
-`expandedMode: true`, `invalidateBytes: 200` (QL-800 series → `400`).
-Backfill the existing device registry in the same PR.
+**Engine `protocol` discrimination.** Each PT entry sets
+`engines[0].protocol: 'pt-raster'`; QL entries stay on `'ql-raster'`.
+The `KNOWN_PROTOCOLS` set in `scripts/compile-data.mjs` adds
+`'pt-raster'` so the validator accepts the new tag. The runtime
+encoder branches on the engine's `protocol` field via the
+`PROTOCOLS` registry in `src/protocols.ts`.
 
-`BrotherMedia` gains a `tapeSystem` discriminator and the
-head-family-keyed geometry shape from §6.2:
+**Media-side: `tapeSystem` + per-head-family geometry.** The
+existing `BrotherQLMedia` carries flat `printAreaDots` /
+`leftMarginPins` / `rightMarginPins` because every DK entry resolves
+on a single head family (720-dot QL or 1296-dot wide-QL — both share
+the same per-tape geometry). PT introduces two head families with
+genuinely different per-tape pin layouts (§6.2), so a `BrotherQLMedia`
+entry on TZe or HSe needs head-family-aware geometry.
 
 ```ts
 export type TapeSystem = 'dk' | 'tze' | 'hse-2to1' | 'hse-3to1';
@@ -161,44 +143,127 @@ export interface TapeGeometry {
   rightMarginPins: number;
 }
 
-export interface BrotherMedia extends MediaDescriptor {
+export interface BrotherQLMedia extends MediaDescriptor {
   id: number;
   type: 'continuous' | 'die-cut';
+  /** Tape system this entry belongs to. Drives lookup gating in
+   *  `findMediaByDimensions(width, height, engine)`. */
   tapeSystem: TapeSystem;
-  /** Per-head-family pin geometry. `narrow` = 128-pin (PT-E550W,
-   *  PT-P750W); `wide` = 560-pin (PT-P900 series). DK entries set
-   *  only `narrow` since QL is single-family from a head-pin
-   *  perspective. */
-  geometry: { narrow?: TapeGeometry; wide?: TapeGeometry };
+  /**
+   * Per-head-family geometry. `narrow` = 128-pin head (PT-E550W,
+   * PT-P750W); `wide` = 560-pin head (PT-P900 family). DK entries
+   * leave both unset and use the flat fields below; TZe / HSe
+   * entries leave the flat fields undefined and populate `narrow`
+   * and/or `wide` per §6.2.
+   */
+  geometry?: { narrow?: TapeGeometry; wide?: TapeGeometry };
+  /** DK-only flat geometry. Migrate to `geometry.<head-family>`
+   *  when a future Brother family forces head-family-aware DK
+   *  geometry. */
+  printAreaDots?: number;
+  leftMarginPins?: number;
+  rightMarginPins?: number;
   /** Mask applied to the printable area on die-cut DK labels. Not
    *  meaningful for continuous media. */
   dieCutMaskedAreaDots?: number;
 }
 ```
 
-`tapeSystem` lets `findMediaByDimensions(widthMm, heightMm, device)`
-skip TZe / HSe entries when the user is on a QL and DK entries when
-on a PT — catalogues sharing a numeric id space without ambiguity.
-Resolution against `device.headPins` selects the right
-`narrow`/`wide` geometry per §6.2.
+A `resolveTapeGeometry(media, engine)` helper keys on
+`engine.headDots` to pick `narrow` (128 dots) or `wide` (560 dots),
+falling back to the flat fields for DK. Existing QL code paths read
+the flat fields directly and continue to work.
+
+### 4.2 What stays off the registry
+
+The 2026-04 revision of this plan added several flags that, against
+the contracts 0.3.0 shape, belong inside the protocol implementation
+rather than on each device entry:
+
+- **`compression` / invalidate-byte count / feed-margin dots** —
+  protocol-internal. The two-colour pre-amble that needs 400
+  invalidate bytes on QL-800-series models (vs 200 elsewhere) is
+  derivable from `engine.capabilities.twoColor`; the encoder reads
+  that and picks the byte count. Feed margin is a per-protocol
+  constant (35 dots for `ql-raster`, 14 dots for `pt-raster`) baked
+  into each protocol module.
+- **`modeSetting` / `expandedMode` flags.** The prior revision
+  proposed gating `ESC i a` and `ESC i K` emission per device. Today
+  the encoder always emits both and every verified QL accepts them;
+  the "some legacy QLs reject these" hypothesis is unverified and
+  introduces speculative complexity. Defer until a verification
+  report on QL-500/550/560/570/700 actually surfaces a print failure.
+- **PT-E550W cutter-requires-compression quirk.** Implemented as a
+  per-name guard inside the encoder (§7.2), not a registry capability —
+  no other model shares this constraint and a registry flag for one
+  model is over-fit.
+- **`line` discriminator.** Replaced by `engines[0].protocol`, which
+  is already the right axis for encoder branching.
+- **`bytesPerRow`.** Derivable as `engine.headDots / 8`; the encoder
+  computes it inline.
+
+### 4.3 Worked JSON5 entry — PT-P750W
+
+```json5
+{
+  key: 'PT_P750W',
+  name: 'PT-P750W',
+  family: 'brother-ql',
+  transports: {
+    usb: { vid: '0x04f9', pid: '0x2062' },
+    // Wi-Fi reachable per Brother spec sheet; verify port + mDNS
+    // service type during phase 4.
+    tcp: { port: 9100 },
+  },
+  engines: [
+    {
+      role: 'primary',
+      protocol: 'pt-raster',
+      dpi: 180,
+      headDots: 128,
+      mediaCompatibility: ['tze', 'hse-2to1', 'hse-3to1'],
+      capabilities: {
+        autocut: true,
+        mediaDetection: true,
+        highResDpi: 360,
+      },
+    },
+  ],
+  capabilities: {
+    massStoragePid: '0x2065',
+  },
+  hardwareQuirks: 'PID disagreement between driver projects: libptouch.c says 0x2062 is the printer PID and 0x2065 is PLite mass-storage; nbuchwitz/ptouch says 0x2065 is the printer PID. We treat libptouch.c as authoritative; flip via a contributor report if discovery fails on real hardware.',
+  support: { status: 'untested' },
+}
+```
 
 ---
 
 ## 5. Device additions
 
-| Model      | Printer-mode PID | PLite/mass-storage PID | DPI       | Head pins | Bytes/row | Two-colour | Network    | Line   |
-| ---------- | ---------------- | ---------------------- | --------- | --------- | --------- | ---------- | ---------- | ------ |
-| PT-E550W   | `0x2060` ✅      | unknown                | 180 / 360 | 128       | 16        | ❌         | Wi-Fi      | `pt-e` |
-| PT-P750W   | `0x2062` ✅      | `0x2065` ✅            | 180 / 360 | 128       | 16        | ❌         | Wi-Fi      | `pt-p` |
-| PT-P900    | `0x2083` ✅      | unknown                | 360 / 720 | 560       | 70        | ❌         | USB-only   | `pt-p` |
-| PT-P900W   | `0x2085` ✅      | unknown                | 360 / 720 | 560       | 70        | ❌         | Wi-Fi      | `pt-p` |
-| PT-P950NW  | `0x2086` ✅      | unknown                | 360 / 720 | 560       | 70        | ❌         | Wi-Fi+LAN  | `pt-p` |
-| PT-P910BT  | `0x20C7` ✅      | unknown                | 360 / 720 | 560       | 70        | ❌         | Bluetooth  | `pt-p` |
+| Model      | Printer PID | Mass-storage PID | DPI (native / high-res) | `headDots` | Two-colour | Transports declared       |
+| ---------- | ----------- | ---------------- | ----------------------- | ---------- | ---------- | ------------------------- |
+| PT-E550W   | `0x2060` ✅ | unknown          | 180 / 360               | 128        | ❌         | `usb`, `tcp`¹             |
+| PT-P750W   | `0x2062` ✅ | `0x2065` ✅      | 180 / 360               | 128        | ❌         | `usb`, `tcp`¹             |
+| PT-P900    | `0x2083` ✅ | unknown          | 360 / 720               | 560        | ❌         | `usb`                     |
+| PT-P900W   | `0x2085` ✅ | unknown          | 360 / 720               | 560        | ❌         | `usb`, `tcp`              |
+| PT-P950NW  | `0x2086` ✅ | unknown          | 360 / 720               | 560        | ❌         | `usb`, `tcp`              |
+| PT-P910BT  | `0x20C7` ✅ | unknown          | 360 / 720               | 560        | ❌         | `usb`, `bluetooth-spp`²   |
 
-DPI column reads as `native / high-res` — see §7.5 for high-res mode handling.
-| PT-E550W  | `0x2060` ⚠️ (~70%)  | unknown                | 180 | 128       | 16        | ❌         | Wi-Fi     | `pt-e` |
-| PT-P900W  | **unknown** ❓       | unknown                | 360 | 560       | 70        | ❌         | Wi-Fi     | `pt-p` |
-| PT-P950NW | **unknown** ❓       | unknown                | 360 | 560       | 70        | ❌         | Wi-Fi+LAN | `pt-p` |
+¹ TCP advertised by Brother spec sheets but Brother emphasises
+   iPrint&Label app integration over raw 9100; verify the port and
+   mDNS service type during phase 4.
+² Classic Bluetooth SPP per the working hypothesis — see §5.3 for
+   the GATT-vs-SPP open question that may pull PT-P910BT out of scope.
+
+`bytesPerRow` is derivable as `headDots / 8` (16 for the 128-pin
+family, 70 for the 560-pin family) and is no longer carried on the
+registry — the encoder reads `engine.headDots` directly. The prior
+revision's `line` column is replaced by `engine.protocol`, which is
+`'pt-raster'` for every row above.
+
+DPI column reads as `native / high-res` — see §7.3 for high-res mode
+handling.
 
 ### 5.1 PID confidence and sources
 
@@ -389,22 +454,29 @@ revision):
    (id 444), looked up via `(widthMm, line)`.
 
 **Recommend option 1**, but generalize the field name beyond
-`...ByHeadPins`: the actual discriminator is the device's head
-geometry, and HSe rows below show that head-pin-count alone isn't
-enough (HSe support is also gated). Use a small helper:
+`...ByHeadPins`: the actual discriminator is the engine's head
+geometry, and HSe rows below show that head-dot-count alone isn't
+enough (HSe support is also gated). Use a small helper that takes
+the engine, not the device, since the rasterizer already has it in
+scope:
 
 ```ts
-function resolveTapeGeometry(media: BrotherMedia, device: BrotherDevice): TapeGeometry {
-  const family = device.headPins === 128 ? 'narrow' : 'wide';
-  return media.geometry[family]
-    ?? throw new Error(`${media.name} not supported on ${device.name}`);
+function resolveTapeGeometry(media: BrotherQLMedia, engine: PrintEngine): TapeGeometry {
+  const family = engine.headDots === 128 ? 'narrow' : 'wide';
+  const geometry = media.geometry?.[family];
+  if (!geometry) {
+    throw new Error(`${media.name} not supported on a ${engine.headDots}-dot head`);
+  }
+  return geometry;
 }
 ```
 
-…with `BrotherMedia.geometry: Record<'narrow' | 'wide', TapeGeometry | undefined>`
+…with `BrotherQLMedia.geometry: { narrow?: TapeGeometry; wide?: TapeGeometry }`
 where `undefined` = "this tape doesn't fit this head family." That
-naturally encodes the "36 mm TZe / 31 mm HSe are 560-pin only" rule
-without a separate support matrix.
+naturally encodes the "36 mm TZe / 31 mm HSe-3:1 are 560-pin only"
+rule without a separate support matrix. DK entries leave both unset
+and resolve via the flat `printAreaDots` / `leftMarginPins` /
+`rightMarginPins` fields per §4.1.
 
 ### 6.3 HSe heat-shrink tube pin configurations
 
@@ -508,130 +580,119 @@ SKU naming. Defer to a follow-up.
 
 ## 7. Encoder changes
 
-The `protocol.ts` encoder is already feature-flag-driven. Five
-deltas — three small (carried over from the prior revision), two
-medium (added after the nbuchwitz/ptouch research pass).
+Most of the wire format is shared between QL and PT raster — same
+status request, same `G` raster opcode, same PackBits compression,
+same status-response shape, same two-colour plane encoding. The
+deltas live inside `src/protocols.ts` so they don't leak onto the
+registry.
 
-### 7.1 Invalidate length
+### 7.1 New `pt-raster` protocol module
 
-The `invalidateBytes` field replaces the hardcoded `200` (or `400`
-two-colour conditional). One line in `buildJobHeader()` — read from
-`device.invalidateBytes` instead.
-
-### 7.2 Mode-setting / expanded-mode gating
-
-Existing encoder unconditionally emits `ESC i a` and `ESC i K`. Wrap
-each in `if (device.modeSetting)` and `if (device.expandedMode)`.
-This also benefits the legacy QLs (QL-500/550/560/570/700) which
-currently get sent commands they reject — likely a latent bug today
-that nobody has hit because those models aren't in the verified set.
-
-### 7.3 Form-factor
-
-QL has `'continuous' | 'die-cut'`; PT is continuous-only. The encoder
-already paths on `media.type` — no change needed. But the **margin
-calculation** for tape feed differs slightly: brother-label has a
-distinct `FormFactor.PTOUCH_ENDLESS` with different feed margins
-(`feed_margin=14` for PT vs `35` for QL). Encode this as a per-`line`
-`feedMarginDots` constant in `protocol.ts`:
+`PROTOCOLS` in `src/protocols.ts` (introduced by the contracts-shape
+migration as the home for protocol-internal wire-format details)
+gains a `pt-raster` entry. The implementation forks `ql-raster`'s
+`encode()` and replaces three constants:
 
 ```ts
-const FEED_MARGIN_DOTS: Record<BrotherLine, number> = {
-  'ql':       35,
-  'ql-wide':  35,
-  'pt-p':     14,
-  'pt-e':     14,
-};
+const PT_FEED_MARGIN_DOTS = 14;     // QL uses 35
+const PT_INVALIDATE_BYTES = 200;    // QL derives 200 vs 400 from twoColor
+const PT_HIGH_RES_FLAG    = 0x40;   // ESC i K bit 6 — gated by options.highRes
 ```
 
-Cited from `brother_label/devices.py:48` (`feed_margin=35`) vs
-`brother_label/devices.py:122` (`feed_margin=14`). Verify against
-Brother's PT raster manual during phase 3.
+Two-colour pre-amble doesn't apply to PT (no two-colour PT models),
+so PT keeps the 200-byte invalidate. QL's 200-vs-400 split is
+derived inside `ql-raster.encode()` from
+`engine.capabilities.twoColor` — no registry flag, no per-model
+lookup table. Feed-margin values cited from `brother_label/devices.py:48`
+(`feed_margin=35` for QL) and `:122` (`feed_margin=14` for PT);
+verify against Brother's PT raster manual during phase 4.
 
-### 7.4 PT-E550W cutter requires compression
+### 7.2 PT-E550W cutter requires compression
 
 `nbuchwitz/ptouch/src/ptouch/printers.py:PTE550W` documents:
 
 > Note: E550W requires compression ON for cutting to work.
 
-Set `DEFAULT_USE_COMPRESSION = True` for PT-E550W; equivalently in
-our schema, treat `compression: true` as load-bearing for the cutter
-on this model and refuse to disable it when `autocut: true` is also
-requested. Most cleanly enforced as a per-device validation in
-`buildJob()` rather than a runtime conditional in `protocol.ts`:
+Implemented as a per-name guard in `pt-raster.encode()`:
 
 ```ts
-if (device.name === 'PT-E550W' && options.autocut && !device.compression) {
+if (device.name === 'PT-E550W' && options.autocut && options.compress === false) {
   throw new Error('PT-E550W requires compression for autocut to work');
 }
 ```
 
-This is a model-specific gotcha (other PT models don't share it per
-the nbuchwitz source — `PTP900Series.DEFAULT_USE_COMPRESSION = False`),
-so model-specific validation beats a generic feature flag.
+Or equivalently force `compress = true` when both flags are set.
+This is a one-model quirk (`PTP900Series.DEFAULT_USE_COMPRESSION = False`
+in the same source), so a registry capability for it is over-fit.
+If a second PT model surfaces the same constraint, promote it to an
+engine capability.
 
-### 7.5 High-resolution mode (180×360 / 360×720)
+### 7.3 High-resolution mode (180×360 / 360×720)
 
 Both PT families support a high-resolution print mode that **doubles
 the vertical resolution** (along the tape-feed axis) without changing
-the horizontal head-pin count:
+the horizontal head-dot count. Enabled via `ESC i K` bit 6.
 
-- **128-pin family (PT-E550W, PT-P750W):** `180×180` native, `180×360`
-  high-res. Enabled via `ESC i K` bit 6.
-- **560-pin family (PT-P900 series):** `360×360` native, `360×720`
-  high-res. Same `ESC i K` bit 6.
+- **128-pin family (PT-E550W, PT-P750W):** `180×180` native, `180×360` high-res.
+- **560-pin family (PT-P900 series):** `360×360` native, `360×720` high-res.
 
-In high-res mode, **each raster line is sent twice** and feed margins
-are doubled. From `nbuchwitz/ptouch`:
+In high-res mode, **each raster line is sent twice** and the feed
+margin is doubled. From `nbuchwitz/ptouch`:
 
-> High resolution mode (180x360 dpi) is supported via ESC i K bit 6.
+> High resolution mode (180×360 dpi) is supported via ESC i K bit 6.
 > In high-res mode, each raster line must be sent twice and margin doubled.
 
-Schema additions needed beyond what §4 specified:
+API surface — `BrotherQLPrintOptions` (existing) gains `highRes`:
 
 ```ts
-export interface BrotherDevice extends DeviceDescriptor {
-  // ...existing fields from §4...
-  /** Print head density along the head axis (horizontal). */
-  dpi: 180 | 300 | 360;
-  /** Optional doubled-density mode along the feed axis (vertical).
-   *  When set, encoder enables ESC i K bit 6, sends each raster line
-   *  twice, and doubles feed margins. */
-  highResDpi?: 360 | 720;
-}
-
-export interface BrotherPrintOptions {
-  // ...existing fields...
-  /** Opt into high-res mode for this job. Requires
-   *  `device.highResDpi` to be set; throws otherwise. */
+export interface BrotherQLPrintOptions extends PrintOptions {
+  rotate?: 'auto' | 0 | 90 | 180 | 270;
+  /** Opt into high-res mode for this job. Requires the engine's
+   *  `capabilities.highResDpi` to be set; throws otherwise. */
   highRes?: boolean;
 }
 ```
 
-Encoder delta in `protocol.ts`:
+Encoder delta in `pt-raster.encode()`:
 
 ```ts
 if (options.highRes) {
-  assert(device.highResDpi, `${device.name} does not support high-res mode`);
-  modeFlags |= 0x40; // ESC i K bit 6
+  const highResDpi = engine.capabilities?.highResDpi;
+  if (typeof highResDpi !== 'number') {
+    throw new Error(`${device.name} does not support high-res mode`);
+  }
+  modeFlags |= PT_HIGH_RES_FLAG;
   feedMarginDots *= 2;
 }
-// ...later, in raster emit loop:
+// …later, in the raster emit loop:
 emitRasterLine(line);
-if (options.highRes) emitRasterLine(line); // duplicate for high-res
+if (options.highRes) emitRasterLine(line);
 ```
 
-Image-pipeline implications: the `preview` renderer at `device.dpi`
-is fine for non-high-res. For high-res the preview should render at
-`device.dpi × 2` along the feed axis to match what the printer will
+Preview implications: the renderer at `engine.dpi` is fine for
+native mode. For high-res the preview should render at
+`engine.dpi × 2` along the feed axis to match what the printer will
 emit. Likely one constant change per call site — fold into the
-§12.2 dpi audit.
+§11 phase-1 dpi audit.
 
-### 7.6 What does *not* change
+### 7.4 What does *not* change
 
-Status request, status response parsing, raster line opcode (`G`),
+Status request, status-response parsing, raster line opcode (`G`),
 PackBits compression, init/reset, two-colour plane encoding —
-identical between QL and PT-P. Same code path.
+identical between `ql-raster` and `pt-raster`. Move shared helpers
+into a `_shared` module if duplication starts to itch.
+
+### 7.5 Deferred: per-model `modeSetting` / `expandedMode` gating
+
+The 2026-04 plan revision added registry flags for whether a device
+accepts `ESC i a` (mode setting) and `ESC i K` (expanded mode). The
+hypothesis was that legacy QLs (QL-500/550/560/570/700) reject one
+or both. Today the encoder always emits both and every verified QL
+accepts them — the rejection is unverified. Defer until a
+verification report on those models actually surfaces a print
+failure. If/when it does, add `modeSetting?: boolean` /
+`expandedMode?: boolean` to `BrotherEngineCapabilities` and gate
+emission per engine.
 
 ---
 
@@ -785,28 +846,39 @@ per family during phase 4/5; HSe should be exercised on at least one
 
 ## 11. Phasing
 
-1. **Schema + rename, no PT yet** (1-2 days). Rename packages, types,
-   `family` field, repo. Add `line` / `dpi` / `highResDpi` /
-   `modeSetting` / `expandedMode` / `invalidateBytes` to
-   `BrotherDevice`; backfill defaults for every existing QL entry.
-   Add `tapeSystem` and the `geometry: { narrow?, wide? }` shape to
-   `BrotherMedia`; default existing entries to `tapeSystem: 'dk'`
-   with all geometry under `narrow` (QL is single-family). All unit
-   tests pass; behaviour unchanged for QL users. Ship as `0.4.0`.
+1. **Schema, no PT yet** (~1 day). Three small additions on top of
+   the contracts 0.3.0 shape:
+   - Add `'pt-raster'` to `KNOWN_PROTOCOLS` in
+     `scripts/compile-data.mjs`.
+   - Extend `BrotherEngineCapabilities` in
+     `packages/core/src/types.ts` with the optional
+     `highResDpi: 360 | 720` field (driver-side via the contracts
+     open index signature).
+   - Add the `tapeSystem` discriminator and
+     `geometry: { narrow?, wide? }` shape to `BrotherQLMedia`;
+     existing DK entries set `tapeSystem: 'dk'` and keep their flat
+     `printAreaDots` / `leftMarginPins` / `rightMarginPins` per §4.1.
+   All unit tests pass; behaviour unchanged for QL users.
 
-   **Sub-step 1a:** §12.2 dpi audit — grep `300` and `11.81` in
-   `packages/core/src/`, route through `device.dpi`. Lands in the
-   same PR so the rename and the dpi-genericisation move together.
+   **Sub-step 1a — dpi audit (§12.2).** `engine.dpi` already exists
+   on the contracts shape. Grep `300` and `11.81` in
+   `packages/core/src/` and route any hardcoded values through the
+   engine's dpi field. Most preview / rendering code already does
+   the right thing; this is a sweep, not a rewrite.
 
-   **Sub-step 1b:** ~~§12.11 QL-820NWB / QL-1100 PID verification.~~
-   **Done as a pre-flight on 2026-05-01.** `devices.ts` PIDs
-   for QL-820NWB / QL-1100 / QL-1110NWB / QL-1115NWB and the
-   `MASS_STORAGE_PIDS` set were aligned to the Linux usb-ids database;
-   the wrong `QL_820NWB` entry (PID `0x20a7` actually belongs to
-   QL-1100) was dropped, leaving `QL_820NWBc` (PID `0x209d`) as the
-   single 820-series entry covering both marketing names. Tests and
-   docs updated. The rename PR can proceed without re-touching these
-   entries.
+   **Sub-step 1b** — ~~QL-820NWB / QL-1100 PID verification.~~
+   **Resolved as a pre-flight on 2026-05-01** (commit `66883d1`).
+   The misnamed `QL_820NWB` entry was dropped — PID `0x20a7` is
+   actually QL-1100 — and the registry now matches Linux usb-ids.
+
+   **Sub-step 1c** — ~~Package rename.~~ **Spun off into
+   `plans/backlog/rename-to-brother.md`.** Phase 1 here no longer
+   includes any rename work; if the rename PR lands first, the
+   subsequent phases below absorb the new names.
+
+   Ship as the next minor (0.4.0 or whatever follows the
+   contracts-shape release) — without the rename, no major bump
+   is forced.
 
 2. **TZe catalogue + HSe catalogue** (1-2 days). Port the
    nbuchwitz/ptouch tape configs into `media.ts` with id ranges
@@ -835,11 +907,11 @@ per family during phase 4/5; HSe should be exercised on at least one
    PT-E550W's "compression-required-for-cutter" gotcha if E550W is
    the test unit. Promote that one model to `🟢 Verified`.
 
-5. **High-res mode** (1 day). Land §7.5 encoder support and
-   `BrotherPrintOptions.highRes`. Tests: golden bytes show duplicated
-   raster lines and `ESC i K` bit 6 set. Defer hardware verification
-   to whoever has a PT model — non-blocking for the 0.4.x release
-   train.
+5. **High-res mode** (1 day). Land §7.3 encoder support and
+   `BrotherQLPrintOptions.highRes`. Tests: golden bytes show
+   duplicated raster lines and `ESC i K` bit 6 set. Defer hardware
+   verification to whoever has a PT model — non-blocking for the
+   0.4.x release train.
 
 6. **Remaining PT models** (rolling, contributor-driven). Each
    addition is just an integration-test pass that promotes one
