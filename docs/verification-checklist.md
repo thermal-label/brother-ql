@@ -123,6 +123,59 @@ print the demo label.
 If pairing fails on Linux, your browser likely lacks USB access —
 the same udev rule from setup is required for WebUSB too.
 
+## PT-* models — additional steps
+
+The PT-P / PT-E series is **untested** on every entry as of this
+release — the registry is built from `nbuchwitz/ptouch`'s
+transcription of Brother's spec PDFs (with two known "shifted N pins"
+HSe corrections from real-world testing). If you have a PT model, you
+are the first verifier; please capture the following beyond the
+generic steps above.
+
+### Tape-width capture
+
+For each tape width you have on hand, record:
+
+- The **media id** that `thermal-label status` resolves
+  (`detectedMedia.id` / `name` / `tapeSystem`).
+- A photo of the printed label / tube with a ruler showing the
+  effective print area in mm — particularly important for **HSe**
+  rolls where the inherited "shifted N pins" correction may need
+  adjusting.
+
+### High-resolution mode
+
+Run a print with `{ highRes: true }` on at least one model per
+head-dot family (one of PT-E550W / PT-P750W, and one of PT-P900 /
+P900W / P950NW / P910BT). Compare the result to native dpi. The
+high-res print should show finer vertical detail than the native dpi
+print.
+
+### PT-E550W cutter quirk
+
+If you're verifying PT-E550W, attempt a print with
+`{ autoCut: true, compress: false }` and confirm the encoder throws.
+Then attempt with `{ autoCut: true, compress: true }` and confirm the
+cutter actually severs the tape. This is the
+"compression-required-for-cutter" quirk documented in
+[`DECISIONS.md`](./decisions) D14 / `nbuchwitz/ptouch:PTE550W`.
+
+### PT-P910BT — Bluetooth route
+
+If verifying PT-P910BT, capture whether the unit pairs over **classic
+Bluetooth SPP** (the driver's default assumption — RFCOMM device path
+on Linux) or **BLE GATT** (which would block on the niimbot BLE
+adapter and force the entry out of scope until that lands).
+
+### Mass-storage PID
+
+If your PT unit ever ends up enumerating as a mass-storage device on
+a different USB PID than its printer-class PID, capture the
+mass-storage PID via `lsusb` (Linux), Device Manager (Windows), or
+System Information (macOS). Only PT-P750W's mass-storage PID is
+currently known — the rest are missing from the registry until a
+contributor reports them.
+
 ## What to capture for the report
 
 - The full terminal output of steps 1–4 (and 5–8 if applicable).

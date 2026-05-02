@@ -156,3 +156,106 @@ Further status dumps across roll types are needed to confirm.
 | 15   | 14     | "Fixed at 3Fh"           | **Varies per roll** — likely CAS-derived      |
 | 18   | 17     | Media length (mm)        | Correct — 0x00 for continuous, mm for die-cut |
 | 25   | 24     | "Fixed at 00h" (8 bytes) | **Varies** — bit 7 of byte [25] = two-color?  |
+
+## PT-P / PT-E — TZe laminated tape
+
+Laminated tape cartridges for the PC-connectable PT-P / PT-E series.
+The same id maps to different print-area pin counts on the 128-pin and
+560-pin head families — the registry stores both under
+`media.geometry.narrow` / `media.geometry.wide`. Pin configurations
+sourced from Brother's *Raster Command Reference* PDFs via
+[`nbuchwitz/ptouch`](https://github.com/nbuchwitz/ptouch). Status:
+🔲 Untested.
+
+### 128-pin head (PT-E550W, PT-P750W)
+
+| ID  | Width  | Left pins | Print pins | Right pins |
+| --- | ------ | --------- | ---------- | ---------- |
+| 401 | 3.5 mm | 52        | 24         | 52         |
+| 402 | 6 mm   | 48        | 32         | 48         |
+| 403 | 9 mm   | 39        | 50         | 39         |
+| 404 | 12 mm  | 29        | 70         | 29         |
+| 405 | 18 mm  | 8         | 112        | 8          |
+| 406 | 24 mm  | 0         | 128        | 0          |
+
+### 560-pin head (PT-P900, P900W, P950NW, P910BT)
+
+| ID  | Width  | Left pins | Print pins | Right pins |
+| --- | ------ | --------- | ---------- | ---------- |
+| 401 | 3.5 mm | 248       | 48         | 264        |
+| 402 | 6 mm   | 240       | 64         | 256        |
+| 403 | 9 mm   | 219       | 106        | 235        |
+| 404 | 12 mm  | 197       | 150        | 213        |
+| 405 | 18 mm  | 155       | 234        | 171        |
+| 406 | 24 mm  | 112       | 320        | 128        |
+| 407 | 36 mm  | 45        | 454        | 61         |
+
+The 36 mm width (id 407) is exclusive to the 560-pin family.
+
+TZ-legacy cartridges share TZe geometry per width — the entry name
+includes "TZe / TZ" so search hits work for either term. TZeFA
+(flexible-ID) is the same width-by-width; no separate id allocation.
+
+## PT-P / PT-E — HSe heat-shrink tubing
+
+Heat-shrink tubes for cable wraps. Both 2:1 and 3:1 ratios. The
+128-pin pin configurations carry an inherited "shifted -2 pins (up)
+based on testing" correction from `nbuchwitz/ptouch`; the 560-pin
+configurations carry "shifted +17 pins down based on Brother software
+analysis". These corrections are inherited as-shipped — phase-4
+hardware verification should confirm.
+
+PT-P910BT does **not** support HSe; only PT-E550W, PT-P750W, and the
+PT-P900 family print HSe tubes.
+
+### 128-pin head — HSe 2:1
+
+| ID  | Width   | Left | Print | Right |
+| --- | ------- | ---- | ----- | ----- |
+| 421 | 5.8 mm  | 52   | 28    | 48    |
+| 422 | 8.8 mm  | 42   | 48    | 38    |
+| 423 | 11.7 mm | 33   | 66    | 29    |
+| 424 | 17.7 mm | 13   | 106   | 9     |
+| 425 | 23.6 mm | 0    | 128   | 0     |
+
+### 128-pin head — HSe 3:1
+
+| ID  | Width   | Left | Print | Right |
+| --- | ------- | ---- | ----- | ----- |
+| 441 | 5.2 mm  | 56   | 20    | 52    |
+| 442 | 9.0 mm  | 44   | 44    | 40    |
+| 443 | 11.2 mm | 41   | 50    | 37    |
+| 444 | 21.0 mm | 6    | 120   | 2     |
+
+### 560-pin head — HSe 2:1
+
+| ID  | Width   | Left | Print | Right |
+| --- | ------- | ---- | ----- | ----- |
+| 421 | 5.8 mm  | 261  | 56    | 243   |
+| 422 | 8.8 mm  | 241  | 96    | 223   |
+| 423 | 11.7 mm | 223  | 132   | 205   |
+| 424 | 17.7 mm | 183  | 212   | 165   |
+| 425 | 23.6 mm | 161  | 256   | 143   |
+
+### 560-pin head — HSe 3:1
+
+| ID  | Width   | Left | Print | Right |
+| --- | ------- | ---- | ----- | ----- |
+| 441 | 5.2 mm  | 269  | 40    | 251   |
+| 442 | 9.0 mm  | 245  | 88    | 227   |
+| 443 | 11.2 mm | 239  | 100   | 221   |
+| 444 | 21.0 mm | 169  | 240   | 151   |
+| 445 | 31.0 mm | 109  | 360   | 91    |
+
+The 31.0 mm width (id 445) is exclusive to the 560-pin family.
+
+## Per-model media support matrix
+
+| Model       | TZe widths                               | HSe 2:1                | HSe 3:1                       |
+| ----------- | ---------------------------------------- | ---------------------- | ----------------------------- |
+| PT-E550W    | 3.5 / 6 / 9 / 12 / 18 / 24 mm            | 5.8 / 8.8 / 11.7 / 17.7 / 23.6 mm | 5.2 / 9.0 / 11.2 / 21.0 mm |
+| PT-P750W    | 3.5 / 6 / 9 / 12 / 18 / 24 mm            | 5.8 / 8.8 / 11.7 / 17.7 / 23.6 mm | 5.2 / 9.0 / 11.2 / 21.0 mm |
+| PT-P900     | 3.5 / 6 / 9 / 12 / 18 / 24 / **36 mm**   | 5.8 / 8.8 / 11.7 / 17.7 / 23.6 mm | 5.2 / 9.0 / 11.2 / 21.0 / **31.0 mm** |
+| PT-P900W    | 3.5 / 6 / 9 / 12 / 18 / 24 / 36 mm       | 5.8 / 8.8 / 11.7 / 17.7 / 23.6 mm | 5.2 / 9.0 / 11.2 / 21.0 / 31.0 mm |
+| PT-P950NW   | 3.5 / 6 / 9 / 12 / 18 / 24 / 36 mm       | 5.8 / 8.8 / 11.7 / 17.7 / 23.6 mm | 5.2 / 9.0 / 11.2 / 21.0 / 31.0 mm |
+| PT-P910BT   | 3.5 / 6 / 9 / 12 / 18 / 24 / 36 mm       | **— (not supported)**  | **— (not supported)**         |

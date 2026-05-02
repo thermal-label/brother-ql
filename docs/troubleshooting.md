@@ -4,6 +4,52 @@ Things often work on the first try, but the setup can be finicky. This page cove
 
 ## All platforms
 
+### PT-E550W cuts but doesn't separate the label
+
+**Symptom:** PT-E550W prints, the cutter activates, but the tape is
+not actually severed; or the cutter doesn't activate at all.
+
+**Cause:** PT-E550W has an undocumented quirk — the cutter only
+operates when **compression is enabled** in the print job. Brother
+does not document this; it was discovered through testing
+(`nbuchwitz/ptouch:PTE550W`).
+
+**Fix:** the encoder enforces this and will throw with a clear
+message when `autocut: true && compress: false` is set on a
+PT-E550W. Either enable compression in your print options
+(`{ compress: true, autoCut: true }`), or rely on the encoder's
+guard to surface the misconfiguration.
+
+This guard is per-name (it does not fire on PT-P750W even though that
+model shares the same head family). If you encounter the issue on
+another model, please file an issue so we can extend the guard.
+
+---
+
+### PT printer stuck in mass-storage mode and no PID match
+
+**Symptom:** Plugging in a PT-P900, PT-P900W, PT-P950NW, PT-P910BT,
+or PT-E550W after using the Brother iPrint&Label app may leave the
+unit in a USB Mass Storage Class mode similar to QL Editor Lite, on
+a *different* PID than the printer-class one.
+
+**Cause:** The driver's `MASS_STORAGE_PIDS` filter only knows the
+mass-storage sibling PID for **PT-P750W** (`0x2065`) — none of the
+other PT models' mass-storage PIDs are in any source we've checked.
+With those PIDs unknown, the discovery filter cannot recognise the
+printer when it's stuck in mass-storage mode and you'll see no
+helpful error.
+
+**Workaround:** unplug and re-plug the printer with the appropriate
+mode toggle (consult Brother's manual for your model). Then run
+`brother-ql list` again.
+
+If you have a unit and `lsusb` (or equivalent) handy when this
+happens, please [file an issue](https://github.com/thermal-label/brother-ql/issues/new)
+with the captured PID — the registry is incomplete until those land.
+
+---
+
 ### Editor Lite mode
 
 **Symptom:** `brother-ql list` finds no printers, or the printer shows up as a USB mass storage device instead of a printer.

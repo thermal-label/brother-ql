@@ -19,7 +19,7 @@ hero:
 features:
   - icon: 🟢
     title: Node.js
-    details: USB via libusb, TCP for network-connected QL printers, or Bluetooth-SPP via the OS serial port (QL-820NWB). All models from QL-500 to QL-1115NWB.
+    details: USB via libusb, TCP for network-connected printers, or Bluetooth-SPP via the OS serial port. All QL models (QL-500 to QL-1115NWB) plus the PT-P / PT-E lineup (PT-E550W, PT-P750W, PT-P900, PT-P900W, PT-P950NW, PT-P910BT) for TZe / HSe tape.
     link: /node
     linkText: Node.js guide
   - icon: 🌐

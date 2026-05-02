@@ -154,3 +154,34 @@ status.editorLiteMode; // brother-ql extension
 
 See the [hardware reference](./hardware#label-media) for the full
 table of media IDs, sizes, DK product codes, and print-area geometry.
+DK lives in id range 200-399; TZe / HSe live in 401-459 with
+per-head-family geometry (`narrow` for 128-pin PT-E550W / PT-P750W;
+`wide` for 560-pin PT-P900 family).
+
+## High-resolution mode (PT-* only)
+
+PT engines support a high-resolution print mode that doubles the
+vertical resolution along the tape feed axis. Opt in per call:
+
+```ts
+await printer.print(image, media, { highRes: true });
+```
+
+This requires the engine's `capabilities.highResDpi` to be set —
+defined for every PT-* entry, undefined for QL entries. Calling
+`print(..., { highRes: true })` on a QL printer throws at job-build
+time with a clear error rather than silently falling back to native dpi.
+
+| Engine head family            | Native dpi | High-res dpi |
+| ----------------------------- | ---------- | ------------ |
+| 128-pin (PT-E550W, PT-P750W)  | 180×180    | 180×360      |
+| 560-pin (PT-P900 family)      | 360×360    | 360×720      |
+
+Internally the encoder sets `ESC i K` bit 6, doubles the feed margin,
+and emits each raster line twice. Per-protocol wire-format details
+(QL's 35-dot vs PT's 14-dot feed margin, QL's 200/400-byte invalidate
+derivation from `engine.capabilities.twoColor`, PT's bit-6 high-res
+flag) live inside `src/protocol.ts` as `RasterProtocolConfig` and are
+not part of the device-registry data shape — see
+[`DECISIONS.md`](https://github.com/thermal-label/brother-ql/blob/main/DECISIONS.md)
+D18 for the rule.

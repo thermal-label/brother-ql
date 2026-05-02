@@ -134,3 +134,160 @@ in the Web Serial port list alongside wired serial adapters.
 - `packages/cli/` removed; superseded by the unified `thermal-label-cli`.
 - Maintainer unpublishes `@thermal-label/brother-ql-cli` separately.
 - core/node/web bump 0.0.1 → 0.2.0.
+
+## D12 — Combined Brother driver covers QL + PT-P / PT-E
+
+The PC-connectable PT-P / PT-E line shares the QL raster command set
+~95% — same status request (`ESC i S`), same 32-byte response shape,
+same raster opcode (`G`), same PackBits compression, same multi-plane
+two-colour encoding, same vendor and VID. Per-device variation
+(feed-margin, expanded-mode flag bit, head pin count, two-colour
+support, cutter quirks) is exactly the kind of variation the contracts
+0.3.0 device shape already handles.
+
+Splitting QL and PT into separate packages would duplicate the
+encoder, the PackBits implementation, the status parser, the framer,
+the transport plumbing, and the docs site for no architectural
+payoff. The labelmanager/labelwriter precedent does not apply —
+those split because Dymo's tape command set and ESC/raster are
+different protocol families with no shared opcodes; QL and PT-P
+share the bulk of opcodes and only differ on a small set of
+constants that fit cleanly behind a per-protocol config object
+(`PT_PROTOCOL_CONFIG` / `QL_PROTOCOL_CONFIG` in `src/protocol.ts`).
+
+The handheld P-touch line (PT-D, PT-H, PT-1xxx, PT-2xxx) is
+explicitly out of scope — it uses Brother's ESC/P-style "P-touch
+Tape Editor" protocol, not the raster command set. If ever covered,
+it would be a separate driver (analogous to how labelmanager is
+split off from labelwriter).
+
+## D13 — TZe / HSe id ranges 400-499; lookup gated by tapeSystem and head family
+
+DK consumes 200-299 + 300-399. PT consumables get 400-499 to avoid
+public-API collision even if firmware never reports both ranges in
+the same response:
+
+- 401-419 — TZe laminated tape (currently 7 widths, room to grow).
+- 421-439 — HSe 2:1 heat-shrink (5 widths today).
+- 441-459 — HSe 3:1 heat-shrink (5 widths today).
+- 460-499 — reserved for future PT media (TZeFA flexible-ID,
+  paper-on-paper, fluorescent, etc.).
+
+`findMediaByDimensions(widthMm, heightMm, twoColorMode, engine?)`
+gates by `engine.mediaCompatibility` (so PT-P910BT, which is TZe-only,
+never resolves an HSe entry) and by head-family geometry availability
+(so a 128-dot head cannot reach 36 mm TZe / 31 mm HSe-3:1 — those
+rows have no `geometry.narrow`). The legacy no-engine call preserves
+DK-only behaviour for back-compat.
+
+Per-head-family geometry sits at `BrotherQLMedia.geometry: { narrow?,
+wide? }`. DK entries leave it unset and use the flat
+`printAreaDots` / `leftMarginPins` / `rightMarginPins` fields as
+before. The `resolveTapeGeometry(media, engine)` helper centralises
+the dispatch (DK → flat fields, TZe/HSe → narrow/wide via
+`engine.headDots`).
+
+## D14 — nbuchwitz/ptouch is the source-of-truth for PT PIDs and pin configs
+
+`nbuchwitz/ptouch` (Python, LGPL-2.1, active 2024-2026) transcribes
+Brother's official *Raster Command Reference* PDFs and ships per-model
+USB PIDs and full pin configurations. We treat it as primary. Each PT
+device entry's `hardwareQuirks` field cites the source path
+(`nbuchwitz/ptouch/src/ptouch/printers.py:<class>`) and the Brother
+PDF filename it transcribed from, so future maintainers can re-check.
+
+Secondary sources kept for cross-reference:
+
+- **`hannesweisbach/ptouch-print/src/libptouch.c`** — disagrees with
+  nbuchwitz on PT-P750W's printer PID (see D15).
+- **`brother-label` / `pklaus/brother_ql`** — useful for golden-byte
+  stream generation only. Their `Model(...)` entries carry no USB
+  PIDs (vendor-only enumeration, runtime-PID-from-URL pattern), so
+  they are *not* useful for PID lookup.
+
+The 128-pin HSe configs carry an inherited "shifted -2 pins (up) based
+on testing" correction from nbuchwitz; the 560-pin HSe configs carry
+"shifted +17 pins down based on Brother software analysis". We
+inherit those corrections rather than reverting to raw spec-PDF
+values; phase 4 hardware verification on the maintainer's first PT
+unit should confirm.
+
+## D15 — PT-P750W stores both PIDs (libptouch.c authoritative)
+
+libptouch.c says PT-P750W's printer PID is `0x2062` and `0x2065` is
+the PLite mass-storage mode. nbuchwitz/ptouch says `0x2065` is the
+printer PID. We treat libptouch.c as authoritative because:
+
+- Most public USB databases (the-sz, linux-usb.org/usb.ids) list
+  `0x2065` under the name "PT-P750W" — per libptouch.c that's
+  the PLite mode the unit ships in by default.
+- nbuchwitz may have copied the PID from those databases without
+  verifying which mode it represents.
+
+Resolution: `transports.usb.pid: '0x2062'` (printer) +
+`capabilities.massStoragePid: '0x2065'`. The existing
+`MASS_STORAGE_PIDS` discovery filter in `src/devices.ts` then handles
+the dual-PID case via the same pattern as QL-700 / QL-1100. If a
+PT-P750W contributor reports `findDevice()` doesn't match their unit,
+flip the assignment.
+
+## D16 — HSe heat-shrink ships in the same release as TZe
+
+Including HSe rather than deferring because:
+
+- Pin configs are already in the source we're porting from —
+  excluding them would mean writing extra code to ignore them, not
+  saving any work.
+- HSe is the differentiator for the maker / industrial market; every
+  PT-P900-series user we know of bought it specifically for HSe.
+- Schema impact equals TZe: just `tapeSystem: 'hse-2to1' | 'hse-3to1'`
+  vs `'tze'`, no new fields, no new code paths in the encoder.
+
+The "shifted N pins" corrections from nbuchwitz are real risk and the
+phase-4 hardware verification should print HSe samples and measure to
+confirm.
+
+## D17 — Linux usb-ids is the source-of-truth for QL PIDs (resolved 2026-05-01)
+
+The pre-existing `packages/core/src/devices.ts` shipped with PIDs
+that contradicted the Linux usb-ids database. The maintainer's actual
+hardware (QL-820NWBc, PID `0x209d`) agreed with the Linux DB, which
+strongly suggested the rest of the table was wrong rather than the
+DB. Resolved as a pre-flight on 2026-05-01 (commit `66883d1`):
+
+- The wrong `QL_820NWB` entry was dropped. PID `0x20a7` is QL-1100;
+  the 820-series is covered by the existing `QL_820NWBc` entry at
+  `0x209d` (the QL-820NWB and QL-820NWBc share that PID).
+- QL-1100 / QL-1110NWB / QL-1115NWB PIDs and their mass-storage
+  siblings re-aligned to the Linux DB.
+
+Not a PT-series concern strictly, but the rename PR was going to
+touch every device entry, so it was the natural moment to correct
+them. The PT-series work then proceeded against a known-clean
+registry.
+
+## D18 — Per-protocol wire-format details live inside src/protocol.ts, not on the registry
+
+Feed-margin (35 dots QL / 14 dots PT), invalidate-byte count
+(QL bumps 200 → 400 when the engine declares
+`capabilities.twoColor`; PT always 200), `ESC i K` high-res flag bit
+(0x10 QL / 0x40 PT), raster-line duplication on PT high-res, and the
+PT-E550W cutter-requires-compression quirk all sit inside
+`src/protocol.ts` as part of `RasterProtocolConfig` plus a small
+per-name set. None of these reach the registry data shape.
+
+A registry capability is justified iff:
+
+1. ≥2 active drivers implement it AND
+2. a registry consumer branches on it.
+
+The cutter-compression quirk fails (1) — it's PT-E550W only. The
+high-res flag bit fails (2) — only the encoder branches on it; no
+docs site, validator, or third-party tool needs to read it. The
+two-colour invalidate boost is derivable from the engine capability
+already present (`twoColor`) and so doesn't need its own flag.
+
+This rule was applied to drop the proposed `compression`,
+`numInvalidateBytes`, `feedMarginDots`, `modeSetting`, `expandedMode`,
+`bytesPerRow`, and `line` fields that an earlier revision of the plan
+proposed adding to the registry.
