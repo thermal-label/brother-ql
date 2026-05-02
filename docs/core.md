@@ -158,7 +158,7 @@ DK lives in id range 200-399; TZe / HSe live in 401-459 with
 per-head-family geometry (`narrow` for 128-pin PT-E550W / PT-P750W;
 `wide` for 560-pin PT-P900 family).
 
-## High-resolution mode (PT-* only)
+## High-resolution mode (PT-\* only)
 
 PT engines support a high-resolution print mode that doubles the
 vertical resolution along the tape feed axis. Opt in per call:
@@ -168,14 +168,14 @@ await printer.print(image, media, { highRes: true });
 ```
 
 This requires the engine's `capabilities.highResDpi` to be set —
-defined for every PT-* entry, undefined for QL entries. Calling
+defined for every PT-\* entry, undefined for QL entries. Calling
 `print(..., { highRes: true })` on a QL printer throws at job-build
 time with a clear error rather than silently falling back to native dpi.
 
-| Engine head family            | Native dpi | High-res dpi |
-| ----------------------------- | ---------- | ------------ |
-| 128-pin (PT-E550W, PT-P750W)  | 180×180    | 180×360      |
-| 560-pin (PT-P900 family)      | 360×360    | 360×720      |
+| Engine head family           | Native dpi | High-res dpi |
+| ---------------------------- | ---------- | ------------ |
+| 128-pin (PT-E550W, PT-P750W) | 180×180    | 180×360      |
+| 560-pin (PT-P900 family)     | 360×360    | 360×720      |
 
 Internally the encoder sets `ESC i K` bit 6, doubles the feed margin,
 and emits each raster line twice. Per-protocol wire-format details

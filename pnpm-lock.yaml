@@ -12,14 +12,14 @@ importers:
         specifier: ^2.0.0
         version: 2.31.0(@types/node@22.19.17)
       '@mbtech-nl/eslint-config':
-        specifier: ^1.0.1
-        version: 1.0.1(@typescript-eslint/utils@8.59.0(eslint@9.39.4)(typescript@5.5.4))(eslint@9.39.4)(typescript@5.5.4)
+        specifier: ^1.1.0
+        version: 1.1.0(@typescript-eslint/utils@8.59.0(eslint@9.39.4)(typescript@5.5.4))(eslint@9.39.4)(typescript@5.5.4)
       '@mbtech-nl/prettier-config':
-        specifier: ^1.0.0
-        version: 1.0.0(prettier@3.8.3)
+        specifier: ^1.1.0
+        version: 1.1.0(prettier@3.8.3)
       '@mbtech-nl/tsconfig':
-        specifier: ^1.0.0
-        version: 1.0.0
+        specifier: ^1.1.0
+        version: 1.1.0
       eslint:
         specifier: ^9.0.0
         version: 9.39.4
@@ -48,15 +48,15 @@ importers:
   packages/core:
     dependencies:
       '@mbtech-nl/bitmap':
-        specifier: ^1.2.1
-        version: 1.2.1
+        specifier: ^1.3.0
+        version: 1.3.0
       '@thermal-label/contracts':
-        specifier: ^0.3.0
-        version: 0.3.0
+        specifier: ^0.3.1
+        version: 0.3.1
     devDependencies:
       '@mbtech-nl/tsconfig':
-        specifier: ^1.0.0
-        version: 1.0.0
+        specifier: ^1.1.0
+        version: 1.1.0
       '@types/node':
         specifier: ^22.0.0
         version: 22.19.17
@@ -76,24 +76,28 @@ importers:
   packages/node:
     dependencies:
       '@mbtech-nl/bitmap':
-        specifier: ^1.2.1
-        version: 1.2.1
+        specifier: ^1.3.0
+        version: 1.3.0
       '@thermal-label/brother-ql-core':
         specifier: workspace:*
         version: link:../core
       '@thermal-label/contracts':
-        specifier: ^0.3.0
-        version: 0.3.0
+        specifier: ^0.3.1
+        version: 0.3.1
       '@thermal-label/transport':
-        specifier: ^0.2.1
-        version: 0.2.1(usb@2.17.0)
+        specifier: ^0.3.0
+        version: 0.3.0(usb@2.17.0)
       usb:
         specifier: ^2.0.0
         version: 2.17.0
+    optionalDependencies:
+      '@napi-rs/canvas':
+        specifier: ^0.1.0
+        version: 0.1.99
     devDependencies:
       '@mbtech-nl/tsconfig':
-        specifier: ^1.0.0
-        version: 1.0.0
+        specifier: ^1.1.0
+        version: 1.1.0
       '@types/node':
         specifier: ^22.0.0
         version: 22.19.17
@@ -106,10 +110,6 @@ importers:
       vitest:
         specifier: ^2.0.0
         version: 2.1.9(@types/node@22.19.17)(jsdom@26.1.0)
-    optionalDependencies:
-      '@napi-rs/canvas':
-        specifier: ^0.1.0
-        version: 0.1.99
 
   packages/web:
     dependencies:
@@ -117,15 +117,15 @@ importers:
         specifier: workspace:*
         version: link:../core
       '@thermal-label/contracts':
-        specifier: ^0.3.0
-        version: 0.3.0
+        specifier: ^0.3.1
+        version: 0.3.1
       '@thermal-label/transport':
-        specifier: ^0.2.1
-        version: 0.2.1(usb@2.17.0)
+        specifier: ^0.3.0
+        version: 0.3.0(usb@2.17.0)
     devDependencies:
       '@mbtech-nl/tsconfig':
-        specifier: ^1.0.0
-        version: 1.0.0
+        specifier: ^1.1.0
+        version: 1.1.0
       '@types/w3c-web-usb':
         specifier: ^1.0.0
         version: 1.0.14
@@ -506,26 +506,26 @@ packages:
   '@manypkg/get-packages@1.1.3':
     resolution: {integrity: sha512-fo+QhuU3qE/2TQMQmbVMqaQ6EWbMhi4ABWP+O4AM1NqPBuy0OrApV5LO6BrrgnhtAHS2NH6RrVk9OL181tTi8A==}
 
-  '@mbtech-nl/bitmap@1.2.1':
-    resolution: {integrity: sha512-pHpKkKwHMjZToF6+f/65nX+yOQJ1Ig+SLr/H2OX51yQJ87eDZl6hC8yuiMXIIaiFPUvqrFgaTl+Cxw+AshCoDQ==}
-    engines: {node: '>=24.0.0', pnpm: '>=9.0.0'}
+  '@mbtech-nl/bitmap@1.3.0':
+    resolution: {integrity: sha512-vkYfGg3oLsl5o7W2kTTlivfP4HJL7Q1C08TDpMBd4SykD0vOiA7Fzgim9ctMRH4bU09i204traTSAFyhJw1AnQ==}
+    engines: {node: '>=20.9.0', pnpm: '>=9.0.0'}
 
-  '@mbtech-nl/eslint-config@1.0.1':
-    resolution: {integrity: sha512-YXjxS8qC8zl4zC8TD5pD/XLMY3eYldt04lq5YeczLtljBDsvWbqXBmeEbTCQtWFNkDWGwtScbF9G5PHzvIYOCQ==}
-    engines: {node: '>=24.0.0'}
+  '@mbtech-nl/eslint-config@1.1.0':
+    resolution: {integrity: sha512-N3UcfVkrV9726JYIN6WjV1U9PpIbQ6g/D2hrpN9R3tZ0QRJNq1Qn0fJj0kEk/i//2gcKpwrOsbM8JY67hmVjZg==}
+    engines: {node: '>=20.9.0'}
     peerDependencies:
       eslint: '>=9.0.0'
       typescript: '>=5.0.0'
 
-  '@mbtech-nl/prettier-config@1.0.0':
-    resolution: {integrity: sha512-QUER8bQwvv+UBi6Wp78qlNyxVKMLDcgV7Y4orBCviXvApXzHaboWp6ZRlw6OG9CwzlQDTaWOv5yG6bEqktPa8A==}
-    engines: {node: '>=24.0.0'}
+  '@mbtech-nl/prettier-config@1.1.0':
+    resolution: {integrity: sha512-wcPw1oaIvD9lqiLkpsEy3sEU8grr41aciH605bomEK9pnqIQ7d8C9VyUwXvplCkq7GYy6r39jiZRakIE12QBzg==}
+    engines: {node: '>=20.9.0'}
     peerDependencies:
       prettier: '>=3.0.0'
 
-  '@mbtech-nl/tsconfig@1.0.0':
-    resolution: {integrity: sha512-10HHANxOVSi11X62neeorismUA8Ys5vYvrQ3YxzOFwQSCyaoZ2dXw+8p5CDmvztptvGZ03as03RS7ItJrmYXhA==}
-    engines: {node: '>=24.0.0'}
+  '@mbtech-nl/tsconfig@1.1.0':
+    resolution: {integrity: sha512-CkJ+OsqKaotPsG1U2qGpq5u4vSYzcam4leYJSp7H1SrOxORGkCSf6+mjcOU1FiLEoH50zxjaA863Tnh8QGopVA==}
+    engines: {node: '>=20.9.0'}
 
   '@napi-rs/canvas-android-arm64@0.1.99':
     resolution: {integrity: sha512-9OCRt8VVxA17m32NWZKyNC2qamdaS/SC5CEOIQwFngRq0DIeVm4PDal+6Ljnhqm2whZiC63DNuKZ4xSp2nbj9w==}
@@ -556,35 +556,30 @@ packages:
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
-    libc: [glibc]
 
   '@napi-rs/canvas-linux-arm64-musl@0.1.99':
     resolution: {integrity: sha512-Z+6nyLdJXWzLPVxi4H6g9TJop4DwN3KSgHWto5JCbZV5/uKoVqcSynPs0tGlUHOoWI8S8tEvJspz51GQkvr07w==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
-    libc: [musl]
 
   '@napi-rs/canvas-linux-riscv64-gnu@0.1.99':
     resolution: {integrity: sha512-jAnfOUv4IO1l8Levk5t85oVtEBOXLa07KnIUgWo1CDlPxiqpxS3uBfiE38Lvj/CQgHaNF6Nxk/SaemwLgsVJgw==}
     engines: {node: '>= 10'}
     cpu: [riscv64]
     os: [linux]
-    libc: [glibc]
 
   '@napi-rs/canvas-linux-x64-gnu@0.1.99':
     resolution: {integrity: sha512-mIkXw3fGmbYyFjSmfWEvty4jN+rwEOmv0+Dy9bRvvTzLYWCgm3RMgUEQVfAKFw96nIRFnyNZiK83KNQaVVFjng==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
-    libc: [glibc]
 
   '@napi-rs/canvas-linux-x64-musl@0.1.99':
     resolution: {integrity: sha512-f3Uz2P0RgrtBHISxZqr6yiYXJlTDyCVBumDacxo+4AmSg7z0HiqYZKGWC/gszq3fbPhyQUya1W2AEteKxT9Y6A==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
-    libc: [musl]
 
   '@napi-rs/canvas-win32-arm64-msvc@0.1.99':
     resolution: {integrity: sha512-XE6KUkfqRsCNejcoRMiMr3RaUeObxNf6y7dut3hrq2rn7PzfRTZgrjF1F/B2C7FcdgqY/vSHWpQeMuNz1vTNHg==}
@@ -658,79 +653,66 @@ packages:
     resolution: {integrity: sha512-2QxQrM+KQ7DAW4o22j+XZ6RKdxjLD7BOWTP0Bv0tmjdyhXSsr2Ul1oJDQqh9Zf5qOwTuTc7Ek83mOFaKnodPjg==}
     cpu: [arm]
     os: [linux]
-    libc: [glibc]
 
   '@rollup/rollup-linux-arm-musleabihf@4.60.2':
     resolution: {integrity: sha512-TbziEu2DVsTEOPif2mKWkMeDMLoYjx95oESa9fkQQK7r/Orta0gnkcDpzwufEcAO2BLBsD7mZkXGFqEdMRRwfw==}
     cpu: [arm]
     os: [linux]
-    libc: [musl]
 
   '@rollup/rollup-linux-arm64-gnu@4.60.2':
     resolution: {integrity: sha512-bO/rVDiDUuM2YfuCUwZ1t1cP+/yqjqz+Xf2VtkdppefuOFS2OSeAfgafaHNkFn0t02hEyXngZkxtGqXcXwO8Rg==}
     cpu: [arm64]
     os: [linux]
-    libc: [glibc]
 
   '@rollup/rollup-linux-arm64-musl@4.60.2':
     resolution: {integrity: sha512-hr26p7e93Rl0Za+JwW7EAnwAvKkehh12BU1Llm9Ykiibg4uIr2rbpxG9WCf56GuvidlTG9KiiQT/TXT1yAWxTA==}
     cpu: [arm64]
     os: [linux]
-    libc: [musl]
 
   '@rollup/rollup-linux-loong64-gnu@4.60.2':
     resolution: {integrity: sha512-pOjB/uSIyDt+ow3k/RcLvUAOGpysT2phDn7TTUB3n75SlIgZzM6NKAqlErPhoFU+npgY3/n+2HYIQVbF70P9/A==}
     cpu: [loong64]
     os: [linux]
-    libc: [glibc]
 
   '@rollup/rollup-linux-loong64-musl@4.60.2':
     resolution: {integrity: sha512-2/w+q8jszv9Ww1c+6uJT3OwqhdmGP2/4T17cu8WuwyUuuaCDDJ2ojdyYwZzCxx0GcsZBhzi3HmH+J5pZNXnd+Q==}
     cpu: [loong64]
     os: [linux]
-    libc: [musl]
 
   '@rollup/rollup-linux-ppc64-gnu@4.60.2':
     resolution: {integrity: sha512-11+aL5vKheYgczxtPVVRhdptAM2H7fcDR5Gw4/bTcteuZBlH4oP9f5s9zYO9aGZvoGeBpqXI/9TZZihZ609wKw==}
     cpu: [ppc64]
     os: [linux]
-    libc: [glibc]
 
   '@rollup/rollup-linux-ppc64-musl@4.60.2':
     resolution: {integrity: sha512-i16fokAGK46IVZuV8LIIwMdtqhin9hfYkCh8pf8iC3QU3LpwL+1FSFGej+O7l3E/AoknL6Dclh2oTdnRMpTzFQ==}
     cpu: [ppc64]
     os: [linux]
-    libc: [musl]
 
   '@rollup/rollup-linux-riscv64-gnu@4.60.2':
     resolution: {integrity: sha512-49FkKS6RGQoriDSK/6E2GkAsAuU5kETFCh7pG4yD/ylj9rKhTmO3elsnmBvRD4PgJPds5W2PkhC82aVwmUcJ7A==}
     cpu: [riscv64]
     os: [linux]
-    libc: [glibc]
 
   '@rollup/rollup-linux-riscv64-musl@4.60.2':
     resolution: {integrity: sha512-mjYNkHPfGpUR00DuM1ZZIgs64Hpf4bWcz9Z41+4Q+pgDx73UwWdAYyf6EG/lRFldmdHHzgrYyge5akFUW0D3mQ==}
     cpu: [riscv64]
     os: [linux]
-    libc: [musl]
 
   '@rollup/rollup-linux-s390x-gnu@4.60.2':
     resolution: {integrity: sha512-ALyvJz965BQk8E9Al/JDKKDLH2kfKFLTGMlgkAbbYtZuJt9LU8DW3ZoDMCtQpXAltZxwBHevXz5u+gf0yA0YoA==}
     cpu: [s390x]
     os: [linux]
-    libc: [glibc]
 
   '@rollup/rollup-linux-x64-gnu@4.60.2':
     resolution: {integrity: sha512-UQjrkIdWrKI626Du8lCQ6MJp/6V1LAo2bOK9OTu4mSn8GGXIkPXk/Vsp4bLHCd9Z9Iz2OTEaokUE90VweJgIYQ==}
     cpu: [x64]
     os: [linux]
-    libc: [glibc]
 
   '@rollup/rollup-linux-x64-musl@4.60.2':
     resolution: {integrity: sha512-bTsRGj6VlSdn/XD4CGyzMnzaBs9bsRxy79eTqTCBsA8TMIEky7qg48aPkvJvFe1HyzQ5oMZdg7AnVlWQSKLTnw==}
     cpu: [x64]
     os: [linux]
-    libc: [musl]
 
   '@rollup/rollup-openbsd-x64@4.60.2':
     resolution: {integrity: sha512-6d4Z3534xitaA1FcMWP7mQPq5zGwBmGbhphh2DwaA1aNIXUu3KTOfwrWpbwI4/Gr0uANo7NTtaykFyO2hPuFLg==}
@@ -777,14 +759,14 @@ packages:
   '@shikijs/vscode-textmate@10.0.2':
     resolution: {integrity: sha512-83yeghZ2xxin3Nj8z1NMd/NCuca+gsYXswywDy5bHvwlWL8tpTQmzGeUuHd9FC3E/SBEMvzJRwWEOz5gGes9Qg==}
 
-  '@thermal-label/contracts@0.1.2':
-    resolution: {integrity: sha512-p3Fj9PjGrTdCtNoMHcQNbCSfVffFd0E42okIAjIyoCNRsTM+L2qR7AAVIL6EX33EFxV7A7F5ziGpNZxz9yNU7w==}
+  '@thermal-label/contracts@0.2.0':
+    resolution: {integrity: sha512-EqruuizBc8bgZwthZYir9f4t9YWWajMncTOn2+qkWPyxq/z3vU8giIcB4oYfQy7KYcltK0t8L5HKQJrCyvO5zw==}
 
-  '@thermal-label/contracts@0.3.0':
-    resolution: {integrity: sha512-6aopYfVbDiOBRLv3SdE9ygBK/abftGjecmL0cwn4zcWNT54NpzSZV8fIyABzL5oPs8LBK5az8Bunkto5jfr3TA==}
+  '@thermal-label/contracts@0.3.1':
+    resolution: {integrity: sha512-cssi68nEG2chXTjkI1r9sHMLeK9sW6cHJiNWYuF9hwsgHglPSIEa+pUchCEGzZC/KOAsvirD2H1+IDJiSKyqJg==}
 
-  '@thermal-label/transport@0.2.1':
-    resolution: {integrity: sha512-2rHBfDXQMA+9P9tpCcG7WqlbYrrqMxar4wdYL9ao3LMXla3R/iyeztuorm5JR3w41yRp4CSXOEKnTfBL1PE90A==}
+  '@thermal-label/transport@0.3.0':
+    resolution: {integrity: sha512-SU7NXxMr3/97fR8IHpnggD2yvnf7imLTzobfggGVAip3qdsGLSGkZb8A7wPfiAB7OavfLKDJ/PmyYNckf4VZZQ==}
     engines: {node: '>=24.0.0'}
     peerDependencies:
       serialport: '>=12.0.0'
@@ -920,49 +902,41 @@ packages:
     resolution: {integrity: sha512-34gw7PjDGB9JgePJEmhEqBhWvCiiWCuXsL9hYphDF7crW7UgI05gyBAi6MF58uGcMOiOqSJ2ybEeCvHcq0BCmQ==}
     cpu: [arm64]
     os: [linux]
-    libc: [glibc]
 
   '@unrs/resolver-binding-linux-arm64-musl@1.11.1':
     resolution: {integrity: sha512-RyMIx6Uf53hhOtJDIamSbTskA99sPHS96wxVE/bJtePJJtpdKGXO1wY90oRdXuYOGOTuqjT8ACccMc4K6QmT3w==}
     cpu: [arm64]
     os: [linux]
-    libc: [musl]
 
   '@unrs/resolver-binding-linux-ppc64-gnu@1.11.1':
     resolution: {integrity: sha512-D8Vae74A4/a+mZH0FbOkFJL9DSK2R6TFPC9M+jCWYia/q2einCubX10pecpDiTmkJVUH+y8K3BZClycD8nCShA==}
     cpu: [ppc64]
     os: [linux]
-    libc: [glibc]
 
   '@unrs/resolver-binding-linux-riscv64-gnu@1.11.1':
     resolution: {integrity: sha512-frxL4OrzOWVVsOc96+V3aqTIQl1O2TjgExV4EKgRY09AJ9leZpEg8Ak9phadbuX0BA4k8U5qtvMSQQGGmaJqcQ==}
     cpu: [riscv64]
     os: [linux]
-    libc: [glibc]
 
   '@unrs/resolver-binding-linux-riscv64-musl@1.11.1':
     resolution: {integrity: sha512-mJ5vuDaIZ+l/acv01sHoXfpnyrNKOk/3aDoEdLO/Xtn9HuZlDD6jKxHlkN8ZhWyLJsRBxfv9GYM2utQ1SChKew==}
     cpu: [riscv64]
     os: [linux]
-    libc: [musl]
 
   '@unrs/resolver-binding-linux-s390x-gnu@1.11.1':
     resolution: {integrity: sha512-kELo8ebBVtb9sA7rMe1Cph4QHreByhaZ2QEADd9NzIQsYNQpt9UkM9iqr2lhGr5afh885d/cB5QeTXSbZHTYPg==}
     cpu: [s390x]
     os: [linux]
-    libc: [glibc]
 
   '@unrs/resolver-binding-linux-x64-gnu@1.11.1':
     resolution: {integrity: sha512-C3ZAHugKgovV5YvAMsxhq0gtXuwESUKc5MhEtjBpLoHPLYM+iuwSj3lflFwK3DPm68660rZ7G8BMcwSro7hD5w==}
     cpu: [x64]
     os: [linux]
-    libc: [glibc]
 
   '@unrs/resolver-binding-linux-x64-musl@1.11.1':
     resolution: {integrity: sha512-rV0YSoyhK2nZ4vEswT/QwqzqQXw5I6CjoaYMOX0TqBlWhojUf8P94mvI7nuJTeaCkkds3QE4+zS8Ko+GdXuZtA==}
     cpu: [x64]
     os: [linux]
-    libc: [musl]
 
   '@unrs/resolver-binding-wasm32-wasi@1.11.1':
     resolution: {integrity: sha512-5u4RkfxJm+Ng7IWgkzi3qrFOvLvQYnPBmjmZQ8+szTK/b31fQCnleNl1GgEt7nIsZRIf5PLhPwT0WM+q45x/UQ==}
@@ -2664,9 +2638,9 @@ snapshots:
       globby: 11.1.0
       read-yaml-file: 1.1.0
 
-  '@mbtech-nl/bitmap@1.2.1': {}
+  '@mbtech-nl/bitmap@1.3.0': {}
 
-  '@mbtech-nl/eslint-config@1.0.1(@typescript-eslint/utils@8.59.0(eslint@9.39.4)(typescript@5.5.4))(eslint@9.39.4)(typescript@5.5.4)':
+  '@mbtech-nl/eslint-config@1.1.0(@typescript-eslint/utils@8.59.0(eslint@9.39.4)(typescript@5.5.4))(eslint@9.39.4)(typescript@5.5.4)':
     dependencies:
       '@typescript-eslint/eslint-plugin': 8.59.0(@typescript-eslint/parser@8.59.0(eslint@9.39.4)(typescript@5.5.4))(eslint@9.39.4)(typescript@5.5.4)
       '@typescript-eslint/parser': 8.59.0(eslint@9.39.4)(typescript@5.5.4)
@@ -2679,11 +2653,11 @@ snapshots:
       - eslint-import-resolver-node
       - supports-color
 
-  '@mbtech-nl/prettier-config@1.0.0(prettier@3.8.3)':
+  '@mbtech-nl/prettier-config@1.1.0(prettier@3.8.3)':
     dependencies:
       prettier: 3.8.3
 
-  '@mbtech-nl/tsconfig@1.0.0': {}
+  '@mbtech-nl/tsconfig@1.1.0': {}
 
   '@napi-rs/canvas-android-arm64@0.1.99':
     optional: true
@@ -2852,17 +2826,17 @@ snapshots:
 
   '@shikijs/vscode-textmate@10.0.2': {}
 
-  '@thermal-label/contracts@0.1.2':
+  '@thermal-label/contracts@0.2.0':
     dependencies:
-      '@mbtech-nl/bitmap': 1.2.1
+      '@mbtech-nl/bitmap': 1.3.0
 
-  '@thermal-label/contracts@0.3.0':
+  '@thermal-label/contracts@0.3.1':
     dependencies:
-      '@mbtech-nl/bitmap': 1.2.1
+      '@mbtech-nl/bitmap': 1.3.0
 
-  '@thermal-label/transport@0.2.1(usb@2.17.0)':
+  '@thermal-label/transport@0.3.0(usb@2.17.0)':
     dependencies:
-      '@thermal-label/contracts': 0.1.2
+      '@thermal-label/contracts': 0.2.0
     optionalDependencies:
       usb: 2.17.0
 

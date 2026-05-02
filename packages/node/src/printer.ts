@@ -111,14 +111,14 @@ export class BrotherQLPrinter implements PrinterAdapter {
         bitmap: flipHorizontal(black),
         redBitmap: flipHorizontal(red),
         media: resolvedMedia,
-        options: pageOptions,
+        ...(pageOptions ? { options: pageOptions } : {}),
       };
     } else {
       const bitmap = flipHorizontal(renderImage(image, { dither: true, rotate }));
       page = {
         bitmap,
         media: resolvedMedia,
-        options: pageOptions,
+        ...(pageOptions ? { options: pageOptions } : {}),
       };
     }
 

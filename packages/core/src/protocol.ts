@@ -255,11 +255,7 @@ interface EncodeContext {
   deviceName?: string | undefined;
 }
 
-function encodeRasterJob(
-  pages: PageData[],
-  options: JobOptions,
-  ctx: EncodeContext,
-): Uint8Array {
+function encodeRasterJob(pages: PageData[], options: JobOptions, ctx: EncodeContext): Uint8Array {
   const { config, engine, deviceName } = ctx;
   const copies = options.copies ?? 1;
   const chunks: Uint8Array[] = [];

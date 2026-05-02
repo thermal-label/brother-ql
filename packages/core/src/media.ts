@@ -65,9 +65,7 @@ export const DEFAULT_PT_MEDIA: BrotherQLMedia = MEDIA[404]!;
  * Pick a default media entry for an engine. Used by `createPreview()`
  * when neither user-supplied media nor a detected roll is available.
  */
-export function defaultMediaForEngine(
-  engine: Pick<PrintEngine, 'protocol'>,
-): BrotherQLMedia {
+export function defaultMediaForEngine(engine: Pick<PrintEngine, 'protocol'>): BrotherQLMedia {
   return engine.protocol === 'pt-raster' ? DEFAULT_PT_MEDIA : DEFAULT_MEDIA;
 }
 

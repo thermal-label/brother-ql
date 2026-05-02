@@ -1,8 +1,7 @@
 # Hardware
 
 This driver covers two Brother families that share the raster command
-set: the **QL series** (DK paper labels, 300 dpi, head widths 720 or
-1296) and the **PT-P / PT-E series** (TZe laminated tape and HSe
+set: the **QL series** (DK paper labels, 300 dpi, head widths 720 or 1296) and the **PT-P / PT-E series** (TZe laminated tape and HSe
 heat-shrink, 180 / 360 dpi, head widths 128 or 560). The encoder
 branches on `engine.protocol` (`'ql-raster'` vs `'pt-raster'`); see
 [`DECISIONS.md`](./decisions) D12 for why both live in one driver.
@@ -13,26 +12,26 @@ All QL devices share Vendor ID `0x04F9` (Brother Industries Ltd.)
 and speak `ql-raster` at 300 dpi over USB Printer Class or TCP
 port 9100.
 
-| Device           | USB PID  | Head pins | Two-color | Network    | Status      |
-| ---------------- | -------- | --------- | --------- | ---------- | ----------- |
-| QL-820NWB(c)     | `0x209D` | 720       | ✅        | WiFi + LAN | ✅ Verified |
-| QL-800           | `0x209B` | 720       | ✅        | —          | 🟡 Expected |
-| QL-810W          | `0x209C` | 720       | ✅        | WiFi       | 🟡 Expected |
-| QL-700           | `0x2042` | 720       | —         | —          | 🟡 Expected |
-| QL-710W          | `0x2044` | 720       | —         | WiFi       | 🟡 Expected |
-| QL-720NW         | `0x2045` | 720       | —         | LAN        | 🟡 Expected |
-| QL-600           | `0x2100` | 720       | —         | —          | 🟡 Expected |
-| QL-580N          | `0x201B` | 720       | —         | LAN        | 🟡 Expected |
-| QL-570           | `0x2019` | 720       | —         | —          | 🟡 Expected |
-| QL-560           | `0x2018` | 720       | —         | —          | 🟡 Expected |
-| QL-550           | `0x2016` | 720       | —         | —          | 🟡 Expected |
-| QL-500           | `0x2013` | 720       | —         | —          | 🟡 Expected |
-| QL-650TD         | `0x201C` | 720       | —         | —          | 🟡 Expected |
-| QL-1050          | `0x2027` | 1296      | —         | —          | 🟡 Expected |
-| QL-1060N         | `0x2028` | 1296      | —         | LAN        | 🟡 Expected |
-| QL-1100          | `0x20A7` | 1296      | —         | —          | 🟡 Expected |
-| QL-1110NWB       | `0x20A8` | 1296      | —         | WiFi + LAN | 🟡 Expected |
-| QL-1115NWB       | `0x20AB` | 1296      | —         | WiFi + LAN | 🟡 Expected |
+| Device       | USB PID  | Head pins | Two-color | Network    | Status      |
+| ------------ | -------- | --------- | --------- | ---------- | ----------- |
+| QL-820NWB(c) | `0x209D` | 720       | ✅        | WiFi + LAN | ✅ Verified |
+| QL-800       | `0x209B` | 720       | ✅        | —          | 🟡 Expected |
+| QL-810W      | `0x209C` | 720       | ✅        | WiFi       | 🟡 Expected |
+| QL-700       | `0x2042` | 720       | —         | —          | 🟡 Expected |
+| QL-710W      | `0x2044` | 720       | —         | WiFi       | 🟡 Expected |
+| QL-720NW     | `0x2045` | 720       | —         | LAN        | 🟡 Expected |
+| QL-600       | `0x2100` | 720       | —         | —          | 🟡 Expected |
+| QL-580N      | `0x201B` | 720       | —         | LAN        | 🟡 Expected |
+| QL-570       | `0x2019` | 720       | —         | —          | 🟡 Expected |
+| QL-560       | `0x2018` | 720       | —         | —          | 🟡 Expected |
+| QL-550       | `0x2016` | 720       | —         | —          | 🟡 Expected |
+| QL-500       | `0x2013` | 720       | —         | —          | 🟡 Expected |
+| QL-650TD     | `0x201C` | 720       | —         | —          | 🟡 Expected |
+| QL-1050      | `0x2027` | 1296      | —         | —          | 🟡 Expected |
+| QL-1060N     | `0x2028` | 1296      | —         | LAN        | 🟡 Expected |
+| QL-1100      | `0x20A7` | 1296      | —         | —          | 🟡 Expected |
+| QL-1110NWB   | `0x20A8` | 1296      | —         | WiFi + LAN | 🟡 Expected |
+| QL-1115NWB   | `0x20AB` | 1296      | —         | WiFi + LAN | 🟡 Expected |
 
 The QL-820NWB and QL-820NWBc share PID `0x209D`; the `c` is a regional marketing variant with identical firmware.
 
@@ -40,16 +39,16 @@ The QL-820NWB and QL-820NWBc share PID `0x209D`; the `c` is a regional marketing
 
 PC-connectable P-touch models that share Brother's raster command set
 with the QL series. Pin configurations sourced from Brother's
-*Raster Command Reference* PDFs via
+_Raster Command Reference_ PDFs via
 [`nbuchwitz/ptouch`](https://github.com/nbuchwitz/ptouch). All entries
 ship as 🔲 Untested until a hardware report is filed.
 
 ### 128-pin family — 180 dpi native, 360 dpi high-res
 
-| Device     | USB PID  | Mass-storage PID | TZe widths                       | HSe                  | Network | Status      |
-| ---------- | -------- | ---------------- | -------------------------------- | -------------------- | ------- | ----------- |
-| PT-E550W   | `0x2060` | unknown          | 3.5 / 6 / 9 / 12 / 18 / 24 mm    | 2:1 + 3:1            | WiFi    | 🔲 Untested |
-| PT-P750W   | `0x2062` | `0x2065`         | 3.5 / 6 / 9 / 12 / 18 / 24 mm    | 2:1 + 3:1            | WiFi    | 🔲 Untested |
+| Device   | USB PID  | Mass-storage PID | TZe widths                    | HSe       | Network | Status      |
+| -------- | -------- | ---------------- | ----------------------------- | --------- | ------- | ----------- |
+| PT-E550W | `0x2060` | unknown          | 3.5 / 6 / 9 / 12 / 18 / 24 mm | 2:1 + 3:1 | WiFi    | 🔲 Untested |
+| PT-P750W | `0x2062` | `0x2065`         | 3.5 / 6 / 9 / 12 / 18 / 24 mm | 2:1 + 3:1 | WiFi    | 🔲 Untested |
 
 PT-E550W will not cut when compression is disabled — the encoder
 throws on `autocut: true && compress: false` for that model. PT-P750W's
@@ -57,12 +56,12 @@ PID is contested between driver projects ([`DECISIONS.md`](./decisions) D15).
 
 ### 560-pin family — 360 dpi native, 720 dpi high-res
 
-| Device      | USB PID  | TZe widths                              | HSe                  | Network    | Bluetooth | Status      |
-| ----------- | -------- | --------------------------------------- | -------------------- | ---------- | --------- | ----------- |
-| PT-P900     | `0x2083` | 3.5 / 6 / 9 / 12 / 18 / 24 / **36 mm**  | 2:1 + 3:1            | —          | —         | 🔲 Untested |
-| PT-P900W    | `0x2085` | 3.5 / 6 / 9 / 12 / 18 / 24 / 36 mm      | 2:1 + 3:1            | WiFi       | —         | 🔲 Untested |
-| PT-P950NW   | `0x2086` | 3.5 / 6 / 9 / 12 / 18 / 24 / 36 mm      | 2:1 + 3:1            | WiFi + LAN | —         | 🔲 Untested |
-| PT-P910BT   | `0x20C7` | 3.5 / 6 / 9 / 12 / 18 / 24 / 36 mm      | **— (TZe-only)**     | —          | Classic SPP (assumed) | 🔲 Untested |
+| Device    | USB PID  | TZe widths                             | HSe              | Network    | Bluetooth             | Status      |
+| --------- | -------- | -------------------------------------- | ---------------- | ---------- | --------------------- | ----------- |
+| PT-P900   | `0x2083` | 3.5 / 6 / 9 / 12 / 18 / 24 / **36 mm** | 2:1 + 3:1        | —          | —                     | 🔲 Untested |
+| PT-P900W  | `0x2085` | 3.5 / 6 / 9 / 12 / 18 / 24 / 36 mm     | 2:1 + 3:1        | WiFi       | —                     | 🔲 Untested |
+| PT-P950NW | `0x2086` | 3.5 / 6 / 9 / 12 / 18 / 24 / 36 mm     | 2:1 + 3:1        | WiFi + LAN | —                     | 🔲 Untested |
+| PT-P910BT | `0x20C7` | 3.5 / 6 / 9 / 12 / 18 / 24 / 36 mm     | **— (TZe-only)** | —          | Classic SPP (assumed) | 🔲 Untested |
 
 The 560-pin family supports the **36 mm TZe and 31.0 mm HSe-3:1**
 widths that the 128-pin family cannot print. PT-P910BT is the
@@ -133,11 +132,11 @@ The driver detects Editor Lite mode in `listPrinters()` by checking for known ma
 
 These are printer class PIDs' paired mass storage alternatives. They should never appear in printer selection — the physical device is the same hardware in a different USB mode.
 
-| PID      | Device                    |
-| -------- | ------------------------- |
-| `0x20A9` | QL-1100 (mass storage)    |
-| `0x20AA` | QL-1110NWB (mass storage) |
-| `0x20AC` | QL-1115NWB (mass storage) |
+| PID      | Device                        |
+| -------- | ----------------------------- |
+| `0x20A9` | QL-1100 (mass storage)        |
+| `0x20AA` | QL-1110NWB (mass storage)     |
+| `0x20AC` | QL-1115NWB (mass storage)     |
 | `0x2065` | PT-P750W (PLite mass storage) |
 
 The mass-storage sibling PIDs for **PT-E550W, PT-P900, PT-P900W,

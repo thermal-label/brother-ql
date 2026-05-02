@@ -123,7 +123,7 @@ print the demo label.
 If pairing fails on Linux, your browser likely lacks USB access —
 the same udev rule from setup is required for WebUSB too.
 
-## PT-* models — additional steps
+## PT-\* models — additional steps
 
 The PT-P / PT-E series is **untested** on every entry as of this
 release — the registry is built from `nbuchwitz/ptouch`'s

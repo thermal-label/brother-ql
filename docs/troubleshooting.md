@@ -31,7 +31,7 @@ another model, please file an issue so we can extend the guard.
 **Symptom:** Plugging in a PT-P900, PT-P900W, PT-P950NW, PT-P910BT,
 or PT-E550W after using the Brother iPrint&Label app may leave the
 unit in a USB Mass Storage Class mode similar to QL Editor Lite, on
-a *different* PID than the printer-class one.
+a _different_ PID than the printer-class one.
 
 **Cause:** The driver's `MASS_STORAGE_PIDS` filter only knows the
 mass-storage sibling PID for **PT-P750W** (`0x2065`) — none of the

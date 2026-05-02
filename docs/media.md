@@ -163,7 +163,7 @@ Laminated tape cartridges for the PC-connectable PT-P / PT-E series.
 The same id maps to different print-area pin counts on the 128-pin and
 560-pin head families — the registry stores both under
 `media.geometry.narrow` / `media.geometry.wide`. Pin configurations
-sourced from Brother's *Raster Command Reference* PDFs via
+sourced from Brother's _Raster Command Reference_ PDFs via
 [`nbuchwitz/ptouch`](https://github.com/nbuchwitz/ptouch). Status:
 🔲 Untested.
 
@@ -251,11 +251,11 @@ The 31.0 mm width (id 445) is exclusive to the 560-pin family.
 
 ## Per-model media support matrix
 
-| Model       | TZe widths                               | HSe 2:1                | HSe 3:1                       |
-| ----------- | ---------------------------------------- | ---------------------- | ----------------------------- |
-| PT-E550W    | 3.5 / 6 / 9 / 12 / 18 / 24 mm            | 5.8 / 8.8 / 11.7 / 17.7 / 23.6 mm | 5.2 / 9.0 / 11.2 / 21.0 mm |
-| PT-P750W    | 3.5 / 6 / 9 / 12 / 18 / 24 mm            | 5.8 / 8.8 / 11.7 / 17.7 / 23.6 mm | 5.2 / 9.0 / 11.2 / 21.0 mm |
-| PT-P900     | 3.5 / 6 / 9 / 12 / 18 / 24 / **36 mm**   | 5.8 / 8.8 / 11.7 / 17.7 / 23.6 mm | 5.2 / 9.0 / 11.2 / 21.0 / **31.0 mm** |
-| PT-P900W    | 3.5 / 6 / 9 / 12 / 18 / 24 / 36 mm       | 5.8 / 8.8 / 11.7 / 17.7 / 23.6 mm | 5.2 / 9.0 / 11.2 / 21.0 / 31.0 mm |
-| PT-P950NW   | 3.5 / 6 / 9 / 12 / 18 / 24 / 36 mm       | 5.8 / 8.8 / 11.7 / 17.7 / 23.6 mm | 5.2 / 9.0 / 11.2 / 21.0 / 31.0 mm |
-| PT-P910BT   | 3.5 / 6 / 9 / 12 / 18 / 24 / 36 mm       | **— (not supported)**  | **— (not supported)**         |
+| Model     | TZe widths                             | HSe 2:1                           | HSe 3:1                               |
+| --------- | -------------------------------------- | --------------------------------- | ------------------------------------- |
+| PT-E550W  | 3.5 / 6 / 9 / 12 / 18 / 24 mm          | 5.8 / 8.8 / 11.7 / 17.7 / 23.6 mm | 5.2 / 9.0 / 11.2 / 21.0 mm            |
+| PT-P750W  | 3.5 / 6 / 9 / 12 / 18 / 24 mm          | 5.8 / 8.8 / 11.7 / 17.7 / 23.6 mm | 5.2 / 9.0 / 11.2 / 21.0 mm            |
+| PT-P900   | 3.5 / 6 / 9 / 12 / 18 / 24 / **36 mm** | 5.8 / 8.8 / 11.7 / 17.7 / 23.6 mm | 5.2 / 9.0 / 11.2 / 21.0 / **31.0 mm** |
+| PT-P900W  | 3.5 / 6 / 9 / 12 / 18 / 24 / 36 mm     | 5.8 / 8.8 / 11.7 / 17.7 / 23.6 mm | 5.2 / 9.0 / 11.2 / 21.0 / 31.0 mm     |
+| PT-P950NW | 3.5 / 6 / 9 / 12 / 18 / 24 / 36 mm     | 5.8 / 8.8 / 11.7 / 17.7 / 23.6 mm | 5.2 / 9.0 / 11.2 / 21.0 / 31.0 mm     |
+| PT-P910BT | 3.5 / 6 / 9 / 12 / 18 / 24 / 36 mm     | **— (not supported)**             | **— (not supported)**                 |
