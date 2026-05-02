@@ -127,7 +127,7 @@ export class WebBrotherQLPrinter implements PrinterAdapter {
   async getStatus(): Promise<BrotherQLStatus> {
     await this.transport.write(STATUS_REQUEST);
     const bytes = await this.transport.read(STATUS_BYTE_COUNT);
-    const status = parseStatus(bytes);
+    const status = parseStatus(bytes, this.device.engines[0]);
     this.lastStatus = status;
     return status;
   }

@@ -1,9 +1,18 @@
 import { getRow, createBitmap } from '@mbtech-nl/bitmap';
+import type { PrintEngine } from '@thermal-label/contracts';
 import { packBits } from './pack-bits.js';
-import type { BrotherQLMedia, PageData, JobOptions, PageOptions } from './types.js';
+import { resolveTapeGeometry } from './media.js';
+import type {
+  BrotherEngineCapabilities,
+  BrotherQLMedia,
+  PageData,
+  JobOptions,
+  PageOptions,
+  TapeGeometry,
+} from './types.js';
 
-export function buildInvalidate(): Uint8Array {
-  return new Uint8Array(200);
+export function buildInvalidate(byteCount = 200): Uint8Array {
+  return new Uint8Array(byteCount);
 }
 
 export function buildStatusRequest(): Uint8Array {
@@ -58,11 +67,12 @@ export function buildExpandedMode(
   cutAtEnd: boolean,
   highRes: boolean,
   twoColor = false,
+  highResFlagBit = 0x10,
 ): Uint8Array {
   let flags = 0x00;
   if (twoColor) flags |= 0x01;
   if (cutAtEnd) flags |= 0x08;
-  if (highRes) flags |= 0x10;
+  if (highRes) flags |= highResFlagBit;
   return new Uint8Array([0x1b, 0x69, 0x4b, flags]);
 }
 
@@ -135,14 +145,137 @@ function concat(...arrays: Uint8Array[]): Uint8Array {
   return out;
 }
 
-export function encodeJob(pages: PageData[], options: JobOptions = {}): Uint8Array {
+/**
+ * Per-protocol wire-format constants.
+ *
+ * QL and PT raster differ in three numeric constants and one rule —
+ * everything else (status request, raster opcode, PackBits, two-colour
+ * plane encoding) is shared and lives in `encodeRasterJob`. Per the
+ * plan §4.2 / §7, these are protocol-internal and do not leak onto
+ * the device registry.
+ *
+ * - `feedMarginDots` — leading/trailing blank tape (`ESC i d`). QL = 35,
+ *   PT = 14. Per `brother_label/devices.py` and Brother's PT raster
+ *   manual; verify against print output during phase 4.
+ * - `invalidateBytes` — leading invalidate sequence. QL is 200 by
+ *   default but the encoder bumps it to 400 when the engine carries
+ *   `capabilities.twoColor`. PT is always 200 (no two-colour PT model
+ *   exists today).
+ * - `highResFlagBit` — bit set in `ESC i K` flags when `highRes`
+ *   is requested. QL uses bit 4 (0x10) for 300x600; PT uses bit 6
+ *   (0x40) for 180x360 / 360x720 (per nbuchwitz/ptouch).
+ * - `duplicateRasterLines` — when `highRes` is on, PT requires each
+ *   raster line to be sent twice. QL's high-res mode does not.
+ */
+export interface RasterProtocolConfig {
+  feedMarginDots: number;
+  invalidateBytes: number;
+  highResFlagBit: number;
+  duplicateRasterLines: boolean;
+}
+
+export const QL_PROTOCOL_CONFIG: RasterProtocolConfig = {
+  feedMarginDots: 35,
+  invalidateBytes: 200,
+  highResFlagBit: 0x10,
+  duplicateRasterLines: false,
+};
+
+export const PT_PROTOCOL_CONFIG: RasterProtocolConfig = {
+  feedMarginDots: 14,
+  invalidateBytes: 200,
+  highResFlagBit: 0x40,
+  duplicateRasterLines: true,
+};
+
+/** Engine shape consumed by the encoder — narrow `Pick` so unit tests can synthesise minimal stubs. */
+export type EncoderEngine = Pick<PrintEngine, 'protocol' | 'headDots'> & {
+  capabilities?: BrotherEngineCapabilities;
+};
+
+/**
+ * Cutter compression-required quirk.
+ *
+ * PT-E550W silently fails to cut when compression is disabled —
+ * documented in nbuchwitz/ptouch:PTE550W ("E550W requires compression
+ * ON for cutting to work"). Encoded as a per-name guard rather than a
+ * registry capability so we don't promote a one-model bug into the
+ * data shape.
+ */
+const COMPRESSION_REQUIRED_FOR_CUTTER = new Set(['PT-E550W']);
+
+function maybeCheckCutterCompressionQuirk(
+  deviceName: string | undefined,
+  autoCut: boolean,
+  compress: boolean,
+): void {
+  if (autoCut && !compress && deviceName && COMPRESSION_REQUIRED_FOR_CUTTER.has(deviceName)) {
+    throw new Error(
+      `${deviceName} requires compression to be enabled when autocut is on (per nbuchwitz/ptouch)`,
+    );
+  }
+}
+
+/**
+ * Resolve per-page geometry for the encoder.
+ *
+ * QL paths take the flat fields off the media row directly; PT paths
+ * delegate to `resolveTapeGeometry` so the head-family dispatch lives
+ * in one place. `engine` is required for PT and ignored for QL.
+ */
+function resolveEncoderGeometry(
+  media: BrotherQLMedia,
+  engine: EncoderEngine | undefined,
+): TapeGeometry {
+  if (media.tapeSystem === 'dk') {
+    if (
+      typeof media.printAreaDots !== 'number' ||
+      typeof media.leftMarginPins !== 'number' ||
+      typeof media.rightMarginPins !== 'number'
+    ) {
+      throw new Error(`DK media ${media.id.toString()} missing flat geometry fields`);
+    }
+    return {
+      printAreaDots: media.printAreaDots,
+      leftMarginPins: media.leftMarginPins,
+      rightMarginPins: media.rightMarginPins,
+    };
+  }
+  if (!engine) {
+    throw new Error(
+      `tape system "${media.tapeSystem}" requires an engine to resolve head-family geometry`,
+    );
+  }
+  return resolveTapeGeometry(media, engine);
+}
+
+interface EncodeContext {
+  config: RasterProtocolConfig;
+  engine?: EncoderEngine | undefined;
+  deviceName?: string | undefined;
+}
+
+function encodeRasterJob(
+  pages: PageData[],
+  options: JobOptions,
+  ctx: EncodeContext,
+): Uint8Array {
+  const { config, engine, deviceName } = ctx;
   const copies = options.copies ?? 1;
   const chunks: Uint8Array[] = [];
 
-  // Python brother_ql sequence: raster-mode first, then 200-byte invalidate, then init, then
+  // Two-colour invalidate-byte derivation (§7.1): QL bumps to 400 when
+  // the engine carries `twoColor`. PT has no two-colour models today;
+  // its config keeps invalidateBytes at 200 regardless.
+  const baseInvalidate = config.invalidateBytes;
+  const twoColorInvalidateBoost =
+    engine?.protocol === 'ql-raster' && engine.capabilities?.twoColor === true;
+  const invalidateBytes = twoColorInvalidateBoost ? baseInvalidate * 2 : baseInvalidate;
+
+  // Python brother_ql sequence: raster-mode first, then invalidate, then init, then
   // raster-mode again (matches observed working sequence for QL-820NWB).
   chunks.push(buildRasterMode());
-  chunks.push(buildInvalidate());
+  chunks.push(buildInvalidate(invalidateBytes));
   chunks.push(buildInitialize());
 
   const allPageInstances: PageData[] = [];
@@ -158,9 +291,22 @@ export function encodeJob(pages: PageData[], options: JobOptions = {}): Uint8Arr
     const autoCut = opts.autoCut ?? true;
     const cutAtEnd = opts.cutAtEnd ?? true;
     const highRes = opts.highResolution ?? false;
-    const marginDots = opts.marginDots ?? 35;
     const compress = opts.compress ?? false;
     const { bitmap, media } = page;
+
+    // High-res mode requires the engine to declare `capabilities.highResDpi`.
+    if (highRes && engine && engine.capabilities?.highResDpi === undefined) {
+      throw new Error(
+        `${deviceName ?? 'device'} does not support high-res mode (engine.capabilities.highResDpi is not set)`,
+      );
+    }
+
+    maybeCheckCutterCompressionQuirk(deviceName, autoCut, compress);
+
+    // Per §7.3: PT high-res doubles the feed margin and duplicates
+    // each raster line. QL high-res leaves both untouched.
+    const baseMargin = opts.marginDots ?? config.feedMarginDots;
+    const marginDots = config.duplicateRasterLines && highRes ? baseMargin * 2 : baseMargin;
 
     // Multi-ink media (e.g. DK-22251) requires two-color mode even for black-only jobs.
     // Auto-create an empty red plane when the tape demands it but caller didn't supply one.
@@ -182,43 +328,41 @@ export function encodeJob(pages: PageData[], options: JobOptions = {}): Uint8Arr
     chunks.push(buildPrintInfo(media, rowCount, i));
     chunks.push(buildVariousMode(autoCut));
     chunks.push(buildCutEach(1));
-    chunks.push(buildExpandedMode(cutAtEnd, highRes, twoColor));
+    chunks.push(buildExpandedMode(cutAtEnd, highRes, twoColor, config.highResFlagBit));
     chunks.push(buildMargin(marginDots));
     if (compress) chunks.push(buildCompression(true));
 
     // Each raster row must cover the full print head width (derived from media geometry).
-    // leftMarginPins + printAreaDots + rightMarginPins = head pin count (720 or 1296).
-    // QL's `encodeJob` is DK-only — flat fields are guaranteed to be set.
-    if (
-      typeof media.printAreaDots !== 'number' ||
-      typeof media.leftMarginPins !== 'number' ||
-      typeof media.rightMarginPins !== 'number'
-    ) {
-      throw new Error(`encodeJob requires DK media with flat geometry (got id ${media.id.toString()})`);
-    }
-    const leftMarginPins = media.leftMarginPins;
-    const totalPins = leftMarginPins + media.printAreaDots + media.rightMarginPins;
+    // leftMarginPins + printAreaDots + rightMarginPins = head pin count (720 / 1296 / 128 / 560).
+    const geometry = resolveEncoderGeometry(media, engine);
+    const leftMarginPins = geometry.leftMarginPins;
+    const totalPins = leftMarginPins + geometry.printAreaDots + geometry.rightMarginPins;
     const rowByteLen = Math.ceil(totalPins / 8);
 
     // Rows interleaved per raster line (matches Python brother_ql behaviour).
     // Two-color: black row then red row for each line. Single-color: black only.
     // When `compress` is on, each row's bytes are PackBits-encoded and the
-    // raster-row LEN byte carries the compressed length. The printer was
-    // already switched into compression mode by `buildCompression(true)`
-    // above, so it expects every subsequent row to be PackBits.
+    // raster-row LEN byte carries the compressed length.
+    //
+    // Per §7.3: PT high-res duplicates each raster line. QL doesn't.
+    const duplicate = config.duplicateRasterLines && highRes;
     for (let r = 0; r < rowCount; r++) {
       const blackSrc = getRow(bitmap, r);
       const blackBytes = new Uint8Array(rowByteLen);
       placeBits(blackSrc, bitmap.widthPx, blackBytes, leftMarginPins);
       const blackPayload = compress ? packBits(blackBytes) : blackBytes;
-      chunks.push(buildRasterRow(blackPayload, 'black', twoColor));
+      const blackChunk = buildRasterRow(blackPayload, 'black', twoColor);
+      chunks.push(blackChunk);
+      if (duplicate) chunks.push(blackChunk);
 
       if (twoColor && redBitmap !== undefined) {
         const redSrc = getRow(redBitmap, r);
         const redBytes = new Uint8Array(rowByteLen);
         placeBits(redSrc, redBitmap.widthPx, redBytes, leftMarginPins);
         const redPayload = compress ? packBits(redBytes) : redBytes;
-        chunks.push(buildRasterRow(redPayload, 'red', twoColor));
+        const redChunk = buildRasterRow(redPayload, 'red', twoColor);
+        chunks.push(redChunk);
+        if (duplicate) chunks.push(redChunk);
       }
     }
 
@@ -226,4 +370,33 @@ export function encodeJob(pages: PageData[], options: JobOptions = {}): Uint8Arr
   }
 
   return concat(...chunks);
+}
+
+/**
+ * Encode a QL job. Public legacy entry point — DK media only, no
+ * engine awareness, two-colour invalidate-byte boost not applied.
+ * Use `encodeJobForEngine` for PT or for QL with two-colour invalidate
+ * derivation from `engine.capabilities.twoColor`.
+ */
+export function encodeJob(pages: PageData[], options: JobOptions = {}): Uint8Array {
+  return encodeRasterJob(pages, options, { config: QL_PROTOCOL_CONFIG });
+}
+
+/**
+ * Encode a job for a specific engine. Dispatches on `engine.protocol`:
+ * `'ql-raster'` picks the QL config, `'pt-raster'` picks the PT config
+ * and threads `engine.headDots` through to head-family geometry
+ * resolution for TZe / HSe media.
+ *
+ * `deviceName` is optional; when supplied, it enables the per-name
+ * cutter-compression guard for PT-E550W (§7.2 / §12.12).
+ */
+export function encodeJobForEngine(
+  pages: PageData[],
+  options: JobOptions,
+  engine: EncoderEngine,
+  deviceName?: string,
+): Uint8Array {
+  const config = engine.protocol === 'pt-raster' ? PT_PROTOCOL_CONFIG : QL_PROTOCOL_CONFIG;
+  return encodeRasterJob(pages, options, { config, engine, deviceName });
 }

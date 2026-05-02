@@ -294,4 +294,237 @@
     rightMarginPins: 0,
     dieCutMaskedAreaDots: 618,
   },
+
+  // ---------------------------------------------------------------
+  // PT-P / PT-E series — TZe laminated tape (ids 401-419 reserved).
+  //
+  // Pin configurations transcribed from nbuchwitz/ptouch
+  // (src/ptouch/printers.py PIN_CONFIGS), itself sourced from
+  // Brother's Raster Command Reference PDFs:
+  //   - 128-pin family (PT-E550W / PT-P750W):
+  //     cv_pte550wp750wp710bt_eng_raster_102.pdf p.20 §2.3
+  //   - 560-pin family (PT-P900 / P900W / P950NW / P910BT):
+  //     cv_ptp900_eng_raster_102.pdf pp.23-24 §2.3.5
+  //
+  // The same TZe id maps to different pin counts across head families,
+  // so geometry is split into `narrow` (128-dot heads) and `wide`
+  // (560-dot heads). 36 mm TZe is wide-only — the 128-dot head lacks
+  // the print width to render it.
+  //
+  // TZ-legacy and TZeFA share TZe geometry per width; the name field
+  // includes "TZe / TZ" so search hits work for either term.
+  // ---------------------------------------------------------------
+  {
+    id: 401,
+    tapeSystem: 'tze',
+    name: '3.5mm TZe / TZ laminated tape',
+    type: 'continuous',
+    widthMm: 3.5,
+    geometry: {
+      narrow: { printAreaDots: 24, leftMarginPins: 52, rightMarginPins: 52 },
+      wide: { printAreaDots: 48, leftMarginPins: 248, rightMarginPins: 264 },
+    },
+  },
+  {
+    id: 402,
+    tapeSystem: 'tze',
+    name: '6mm TZe / TZ laminated tape',
+    type: 'continuous',
+    widthMm: 6,
+    geometry: {
+      narrow: { printAreaDots: 32, leftMarginPins: 48, rightMarginPins: 48 },
+      wide: { printAreaDots: 64, leftMarginPins: 240, rightMarginPins: 256 },
+    },
+  },
+  {
+    id: 403,
+    tapeSystem: 'tze',
+    name: '9mm TZe / TZ laminated tape',
+    type: 'continuous',
+    widthMm: 9,
+    geometry: {
+      narrow: { printAreaDots: 50, leftMarginPins: 39, rightMarginPins: 39 },
+      wide: { printAreaDots: 106, leftMarginPins: 219, rightMarginPins: 235 },
+    },
+  },
+  {
+    id: 404,
+    tapeSystem: 'tze',
+    name: '12mm TZe / TZ laminated tape',
+    type: 'continuous',
+    widthMm: 12,
+    geometry: {
+      narrow: { printAreaDots: 70, leftMarginPins: 29, rightMarginPins: 29 },
+      wide: { printAreaDots: 150, leftMarginPins: 197, rightMarginPins: 213 },
+    },
+  },
+  {
+    id: 405,
+    tapeSystem: 'tze',
+    name: '18mm TZe / TZ laminated tape',
+    type: 'continuous',
+    widthMm: 18,
+    geometry: {
+      narrow: { printAreaDots: 112, leftMarginPins: 8, rightMarginPins: 8 },
+      wide: { printAreaDots: 234, leftMarginPins: 155, rightMarginPins: 171 },
+    },
+  },
+  {
+    id: 406,
+    tapeSystem: 'tze',
+    name: '24mm TZe / TZ laminated tape',
+    type: 'continuous',
+    widthMm: 24,
+    geometry: {
+      narrow: { printAreaDots: 128, leftMarginPins: 0, rightMarginPins: 0 },
+      wide: { printAreaDots: 320, leftMarginPins: 112, rightMarginPins: 128 },
+    },
+  },
+  {
+    // 36 mm TZe is exclusive to the 560-pin (P900) family — the
+    // 128-pin head can't print this width. `narrow` intentionally
+    // omitted; `findMediaByDimensions` filters it out for narrow heads.
+    id: 407,
+    tapeSystem: 'tze',
+    name: '36mm TZe / TZ laminated tape',
+    type: 'continuous',
+    widthMm: 36,
+    geometry: {
+      wide: { printAreaDots: 454, leftMarginPins: 45, rightMarginPins: 61 },
+    },
+  },
+
+  // ---------------------------------------------------------------
+  // PT-P / PT-E series — HSe heat-shrink tubing 2:1 ratio
+  // (ids 421-439 reserved).
+  //
+  // Same source as TZe above. Note: nbuchwitz/ptouch flags the 128-pin
+  // HSe configs as "shifted -2 pins (up) based on testing" and the
+  // 560-pin HSe configs as "shifted +17 pins down based on Brother
+  // software analysis" — i.e. the spec-PDF values were off by N in
+  // real-world prints. We inherit those corrections; do not "fix"
+  // them back to raw spec-PDF values without bench-testing first.
+  //
+  // PT-P910BT does NOT support HSe (TZe-only) — its device entry's
+  // engine.mediaCompatibility lists only ['tze'], so HSe rows are
+  // never returned for that engine.
+  // ---------------------------------------------------------------
+  {
+    id: 421,
+    tapeSystem: 'hse-2to1',
+    name: '5.8mm HSe heat-shrink tube (2:1)',
+    type: 'continuous',
+    widthMm: 5.8,
+    geometry: {
+      narrow: { printAreaDots: 28, leftMarginPins: 52, rightMarginPins: 48 },
+      wide: { printAreaDots: 56, leftMarginPins: 261, rightMarginPins: 243 },
+    },
+  },
+  {
+    id: 422,
+    tapeSystem: 'hse-2to1',
+    name: '8.8mm HSe heat-shrink tube (2:1)',
+    type: 'continuous',
+    widthMm: 8.8,
+    geometry: {
+      narrow: { printAreaDots: 48, leftMarginPins: 42, rightMarginPins: 38 },
+      wide: { printAreaDots: 96, leftMarginPins: 241, rightMarginPins: 223 },
+    },
+  },
+  {
+    id: 423,
+    tapeSystem: 'hse-2to1',
+    name: '11.7mm HSe heat-shrink tube (2:1)',
+    type: 'continuous',
+    widthMm: 11.7,
+    geometry: {
+      narrow: { printAreaDots: 66, leftMarginPins: 33, rightMarginPins: 29 },
+      wide: { printAreaDots: 132, leftMarginPins: 223, rightMarginPins: 205 },
+    },
+  },
+  {
+    id: 424,
+    tapeSystem: 'hse-2to1',
+    name: '17.7mm HSe heat-shrink tube (2:1)',
+    type: 'continuous',
+    widthMm: 17.7,
+    geometry: {
+      narrow: { printAreaDots: 106, leftMarginPins: 13, rightMarginPins: 9 },
+      wide: { printAreaDots: 212, leftMarginPins: 183, rightMarginPins: 165 },
+    },
+  },
+  {
+    id: 425,
+    tapeSystem: 'hse-2to1',
+    name: '23.6mm HSe heat-shrink tube (2:1)',
+    type: 'continuous',
+    widthMm: 23.6,
+    geometry: {
+      narrow: { printAreaDots: 128, leftMarginPins: 0, rightMarginPins: 0 },
+      wide: { printAreaDots: 256, leftMarginPins: 161, rightMarginPins: 143 },
+    },
+  },
+
+  // ---------------------------------------------------------------
+  // PT-P / PT-E series — HSe heat-shrink tubing 3:1 ratio
+  // (ids 441-459 reserved).
+  //
+  // Same source + correction caveats as HSe 2:1 above. 31.0 mm is
+  // exclusive to the 560-pin family (no narrow geometry).
+  // ---------------------------------------------------------------
+  {
+    id: 441,
+    tapeSystem: 'hse-3to1',
+    name: '5.2mm HSe heat-shrink tube (3:1)',
+    type: 'continuous',
+    widthMm: 5.2,
+    geometry: {
+      narrow: { printAreaDots: 20, leftMarginPins: 56, rightMarginPins: 52 },
+      wide: { printAreaDots: 40, leftMarginPins: 269, rightMarginPins: 251 },
+    },
+  },
+  {
+    id: 442,
+    tapeSystem: 'hse-3to1',
+    name: '9.0mm HSe heat-shrink tube (3:1)',
+    type: 'continuous',
+    widthMm: 9,
+    geometry: {
+      narrow: { printAreaDots: 44, leftMarginPins: 44, rightMarginPins: 40 },
+      wide: { printAreaDots: 88, leftMarginPins: 245, rightMarginPins: 227 },
+    },
+  },
+  {
+    id: 443,
+    tapeSystem: 'hse-3to1',
+    name: '11.2mm HSe heat-shrink tube (3:1)',
+    type: 'continuous',
+    widthMm: 11.2,
+    geometry: {
+      narrow: { printAreaDots: 50, leftMarginPins: 41, rightMarginPins: 37 },
+      wide: { printAreaDots: 100, leftMarginPins: 239, rightMarginPins: 221 },
+    },
+  },
+  {
+    id: 444,
+    tapeSystem: 'hse-3to1',
+    name: '21.0mm HSe heat-shrink tube (3:1)',
+    type: 'continuous',
+    widthMm: 21,
+    geometry: {
+      narrow: { printAreaDots: 120, leftMarginPins: 6, rightMarginPins: 2 },
+      wide: { printAreaDots: 240, leftMarginPins: 169, rightMarginPins: 151 },
+    },
+  },
+  {
+    // 31.0 mm HSe-3:1 is exclusive to the 560-pin (P900) family.
+    id: 445,
+    tapeSystem: 'hse-3to1',
+    name: '31.0mm HSe heat-shrink tube (3:1)',
+    type: 'continuous',
+    widthMm: 31,
+    geometry: {
+      wide: { printAreaDots: 360, leftMarginPins: 109, rightMarginPins: 91 },
+    },
+  },
 ]

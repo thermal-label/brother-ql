@@ -1,4 +1,4 @@
-import type { PrinterError } from '@thermal-label/contracts';
+import type { PrintEngine, PrinterError } from '@thermal-label/contracts';
 import type { BrotherQLStatus } from './types.js';
 import { findMediaByDimensions } from './media.js';
 
@@ -47,7 +47,10 @@ const ERROR_INFO_2: { bit: number; code: string; message: string }[] = [
  * set it from other signals (e.g. mass-storage PID detected during
  * discovery) without changing the return type.
  */
-export function parseStatus(bytes: Uint8Array): BrotherQLStatus {
+export function parseStatus(
+  bytes: Uint8Array,
+  engine?: Pick<PrintEngine, 'headDots' | 'mediaCompatibility'>,
+): BrotherQLStatus {
   if (bytes.length < 32) {
     throw new Error(`Status response too short: ${bytes.length.toString()} bytes`);
   }
@@ -71,7 +74,7 @@ export function parseStatus(bytes: Uint8Array): BrotherQLStatus {
 
   const mediaLoaded = mediaWidthMm > 0 && mediaTypeByte !== 0;
   const detected = mediaLoaded
-    ? findMediaByDimensions(mediaWidthMm, mediaLengthMm, twoColorFlag)
+    ? findMediaByDimensions(mediaWidthMm, mediaLengthMm, twoColorFlag, engine)
     : undefined;
 
   return {

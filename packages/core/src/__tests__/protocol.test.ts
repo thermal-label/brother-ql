@@ -13,6 +13,8 @@ import {
   buildVariousMode,
   buildExpandedMode,
   encodeJob,
+  encodeJobForEngine,
+  type EncoderEngine,
 } from '../protocol.js';
 import type { PageData } from '../types.js';
 import { MEDIA } from '../media.js';
@@ -283,5 +285,212 @@ describe('buildCompression', () => {
 
   it('disabled returns [0x4D, 0x00]', () => {
     expect(Array.from(buildCompression(false))).toEqual([0x4d, 0x00]);
+  });
+});
+
+describe('encodeJobForEngine — dispatch + invalidate-byte derivation', () => {
+  const TZE_12MM = MEDIA[404]!;
+  const DK_62MM = MEDIA[259]!;
+
+  const NARROW_PT_ENGINE: EncoderEngine = {
+    protocol: 'pt-raster',
+    headDots: 128,
+    capabilities: { autocut: true, mediaDetection: true, highResDpi: 360 },
+  };
+  const WIDE_PT_ENGINE: EncoderEngine = {
+    protocol: 'pt-raster',
+    headDots: 560,
+    capabilities: { autocut: true, mediaDetection: true, highResDpi: 720 },
+  };
+  const QL_TWO_COLOR_ENGINE: EncoderEngine = {
+    protocol: 'ql-raster',
+    headDots: 720,
+    capabilities: { autocut: true, mediaDetection: true, twoColor: true },
+  };
+  const QL_SINGLE_COLOR_ENGINE: EncoderEngine = {
+    protocol: 'ql-raster',
+    headDots: 720,
+    capabilities: { autocut: true, mediaDetection: true },
+  };
+
+  it('PT-raster job uses 200-byte invalidate', () => {
+    const bitmap = createBitmap(70, 5);
+    const out = encodeJobForEngine([{ bitmap, media: TZE_12MM }], {}, NARROW_PT_ENGINE);
+    // After buildRasterMode (4 bytes: 0x1B 0x69 0x61 0x01), invalidate begins.
+    expect(out.slice(0, 4)).toEqual(new Uint8Array([0x1b, 0x69, 0x61, 0x01]));
+    // Confirm the next 200 bytes are zero (PT invalidate).
+    for (let i = 4; i < 204; i++) expect(out[i]).toBe(0);
+    // The byte after the 200-zero invalidate should be 0x1B (start of buildInitialize),
+    // proving the invalidate is not 400 bytes.
+    expect(out[204]).toBe(0x1b);
+  });
+
+  it('QL two-colour engine bumps invalidate to 400 bytes', () => {
+    const bitmap = createBitmap(696, 5);
+    const out = encodeJobForEngine([{ bitmap, media: DK_62MM }], {}, QL_TWO_COLOR_ENGINE);
+    expect(out.slice(0, 4)).toEqual(new Uint8Array([0x1b, 0x69, 0x61, 0x01]));
+    for (let i = 4; i < 404; i++) expect(out[i]).toBe(0);
+    expect(out[404]).toBe(0x1b);
+  });
+
+  it('QL single-colour engine keeps invalidate at 200 bytes', () => {
+    const bitmap = createBitmap(696, 5);
+    const out = encodeJobForEngine([{ bitmap, media: DK_62MM }], {}, QL_SINGLE_COLOR_ENGINE);
+    for (let i = 4; i < 204; i++) expect(out[i]).toBe(0);
+    expect(out[204]).toBe(0x1b);
+  });
+
+  it('PT-raster expanded-mode uses bit 6 (0x40) for high-res', () => {
+    const bitmap = createBitmap(70, 5);
+    const out = encodeJobForEngine(
+      [{ bitmap, media: TZE_12MM, options: { highResolution: true } }],
+      {},
+      NARROW_PT_ENGINE,
+    );
+    // Locate the ESC i K command (0x1B 0x69 0x4B FLAGS).
+    let idx = -1;
+    for (let i = 0; i < out.length - 3; i++) {
+      if (out[i] === 0x1b && out[i + 1] === 0x69 && out[i + 2] === 0x4b) {
+        idx = i;
+        break;
+      }
+    }
+    expect(idx).toBeGreaterThanOrEqual(0);
+    expect((out[idx + 3] ?? 0) & 0x40).toBe(0x40);
+    expect((out[idx + 3] ?? 0) & 0x10).toBe(0x00);
+  });
+
+  it('PT-raster feed-margin defaults to 14 dots', () => {
+    const bitmap = createBitmap(70, 5);
+    const out = encodeJobForEngine([{ bitmap, media: TZE_12MM }], {}, NARROW_PT_ENGINE);
+    // Locate ESC i d (0x1B 0x69 0x64 LO HI).
+    let idx = -1;
+    for (let i = 0; i < out.length - 4; i++) {
+      if (out[i] === 0x1b && out[i + 1] === 0x69 && out[i + 2] === 0x64) {
+        idx = i;
+        break;
+      }
+    }
+    expect(idx).toBeGreaterThanOrEqual(0);
+    const lo = out[idx + 3] ?? 0;
+    const hi = out[idx + 4] ?? 0;
+    expect(lo | (hi << 8)).toBe(14);
+  });
+
+  it('QL feed-margin defaults to 35 dots', () => {
+    const bitmap = createBitmap(696, 5);
+    const out = encodeJobForEngine([{ bitmap, media: DK_62MM }], {}, QL_SINGLE_COLOR_ENGINE);
+    let idx = -1;
+    for (let i = 0; i < out.length - 4; i++) {
+      if (out[i] === 0x1b && out[i + 1] === 0x69 && out[i + 2] === 0x64) {
+        idx = i;
+        break;
+      }
+    }
+    expect(idx).toBeGreaterThanOrEqual(0);
+    const lo = out[idx + 3] ?? 0;
+    const hi = out[idx + 4] ?? 0;
+    expect(lo | (hi << 8)).toBe(35);
+  });
+
+  it('PT high-res duplicates each raster line', () => {
+    const bitmap = createBitmap(70, 3);
+    const noHighRes = encodeJobForEngine([{ bitmap, media: TZE_12MM }], {}, NARROW_PT_ENGINE);
+    const highRes = encodeJobForEngine(
+      [{ bitmap, media: TZE_12MM, options: { highResolution: true } }],
+      {},
+      NARROW_PT_ENGINE,
+    );
+    // Counting the 0x67 raster opcodes is the cleanest signal: 3 lines
+    // native vs 6 lines high-res.
+    const countOp = (buf: Uint8Array, op: number): number => {
+      let n = 0;
+      for (const b of buf) if (b === op) n++;
+      return n;
+    };
+    // 0x67 happens to also be present in invalidate-zero adjacency rare;
+    // we instead compare relative line counts (delta = doubled rows).
+    expect(countOp(highRes, 0x67) - countOp(noHighRes, 0x67)).toBe(3);
+  });
+
+  it('PT high-res doubles the feed-margin field', () => {
+    const bitmap = createBitmap(70, 3);
+    const out = encodeJobForEngine(
+      [{ bitmap, media: TZE_12MM, options: { highResolution: true } }],
+      {},
+      NARROW_PT_ENGINE,
+    );
+    let idx = -1;
+    for (let i = 0; i < out.length - 4; i++) {
+      if (out[i] === 0x1b && out[i + 1] === 0x69 && out[i + 2] === 0x64) {
+        idx = i;
+        break;
+      }
+    }
+    const lo = out[idx + 3] ?? 0;
+    const hi = out[idx + 4] ?? 0;
+    expect(lo | (hi << 8)).toBe(28);
+  });
+
+  it('encodeJobForEngine resolves narrow vs wide TZe geometry', () => {
+    const bitmap = createBitmap(70, 1);
+    const narrow = encodeJobForEngine([{ bitmap, media: TZE_12MM }], {}, NARROW_PT_ENGINE);
+    const bitmap2 = createBitmap(150, 1);
+    const wide = encodeJobForEngine([{ bitmap: bitmap2, media: TZE_12MM }], {}, WIDE_PT_ENGINE);
+    // narrow: 128 pin head → row payload 16 bytes per raster line.
+    // wide:    560 pin head → row payload 70 bytes per raster line.
+    // Find the 0x67 raster opcode and check the LEN byte.
+    const findRowLen = (buf: Uint8Array): number => {
+      for (let i = 0; i < buf.length - 2; i++) {
+        if (buf[i] === 0x67 && buf[i + 1] === 0x00) return buf[i + 2] ?? -1;
+      }
+      return -1;
+    };
+    expect(findRowLen(narrow)).toBe(16);
+    expect(findRowLen(wide)).toBe(70);
+  });
+
+  it('throws when high-res requested on an engine without highResDpi', () => {
+    const bitmap = createBitmap(696, 1);
+    expect(() =>
+      encodeJobForEngine(
+        [{ bitmap, media: DK_62MM, options: { highResolution: true } }],
+        {},
+        QL_SINGLE_COLOR_ENGINE,
+      ),
+    ).toThrow(/high-res/);
+  });
+
+  it('PT-E550W rejects autocut with compression disabled (cutter quirk)', () => {
+    const bitmap = createBitmap(70, 3);
+    expect(() =>
+      encodeJobForEngine(
+        [{ bitmap, media: TZE_12MM, options: { autoCut: true, compress: false } }],
+        {},
+        NARROW_PT_ENGINE,
+        'PT-E550W',
+      ),
+    ).toThrow(/PT-E550W/);
+  });
+
+  it('PT-P750W (same head family, different name) does NOT trigger the E550W cutter quirk', () => {
+    const bitmap = createBitmap(70, 3);
+    expect(() =>
+      encodeJobForEngine(
+        [{ bitmap, media: TZE_12MM, options: { autoCut: true, compress: false } }],
+        {},
+        NARROW_PT_ENGINE,
+        'PT-P750W',
+      ),
+    ).not.toThrow();
+  });
+});
+
+describe('encodeJob legacy entry point — back compat', () => {
+  it('still produces the original 200-byte single-colour invalidate', () => {
+    const bitmap = createBitmap(696, 1);
+    const out = encodeJob([{ bitmap, media: MEDIA[259]! }], {});
+    for (let i = 4; i < 204; i++) expect(out[i]).toBe(0);
+    expect(out[204]).toBe(0x1b);
   });
 });

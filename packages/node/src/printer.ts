@@ -153,7 +153,7 @@ export class BrotherQLPrinter implements PrinterAdapter {
       await new Promise<void>(r => setTimeout(r, STATUS_POLL_INTERVAL_MS));
       const bytes = await this.transport.read(STATUS_BYTE_COUNT);
       if (bytes.length >= STATUS_BYTE_COUNT) {
-        const status = parseStatus(bytes);
+        const status = parseStatus(bytes, this.device.engines[0]);
         this.lastStatus = status;
         return status;
       }
