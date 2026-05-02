@@ -12,6 +12,31 @@ export type HeadWidth = 720 | 1296;
 export type ColorMode = 'single' | 'two-color';
 
 /**
+ * Tape-system discriminator on `BrotherQLMedia`. DK is the QL series'
+ * paper-label system; TZe is the laminated-tape system used by the
+ * PT-P / PT-E line; HSe 2:1 and HSe 3:1 are heat-shrink tubing systems
+ * supported by most P900-series and PT-E550W. Lookup paths gate on
+ * this so a QL printer never resolves a TZe entry, and vice versa.
+ */
+export type TapeSystem = 'dk' | 'tze' | 'hse-2to1' | 'hse-3to1';
+
+/**
+ * Per-head-family geometry on `BrotherQLMedia`.
+ *
+ * Brother's PT-P / PT-E line ships two head families with different
+ * per-tape pin layouts. The same TZe id maps to different
+ * `printAreaDots` / `leftMarginPins` / `rightMarginPins` values on a
+ * 128-pin head (PT-E550W, PT-P750W) versus a 560-pin head (PT-P900,
+ * P900W, P950NW, P910BT). DK media leaves these unset and resolves via
+ * the flat fields on `BrotherQLMedia` directly.
+ */
+export interface TapeGeometry {
+  printAreaDots: number;
+  leftMarginPins: number;
+  rightMarginPins: number;
+}
+
+/**
  * Brother-specific engine capabilities.
  *
  * Extends the contracts-defined `PrintEngineCapabilities` (which
@@ -24,6 +49,14 @@ export type ColorMode = 'single' | 'two-color';
 export interface BrotherEngineCapabilities extends PrintEngineCapabilities {
   /** Two-colour ribbon path — black + red plane raster encoding. */
   twoColor?: boolean;
+  /**
+   * Doubled-density mode along the feed axis (`ESC i K` bit 6).
+   * `360` on PT-E550W / PT-P750W (native 180); `720` on the PT-P900
+   * family (native 360). Undefined on QL and PT models that don't
+   * support high-res. The encoder branches on this when
+   * `BrotherQLPrintOptions.highRes` is set.
+   */
+  highResDpi?: 360 | 720;
 }
 
 /**
@@ -54,9 +87,26 @@ export type BrotherQLDevice = DeviceEntry;
 export interface BrotherQLMedia extends MediaDescriptor {
   id: number;
   type: MediaType;
-  printAreaDots: number;
-  leftMarginPins: number;
-  rightMarginPins: number;
+  /**
+   * Tape system this entry belongs to. Drives lookup gating in
+   * `findMediaByDimensions(width, height, engine)` so QL engines never
+   * resolve TZe / HSe entries and vice versa.
+   */
+  tapeSystem: TapeSystem;
+  /**
+   * Per-head-family geometry. `narrow` = 128-pin head (PT-E550W,
+   * PT-P750W); `wide` = 560-pin head (PT-P900 family). DK entries
+   * leave both unset and use the flat fields below; TZe / HSe entries
+   * leave the flat fields undefined and populate `narrow` and/or
+   * `wide` per the *Raster Command Reference* PDFs. `undefined` on a
+   * head family means "this tape doesn't fit this head" (e.g. 36 mm
+   * TZe and 31 mm HSe-3:1 have no `narrow` entry).
+   */
+  geometry?: { narrow?: TapeGeometry; wide?: TapeGeometry };
+  /** DK-only flat geometry. PT-* entries populate `geometry` instead. */
+  printAreaDots?: number;
+  leftMarginPins?: number;
+  rightMarginPins?: number;
   /** Die-cut masked area in dots (registration windows). */
   dieCutMaskedAreaDots?: number;
 }
@@ -104,4 +154,10 @@ export interface JobOptions {
  */
 export interface BrotherQLPrintOptions extends PrintOptions {
   rotate?: 'auto' | 0 | 90 | 180 | 270;
+  /**
+   * Opt into high-resolution mode (doubles dpi along the feed axis).
+   * Requires the engine's `capabilities.highResDpi` to be set; throws
+   * at job-build time otherwise. PT-* only — QL ignores the option.
+   */
+  highRes?: boolean;
 }

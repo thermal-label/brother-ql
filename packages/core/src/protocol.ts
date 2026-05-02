@@ -188,7 +188,16 @@ export function encodeJob(pages: PageData[], options: JobOptions = {}): Uint8Arr
 
     // Each raster row must cover the full print head width (derived from media geometry).
     // leftMarginPins + printAreaDots + rightMarginPins = head pin count (720 or 1296).
-    const totalPins = media.leftMarginPins + media.printAreaDots + media.rightMarginPins;
+    // QL's `encodeJob` is DK-only — flat fields are guaranteed to be set.
+    if (
+      typeof media.printAreaDots !== 'number' ||
+      typeof media.leftMarginPins !== 'number' ||
+      typeof media.rightMarginPins !== 'number'
+    ) {
+      throw new Error(`encodeJob requires DK media with flat geometry (got id ${media.id.toString()})`);
+    }
+    const leftMarginPins = media.leftMarginPins;
+    const totalPins = leftMarginPins + media.printAreaDots + media.rightMarginPins;
     const rowByteLen = Math.ceil(totalPins / 8);
 
     // Rows interleaved per raster line (matches Python brother_ql behaviour).
@@ -200,14 +209,14 @@ export function encodeJob(pages: PageData[], options: JobOptions = {}): Uint8Arr
     for (let r = 0; r < rowCount; r++) {
       const blackSrc = getRow(bitmap, r);
       const blackBytes = new Uint8Array(rowByteLen);
-      placeBits(blackSrc, bitmap.widthPx, blackBytes, media.leftMarginPins);
+      placeBits(blackSrc, bitmap.widthPx, blackBytes, leftMarginPins);
       const blackPayload = compress ? packBits(blackBytes) : blackBytes;
       chunks.push(buildRasterRow(blackPayload, 'black', twoColor));
 
       if (twoColor && redBitmap !== undefined) {
         const redSrc = getRow(redBitmap, r);
         const redBytes = new Uint8Array(rowByteLen);
-        placeBits(redSrc, redBitmap.widthPx, redBytes, media.leftMarginPins);
+        placeBits(redSrc, redBitmap.widthPx, redBytes, leftMarginPins);
         const redPayload = compress ? packBits(redBytes) : redBytes;
         chunks.push(buildRasterRow(redPayload, 'red', twoColor));
       }

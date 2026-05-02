@@ -17,6 +17,7 @@
   // Continuous length tape
   {
     id: 257,
+    tapeSystem: 'dk',
     name: '12mm continuous (DK-22214)',
     type: 'continuous',
     widthMm: 12,
@@ -26,6 +27,7 @@
   },
   {
     id: 258,
+    tapeSystem: 'dk',
     name: '29mm continuous (DK-22210)',
     type: 'continuous',
     widthMm: 29,
@@ -35,6 +37,7 @@
   },
   {
     id: 264,
+    tapeSystem: 'dk',
     name: '38mm continuous (DK-22225)',
     type: 'continuous',
     widthMm: 38,
@@ -44,6 +47,7 @@
   },
   {
     id: 262,
+    tapeSystem: 'dk',
     name: '50mm continuous (DK-22246)',
     type: 'continuous',
     widthMm: 50,
@@ -53,6 +57,7 @@
   },
   {
     id: 261,
+    tapeSystem: 'dk',
     name: '54mm continuous (DK-N55224)',
     type: 'continuous',
     widthMm: 54,
@@ -62,6 +67,7 @@
   },
   {
     id: 259,
+    tapeSystem: 'dk',
     name: '62mm continuous (DK-22205)',
     type: 'continuous',
     widthMm: 62,
@@ -71,6 +77,7 @@
   },
   {
     id: 251,
+    tapeSystem: 'dk',
     name: '62mm continuous two-color (DK-22251)',
     type: 'continuous',
     widthMm: 62,
@@ -84,6 +91,7 @@
   },
   {
     id: 260,
+    tapeSystem: 'dk',
     name: '102mm continuous (DK-22243)',
     type: 'continuous',
     widthMm: 102,
@@ -95,6 +103,7 @@
   // Die-cut labels
   {
     id: 269,
+    tapeSystem: 'dk',
     name: '17×54mm die-cut (DK-11204)',
     type: 'die-cut',
     widthMm: 17,
@@ -108,6 +117,7 @@
   },
   {
     id: 270,
+    tapeSystem: 'dk',
     name: '17×87mm die-cut (DK-11203)',
     type: 'die-cut',
     widthMm: 17,
@@ -121,6 +131,7 @@
   },
   {
     id: 370,
+    tapeSystem: 'dk',
     name: '23×23mm die-cut',
     type: 'die-cut',
     widthMm: 23,
@@ -134,6 +145,7 @@
   },
   {
     id: 271,
+    tapeSystem: 'dk',
     name: '29×90mm die-cut (DK-11201)',
     type: 'die-cut',
     widthMm: 29,
@@ -147,6 +159,7 @@
   },
   {
     id: 272,
+    tapeSystem: 'dk',
     name: '38×90mm die-cut (DK-11218)',
     type: 'die-cut',
     widthMm: 38,
@@ -160,6 +173,7 @@
   },
   {
     id: 367,
+    tapeSystem: 'dk',
     name: '39×48mm die-cut (DK-11219)',
     type: 'die-cut',
     widthMm: 39,
@@ -173,6 +187,7 @@
   },
   {
     id: 374,
+    tapeSystem: 'dk',
     name: '52×29mm die-cut',
     type: 'die-cut',
     widthMm: 52,
@@ -186,6 +201,7 @@
   },
   {
     id: 274,
+    tapeSystem: 'dk',
     name: '62×29mm die-cut (DK-11209)',
     type: 'die-cut',
     widthMm: 62,
@@ -199,6 +215,7 @@
   },
   {
     id: 275,
+    tapeSystem: 'dk',
     name: '62×100mm die-cut (DK-11202)',
     type: 'die-cut',
     widthMm: 62,
@@ -212,6 +229,7 @@
   },
   {
     id: 365,
+    tapeSystem: 'dk',
     name: '102×51mm die-cut (DK-11240)',
     type: 'die-cut',
     widthMm: 102,
@@ -225,6 +243,7 @@
   },
   {
     id: 366,
+    tapeSystem: 'dk',
     name: '102×152mm die-cut (DK-11241)',
     type: 'die-cut',
     widthMm: 102,
@@ -238,6 +257,7 @@
   },
   {
     id: 362,
+    tapeSystem: 'dk',
     name: '12mm Ø die-cut',
     type: 'die-cut',
     widthMm: 12,
@@ -250,6 +270,7 @@
   },
   {
     id: 363,
+    tapeSystem: 'dk',
     name: '24mm Ø die-cut (DK-11221)',
     type: 'die-cut',
     widthMm: 24,
@@ -262,6 +283,7 @@
   },
   {
     id: 273,
+    tapeSystem: 'dk',
     name: '58mm Ø die-cut (DK-11207)',
     type: 'die-cut',
     widthMm: 58,

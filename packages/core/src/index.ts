@@ -40,6 +40,7 @@ export {
   findMedia,
   findMediaByDimensions,
   findMediaByWidth,
+  resolveTapeGeometry,
 } from './media.js';
 export { ROTATE_DIRECTION } from './orientation.js';
 export { encodeJob } from './protocol.js';
@@ -58,4 +59,6 @@ export type {
   MediaType,
   PageData,
   PageOptions,
+  TapeGeometry,
+  TapeSystem,
 } from './types.js';

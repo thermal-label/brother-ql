@@ -32,7 +32,8 @@ const MEDIA_TS = resolve(CORE_PKG, 'src/media.generated.ts');
 
 const DRIVER = 'brother-ql';
 const SCHEMA_VERSION = 1;
-const KNOWN_PROTOCOLS = new Set(['ql-raster']);
+const KNOWN_PROTOCOLS = new Set(['ql-raster', 'pt-raster']);
+const KNOWN_TAPE_SYSTEMS = new Set(['dk', 'tze', 'hse-2to1', 'hse-3to1']);
 const STATUS_VALUES = new Set(['verified', 'partial', 'broken', 'untested']);
 const TRANSPORT_KEYS = new Set(['usb', 'tcp', 'serial', 'bluetooth-spp', 'bluetooth-gatt']);
 
@@ -145,6 +146,25 @@ function loadMedia() {
     else seenIds.add(m.id);
     if (typeof m?.widthMm !== 'number') fail(`media[${i}]: \`widthMm\` must be a number`);
     if (typeof m?.type !== 'string') fail(`media[${i}]: \`type\` must be a string`);
+    if (typeof m?.tapeSystem !== 'string' || !KNOWN_TAPE_SYSTEMS.has(m.tapeSystem)) {
+      fail(
+        `media[${i}] (id ${m?.id}): \`tapeSystem\` must be one of ${[...KNOWN_TAPE_SYSTEMS].join('|')} (got ${JSON.stringify(m?.tapeSystem)})`,
+      );
+    }
+    if (m?.tapeSystem === 'dk') {
+      if (typeof m.printAreaDots !== 'number') {
+        fail(`media[${i}] (id ${m?.id}): DK entries require flat \`printAreaDots\``);
+      }
+    } else if (m?.tapeSystem) {
+      // TZe / HSe entries must populate at least one head-family geometry.
+      const narrow = m.geometry?.narrow;
+      const wide = m.geometry?.wide;
+      if (!narrow && !wide) {
+        fail(
+          `media[${i}] (id ${m?.id}): tape-system "${m.tapeSystem}" requires \`geometry.narrow\` or \`geometry.wide\``,
+        );
+      }
+    }
   }
   return list;
 }
