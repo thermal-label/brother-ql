@@ -67,10 +67,12 @@ maintainers don't re-litigate it.
   (`compression`, `mode_setting`, `expanded_mode`, `cutting`,
   `two_color`, `num_invalidate_bytes`, `number_bytes_per_row`).
 - **The variation is exactly what this driver already handles.**
-  `BrotherQLDevice` already discriminates on `twoColor`,
-  `compression`, `editorLite`, `bytesPerRow`. Adding PT support is a
-  matter of two more flags and four more device entries — not a new
-  encoder.
+  `BrotherQLDevice` already discriminates per-engine on
+  `twoColor` / `autocut` / `mediaDetection` and per-chassis on
+  `editorLite` / `massStoragePid`. Adding PT support is a new
+  protocol implementation alongside `ql-raster`, six more device
+  entries, and the TZe / HSe media catalogue — not a new encoder
+  family.
 - **The labelmanager/labelwriter split is the wrong analogy.** Those
   are split because Dymo's tape command set and ESC/raster are
   different protocol families with no shared opcodes. QL and PT-P
@@ -451,12 +453,11 @@ print-pin counts across families, so `printAreaDots` /
 scalars on the registry entry. Two options (unchanged from prior
 revision):
 
-1. **Store-by-headPins** — add `printAreaDotsByHeadPins?: Record<HeadPins, number>`
-   plus parallel `leftMarginPinsByHeadPins` / `rightMarginPinsByHeadPins`,
-   resolved at lookup time from `device.headPins`. Keeps one row
-   per physical tape SKU.
-2. **Split entries** — `tze-12-128pin` (id 404) vs `tze-12-560pin`
-   (id 444), looked up via `(widthMm, line)`.
+1. **Store-by-head-family** — add `geometry: { narrow?, wide? }`
+   to `BrotherQLMedia` (the §4.1 shape) and resolve at lookup time
+   from `engine.headDots`. Keeps one row per physical tape SKU.
+2. **Split entries** — `tze-12-128dot` (id 404) vs `tze-12-560dot`
+   (id 444), looked up via `(widthMm, engine.protocol, engine.headDots)`.
 
 **Recommend option 1**, but generalize the field name beyond
 `...ByHeadPins`: the actual discriminator is the engine's head
@@ -1106,14 +1107,15 @@ should Just Work — the encoder gates on
 `engine.capabilities.twoColor` and the multi-plane render path is
 already in place. Leave as-is; flag if discovered.
 
-### 12.9 `feedMarginDots` is unverified for PT
+### 12.9 PT feed-margin constant is unverified
 
-`feed_margin=14` comes from the Python project, not from Brother's
-raster manual. It governs how much blank tape gets fed before/after
-the print area — a wrong value would cause label misalignment, not
-a print failure. Phase 3 verification step: print a label, measure
+The `PT_FEED_MARGIN_DOTS = 14` constant in §7.1's `pt-raster`
+module comes from the Python project, not from Brother's raster
+manual. It governs how much blank tape gets fed before/after the
+print area — a wrong value would cause label misalignment, not a
+print failure. Phase 4 verification step: print a label, measure
 the leading and trailing margin; if they don't match the Python
-output, adjust the constant.
+output, adjust the constant in `src/protocols.ts`.
 
 ### 12.10 We are downstream of multiple Python/C projects
 
