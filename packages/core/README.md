@@ -15,7 +15,7 @@ Protocol encoding, device registry, and media registry for Brother QL label prin
 
 ## Requirements
 
-- Node.js `>=24.0.0`
+- Node.js `>=20.9.0` (Node 24 LTS recommended)
 - Runs in browser and Node.js — no Node.js built-ins used
 
 ## License

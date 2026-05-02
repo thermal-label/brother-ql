@@ -64,7 +64,7 @@ await printer.close();
 
 ## Requirements
 
-- Node.js `>=24.0.0`
+- Node.js `>=20.9.0` (Node 24 LTS recommended)
 - Linux: add a udev rule for raw USB access without `sudo`:
   ```
   SUBSYSTEM=="usb", ATTRS{idVendor}=="04f9", MODE="0666"

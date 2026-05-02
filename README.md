@@ -77,7 +77,7 @@ The per-driver `*-cli` package was retired — use the unified
 
 | | |
 |---|---|
-| Node | ≥ 24 |
+| Node | ≥ 20.9 (Node 24 LTS recommended) |
 | Browsers | Chrome / Edge 89+ (WebUSB), secure context (`https://` or `localhost`) |
 | Linux | typically needs a `udev` rule for `04F9:*` to access without `sudo` |
 | Peers | `@thermal-label/contracts`, `@thermal-label/transport`, `@mbtech-nl/bitmap` |
