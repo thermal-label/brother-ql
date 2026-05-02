@@ -208,6 +208,59 @@ describe('WebBrotherQLPrinter', () => {
     expect(status.detectedMedia?.id).toBe(259);
   });
 
+  it('onStatus delivers spontaneous frames that arrive without a getStatus request', async () => {
+    const bytes = new Uint8Array(32);
+    bytes[10] = 62;
+    bytes[11] = 0x0a;
+    const device = createMockUSBDevice({ productId: 0x209d, statusBytes: bytes });
+    const printer = await fromUSBDevice(device);
+    const received: number[] = [];
+    const unsubscribe = printer.onStatus(s => {
+      if (s.detectedMedia) received.push(s.detectedMedia.id as number);
+    });
+    // Simulate a spontaneous frame the printer would push on lid close /
+    // media insert — feed it directly into the mock pipe without an
+    // ESC iS request.
+    device.__pushUnsolicited(bytes);
+    // Drain microtasks so the read loop can pick the frame up.
+    await new Promise<void>(r => setTimeout(r, 0));
+    unsubscribe();
+    expect(received).toContain(259);
+  });
+
+  it('onStatus stops firing after unsubscribe', async () => {
+    const bytes = new Uint8Array(32);
+    bytes[10] = 62;
+    bytes[11] = 0x0a;
+    const device = createMockUSBDevice({ productId: 0x209d, statusBytes: bytes });
+    const printer = await fromUSBDevice(device);
+    let count = 0;
+    const unsubscribe = printer.onStatus(() => {
+      count += 1;
+    });
+    device.__pushUnsolicited(bytes);
+    await new Promise<void>(r => setTimeout(r, 0));
+    unsubscribe();
+    device.__pushUnsolicited(bytes);
+    await new Promise<void>(r => setTimeout(r, 0));
+    expect(count).toBe(1);
+  });
+
+  it('getStatus also fires onStatus subscribers (the response flows through the same stream)', async () => {
+    const bytes = new Uint8Array(32);
+    bytes[10] = 62;
+    bytes[11] = 0x0a;
+    const device = createMockUSBDevice({ productId: 0x209d, statusBytes: bytes });
+    const printer = await fromUSBDevice(device);
+    let count = 0;
+    const unsubscribe = printer.onStatus(() => {
+      count += 1;
+    });
+    await printer.getStatus();
+    unsubscribe();
+    expect(count).toBe(1);
+  });
+
   it('throws for unknown USB devices', async () => {
     const device = createMockUSBDevice({ vendorId: 0x1234, productId: 0x5678 });
     await expect(fromUSBDevice(device)).rejects.toThrow('Unsupported USB device');

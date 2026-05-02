@@ -29,7 +29,22 @@ import type {
 import { MediaNotSpecifiedError } from '@thermal-label/contracts';
 import { WebUsbTransport } from '@thermal-label/transport/web';
 
+// Detect transport errors across module boundaries — under pnpm link /
+// multi-version installs `instanceof` checks against the contracts
+// classes can return false even for the right class. The contracts
+// classes pin `this.name`, so name-checking is the portable test.
+function isTransportClosedError(err: unknown): boolean {
+  return err instanceof Error && err.name === 'TransportClosedError';
+}
+
 const STATUS_BYTE_COUNT = 32;
+// Brother QL printers push unsolicited 32-byte status frames on lid
+// open/close, media insert, end of job, errors, etc. We run a
+// persistent read loop that picks up every frame, parses it, and
+// notifies subscribers — instant updates with no polling. `getStatus()`
+// writes ESC iS and awaits the next frame from the same stream.
+const STATUS_RESPONSE_TIMEOUT_MS = 1500;
+const READ_LOOP_BACKOFF_MS = 100;
 
 // Same OUT-pipe chunking as the Node driver — see packages/node/src/printer.ts
 // for the rationale. WebUSB rides the same libusb-style bulk transfer path,
@@ -55,10 +70,14 @@ export class WebBrotherQLPrinter implements PrinterAdapter {
 
   private readonly transport: Transport;
   private lastStatus: BrotherQLStatus | undefined;
+  private readonly statusListeners = new Set<(status: BrotherQLStatus) => void>();
+  private readLoopStarted = false;
+  private readLoopStopped = false;
 
   constructor(device: BrotherQLDevice, transport: Transport) {
     this.device = device;
     this.transport = transport;
+    this.startReadLoop();
   }
 
   get model(): string {
@@ -133,15 +152,96 @@ export class WebBrotherQLPrinter implements PrinterAdapter {
     });
   }
 
+  /**
+   * Send ESC iS and resolve with the next status frame the printer
+   * emits. The read loop is the sole reader of the bulk-IN pipe —
+   * `getStatus()` subscribes transiently, writes the request, and the
+   * subscription receives the response (alongside any spontaneous
+   * frames; see `onStatus()`).
+   */
   async getStatus(): Promise<BrotherQLStatus> {
+    const next = this.nextStatusFrame(STATUS_RESPONSE_TIMEOUT_MS);
     await this.transport.write(STATUS_REQUEST);
-    const bytes = await this.transport.read(STATUS_BYTE_COUNT);
-    const status = parseStatus(bytes, this.device.engines[0]);
-    this.lastStatus = status;
-    return status;
+    return next;
+  }
+
+  /**
+   * Subscribe to push-based status updates. Brother QL printers emit
+   * unsolicited frames on lid open/close, media insert, errors, and
+   * end-of-job — each one fires `cb` synchronously after parsing.
+   * Returns an unsubscribe function.
+   */
+  onStatus(cb: (status: BrotherQLStatus) => void): () => void {
+    this.statusListeners.add(cb);
+    return () => {
+      this.statusListeners.delete(cb);
+    };
+  }
+
+  private nextStatusFrame(timeoutMs: number): Promise<BrotherQLStatus> {
+    return new Promise<BrotherQLStatus>((resolve, reject) => {
+      const timer = setTimeout(() => {
+        this.statusListeners.delete(handler);
+        reject(
+          new Error(`Printer did not respond to status request within ${String(timeoutMs)}ms`),
+        );
+      }, timeoutMs);
+      const handler = (s: BrotherQLStatus): void => {
+        clearTimeout(timer);
+        this.statusListeners.delete(handler);
+        resolve(s);
+      };
+      this.statusListeners.add(handler);
+    });
+  }
+
+  private startReadLoop(): void {
+    if (this.readLoopStarted) return;
+    this.readLoopStarted = true;
+    void this.readLoop();
+  }
+
+  private async readLoop(): Promise<void> {
+    while (!this.readLoopStopped && this.transport.connected) {
+      let bytes: Uint8Array;
+      try {
+        bytes = await this.transport.read(STATUS_BYTE_COUNT);
+      } catch (err) {
+        if (isTransportClosedError(err)) return;
+        // If close() ran while the read was pending, the next iteration's
+        // while-guard exits the loop — no early return needed.
+        // Transient error — back off briefly to avoid hot-spinning.
+        // eslint-disable-next-line no-console -- driver-level diagnostic
+        console.warn('[brother-ql-web] status read error, backing off:', err);
+        await new Promise<void>(r => setTimeout(r, READ_LOOP_BACKOFF_MS));
+        continue;
+      }
+      if (bytes.length < STATUS_BYTE_COUNT) continue;
+      let status: BrotherQLStatus;
+      try {
+        status = parseStatus(bytes, this.device.engines[0]);
+      } catch (err) {
+        // eslint-disable-next-line no-console -- driver-level diagnostic
+        console.warn('[brother-ql-web] failed to parse status frame:', err);
+        continue;
+      }
+      this.lastStatus = status;
+      // Snapshot listeners so unsubscribes during dispatch don't skip siblings.
+      const snapshot = Array.from(this.statusListeners);
+      for (const cb of snapshot) {
+        try {
+          cb(status);
+        } catch (err) {
+          // eslint-disable-next-line no-console -- driver-level diagnostic
+          console.warn('[brother-ql-web] status listener threw:', err);
+        }
+      }
+    }
   }
 
   async close(): Promise<void> {
+    this.readLoopStopped = true;
+    this.statusListeners.clear();
     await this.transport.close();
   }
 }
