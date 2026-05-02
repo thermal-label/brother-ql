@@ -5,6 +5,7 @@ import {
   STATUS_REQUEST,
   createPreviewOffline,
   encodeJob,
+  encodeJobForEngine,
   findDevice,
   flipHorizontal,
   parseStatus,
@@ -83,6 +84,9 @@ export class WebBrotherQLPrinter implements PrinterAdapter {
     // on the right side of the printed face when the leading edge is held
     // up. Mirror the rendered bitmap so the input image's x-axis matches
     // the printed x-axis. Verified on QL-820NWBc + DK-22251.
+    const pageOptions =
+      options?.highRes === true ? { highResolution: true } : undefined;
+
     let page: PageData;
     if (resolvedMedia.palette) {
       const { black, red } = renderMultiPlaneImage(image, {
@@ -93,13 +97,21 @@ export class WebBrotherQLPrinter implements PrinterAdapter {
         bitmap: flipHorizontal(black),
         redBitmap: flipHorizontal(red),
         media: resolvedMedia,
+        ...(pageOptions ? { options: pageOptions } : {}),
       };
     } else {
       const bitmap = flipHorizontal(renderImage(image, { dither: true, rotate }));
-      page = { bitmap, media: resolvedMedia };
+      page = {
+        bitmap,
+        media: resolvedMedia,
+        ...(pageOptions ? { options: pageOptions } : {}),
+      };
     }
 
-    const bytes = encodeJob([page]);
+    const engine = this.device.engines[0];
+    const bytes = engine
+      ? encodeJobForEngine([page], {}, engine, this.device.name)
+      : encodeJob([page]);
     await this.writeChunked(bytes);
   }
 
