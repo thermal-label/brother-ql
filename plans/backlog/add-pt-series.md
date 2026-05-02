@@ -297,8 +297,10 @@ state:
   New addition to the plan. PT-P910BT does **not** support HSe
   heat-shrink tubes — only TZe laminated tape. See §6.1.
 
-For all six models, `bytesPerRow * 8 === headPins` — internal
-consistency check that `devices.test.ts` should enforce.
+For all six models, `engine.headDots` is either 128 or 560 — internal
+consistency check that `devices.test.ts` should enforce against the
+§5 table above. `bytesPerRow` is no longer carried on the registry;
+the encoder derives it.
 
 ### 5.1a Source disagreement on PT-P750W *(foot-gun, keep both PIDs)*
 
@@ -324,14 +326,14 @@ differently depending on whether the unit was last switched out of
 Editor Lite mode. We do not have hardware to adjudicate.
 
 **Resolution:** treat libptouch.c as authoritative for now —
-`pid: 0x2062, massStoragePid: 0x2065` — and let the existing
-`MASS_STORAGE_PIDS` discovery filter handle the dual-PID case (same
-pattern as QL-700 / QL-1100). If a PT-P750W contributor reports that
-`findDevice()` doesn't match their unit, that's the signal to flip
-the assignment.
+`transports.usb.pid: '0x2062'` and `capabilities.massStoragePid: '0x2065'`
+— and let the existing mass-storage PID derivation in `src/devices.ts`
+handle the dual-PID case (same pattern as QL-700 / QL-1100). If a
+PT-P750W contributor reports that `findDevice()` doesn't match their
+unit, that's the signal to flip the assignment.
 
-Cite both sources in `devices.ts` doc-comment for the PT-P750W entry
-so the next maintainer doesn't have to re-derive the disagreement.
+Cite both sources in the entry's `hardwareQuirks` field so the next
+maintainer doesn't have to re-derive the disagreement.
 
 **Most public USB databases (the-sz, linux-usb.org/usb.ids) list
 only `0x2065` under the name "PT-P750W"** — per libptouch.c that's
@@ -350,28 +352,31 @@ historically pairs each printer PID with a mass-storage sibling
 them without `lsusb` from a unit that's been switched into
 Editor-Lite/mass-storage mode.
 
-Treatment: leave `massStoragePid` undefined for those five entries.
-The `MASS_STORAGE_PIDS` discovery filter in `devices.ts` will be
-incomplete for those models — meaning if a user has one of them
-plugged in and stuck in mass-storage mode, the filter won't
-recognise it and they'll see no helpful error. Document this
-limitation in `docs/troubleshooting.md`. Phase 3/4 verification
-step: capture the mass-storage PID of any PT model on hand and
-backfill.
+Treatment: omit `capabilities.massStoragePid` from those five
+entries. The aggregate `MASS_STORAGE_PIDS` set that
+`src/devices.ts` derives from each entry's
+`capabilities.massStoragePid` will be incomplete for those models —
+meaning if a user has one of them plugged in and stuck in
+mass-storage mode, the filter won't recognise it and they'll see no
+helpful error. Document this limitation in
+`docs/troubleshooting.md`. Phase 3/4 verification step: capture the
+mass-storage PID of any PT model on hand and backfill.
 
 ### 5.3 Bluetooth on PT models
 
 The PT-P910BT advertises Bluetooth as its primary transport; the
 PT-P950NW and PT-E550W also list Bluetooth in some marketing
-materials. Per the existing brother-ql convention
-(`packages/core/src/types.ts` doc-comment: classic Bluetooth SPP via
-`'serial'` / `'web-serial'`), treat any PT model with Bluetooth the
-same way: `transports: [..., 'serial', 'web-serial']`, no GATT.
+materials. Treat any PT model with Bluetooth the same way QL-820NWBc
+already does in the contracts shape: declare `bluetooth-spp` in
+`transports` with the appropriate `namePrefix` (e.g.
+`'PT-P910'`). The runtime serial implementation satisfies the
+`bluetooth-spp` transport key by opening the OS-paired RFCOMM
+device path; no separate code path is needed.
 
-PT-P910BT is the highest-priority verification — if it uses BLE GATT
-instead of classic SPP, that's a §11/§12 concern (we'd need
-`web-bluetooth` + the still-missing node BLE class — see the niimbot
-plan).
+PT-P910BT is the highest-priority verification — if it actually
+uses BLE GATT instead of classic SPP, that's a §11/§12 concern
+(we'd need `bluetooth-gatt` declared on the transport plus the
+still-missing node BLE adapter — see the niimbot plan).
 
 ---
 
@@ -548,20 +553,26 @@ in conflict, the registry is a public API surface.
 
 ### 6.5 Lookup, defaults, and tape-system gating
 
-`DEFAULT_MEDIA` selection now needs a `line`/`tapeSystem` argument:
+`DEFAULT_MEDIA` selection now needs a per-engine fallback driven by
+`engine.protocol` (which is the right axis post-contracts-shape):
 
-- `line: 'ql' | 'ql-wide'` → existing DK default unchanged.
-- `line: 'pt-p' | 'pt-e'` → 12 mm TZe (`id: 404`, most common
+- `protocol: 'ql-raster'` → existing DK default unchanged.
+- `protocol: 'pt-raster'` → 12 mm TZe (`id: 404`, most common
   starter tape).
 
-`findMediaByDimensions(widthMm, heightMm, device)` needs the device
-(or at minimum `tapeSystem` + `headPins`) so:
-- QL lookups never return TZe / HSe entries.
-- PT lookups never return DK entries.
-- 36 mm TZe / 31 mm HSe-3:1 don't appear for 128-pin printers.
+`findMediaByDimensions(widthMm, heightMm, engine)` takes the
+`PrintEngine` so the lookup can read `engine.protocol`,
+`engine.headDots`, and `engine.mediaCompatibility` to:
+- restrict to tape systems the engine supports
+  (`engine.mediaCompatibility` carries the list — `['dk']` for QL,
+  `['tze', 'hse-2to1', 'hse-3to1']` for PT);
+- pick the right `narrow`/`wide` geometry on TZe / HSe via
+  `engine.headDots`;
+- skip 36 mm TZe / 31 mm HSe-3:1 for 128-dot heads since their
+  `geometry.narrow` is undefined.
 
 Update callers in `status.ts` (`detectedMedia` resolution) and
-`preview.ts`.
+`preview.ts` to thread the engine instead of just media metadata.
 
 ### 6.6 What about the TZ-legacy and TZeFA series?
 
@@ -708,24 +719,25 @@ and ignores the model byte, so this gap doesn't block any code path.
 
 What **does** change: `findMediaByDimensions` is called inside
 `parseStatus()` to populate `detectedMedia`. It now needs the
-`device` argument from §6.5 so a PT printer reporting "12 mm"
+`engine` argument from §6.5 so a PT printer reporting "12 mm"
 resolves to the TZe entry (with the right `narrow`/`wide` geometry),
-not the DK entry. Thread `device` through to `parseStatus(device, bytes)`
-— already the calling convention in labelwriter, copy that shape.
+not the DK entry. Thread `engine` through to
+`parseStatus(engine, bytes)` — already the calling convention in
+labelmanager, copy that shape.
 
 PT models do **not** have Editor Lite as a printer-side feature
-(unlike PT-P750W's mass-storage *mode*, which is a separate mechanism
-handled via `massStoragePid`). Set `editorLite: false` in all PT
-device entries; `BrotherStatus.editorLiteMode` stays in the shape
-but is always `false` for PT, mirroring how legacy QLs already treat
-it.
+(unlike PT-P750W's mass-storage *mode*, which is a separate
+mechanism handled via the chassis-level `capabilities.massStoragePid`).
+PT entries simply omit `capabilities.editorLite`;
+`BrotherQLStatus.editorLiteMode` stays in the shape but is always
+`false` for PT, mirroring how legacy QLs already treat it.
 
 Per-tape-system gotcha: when a PT-E550W or PT-P750W reports a 12 mm
 TZe tape and the user has opted into high-res mode, `detectedMedia`
 should still resolve to the same registry entry — but the *effective
 print area in dots* is unchanged (high-res only doubles the feed
 axis, not the head axis). No special handling in `parseStatus`; the
-high-res handling lives in §7.5's encoder path.
+high-res handling lives in §7.3's encoder path.
 
 ---
 
@@ -733,50 +745,54 @@ high-res handling lives in §7.5's encoder path.
 
 ### 9.1 Unit
 
-- `devices.test.ts` — every PT entry resolves by `(vid, pid)`; every
-  device's `line`/`bytesPerRow`/`headPins` is internally consistent
-  (`bytesPerRow * 8 === headPins`); every PT entry has a `dpi`
-  matching the §5 table (180 for 128-pin, 360 for 560-pin); every PT
-  entry's `highResDpi` is exactly `2 × dpi` if set; PT-P910BT has
-  `compression: false` matching nbuchwitz's `DEFAULT_USE_COMPRESSION = False`,
-  PT-E550W has `compression: true`.
+- `devices.test.ts` — every PT entry resolves by `(vid, pid)` via
+  the new `getUsbIds` boundary; every PT entry's `engines[0].dpi`
+  matches the §5 table (180 for 128-dot, 360 for 560-dot); every
+  PT entry's `engines[0].capabilities.highResDpi` is exactly
+  `2 × dpi` when set; every PT entry's `engines[0].headDots` is
+  either 128 or 560.
 - `media.test.ts`:
   - TZe / HSe entries don't collide with DK entries on `id`.
-  - `findMediaByDimensions(width, height, qlDevice)` never returns
-    a TZe / HSe entry; vice versa.
-  - 36 mm TZe and 31 mm HSe-3:1 are unreachable from any 128-pin
-    device.
-  - PT-P910BT lookups never return any HSe entry.
-  - Pin-sum invariants per §6.2 (128-pin TZe rows sum to 128;
-    560-pin TZe rows sum to 560).
-- `protocol.test.ts` — golden byte sequences:
-  - "Print one 12 mm TZe on PT-E550W" (128-pin)
-  - "Print one 12 mm TZe on PT-P750W" (128-pin, with cutter)
-  - "Print one 24 mm TZe on PT-P900W" (560-pin)
-  - "Print one 36 mm TZe on PT-P950NW" (560-pin, exclusive width)
+  - `findMediaByDimensions(width, height, qlEngine)` never returns
+    a TZe / HSe entry; vice versa for `ptEngine`.
+  - 36 mm TZe and 31 mm HSe-3:1 are unreachable from any 128-dot
+    engine.
+  - PT-P910BT lookups never return any HSe entry (its engine's
+    `mediaCompatibility` lists only `['tze']`).
+  - Pin-sum invariants per §6.2 (128-dot TZe rows sum to 128;
+    560-dot TZe rows sum to 560).
+- `protocol.test.ts` — golden byte sequences from the
+  `pt-raster.encode()` path:
+  - "Print one 12 mm TZe on PT-E550W" (128-dot)
+  - "Print one 12 mm TZe on PT-P750W" (128-dot, with cutter)
+  - "Print one 24 mm TZe on PT-P900W" (560-dot)
+  - "Print one 36 mm TZe on PT-P950NW" (560-dot, exclusive width)
   - "Print one 11.7 mm HSe 2:1 on PT-P900" (HSe path)
   - "Print one 12 mm TZe on PT-P750W in high-res mode"
-    (verifies §7.5 — duplicated raster lines, `ESC i K` bit 6 set,
+    (verifies §7.3 — duplicated raster lines, `ESC i K` bit 6 set,
     doubled feed margin)
   - Goldens come from running the brother-label Python project
-    against the same input and snapshotting its output. brother-label
-    doesn't model high-res mode natively, so the high-res golden is
-    derived: take the brother-label native-mode bytes, manually
-    duplicate raster lines per §7.5, set bit 6 in the `ESC i K`
-    payload, double the feed-margin field. Document this derivation
-    in the test fixture.
+    against the same input and snapshotting its output.
+    brother-label doesn't model high-res mode natively, so the
+    high-res golden is derived: take the brother-label native-mode
+    bytes, manually duplicate raster lines per §7.3, set bit 6 in
+    the `ESC i K` payload, double the feed-margin field. Document
+    this derivation in the test fixture.
 - `status.test.ts` — synthetic 32-byte responses for each PT model
   resolve `detectedMedia` to the right TZe / HSe entry given the
-  device. PT-P900-series 12 mm reports must resolve to the 560-pin
-  geometry, not 128-pin.
+  engine. PT-P900-series 12 mm reports must resolve to the 560-dot
+  geometry, not 128-dot.
 - `encoder.test.ts`:
-  - Invalidate length matches `device.invalidateBytes`.
-  - `ESC i a` / `ESC i K` are present iff the corresponding flag is
-    set.
-  - `BrotherPrintOptions.highRes: true` on a device without
-    `highResDpi` throws at job-build time.
-  - PT-E550W `autocut: true` with compression disabled throws
-    (per §7.4 / §12.12).
+  - QL invalidate length: 200 bytes for single-colour engines, 400
+    bytes for two-colour (derived from
+    `engine.capabilities.twoColor` inside `ql-raster.encode()`).
+    PT invalidate length: 200 bytes always.
+  - PT-raster feed margin is 14 dots; QL-raster is 35 dots
+    (per-protocol constants in `src/protocols.ts`).
+  - `BrotherQLPrintOptions.highRes: true` on an engine without
+    `engine.capabilities.highResDpi` throws at job-build time.
+  - PT-E550W `autocut: true` with `compress: false` throws
+    (per §7.2 / §12.12).
 
 ### 9.2 Integration
 
@@ -792,46 +808,55 @@ per family during phase 4/5; HSe should be exercised on at least one
 
 ## 10. Documentation
 
-- `README.md` — rename mentions throughout; add a "previously known as
-  brother-ql" paragraph under the install snippet.
+The rename-related doc updates (README "previously known as brother-ql"
+paragraph, package-name sweep) move to `plans/backlog/rename-to-brother.md`.
+This plan owns the PT-series doc additions only.
+
 - `docs/index.md` — expand the supported-devices summary to include
   PT-P / PT-E.
-- `docs/hardware.md` — split the device table by line (QL, QL-wide,
-  PT-P, PT-E). Each section gets the same `🟢/🔲` status column.
-- `docs/core.md` — note that `ESC i a` / `ESC i K` are gated by device
-  flags; document the `invalidateBytes` divergence; note the
-  `feedMarginDots` table; add a high-res-mode subsection covering
-  `BrotherPrintOptions.highRes` and the `device.highResDpi` requirement.
-- `docs/media.md` (new — mirroring the labelwriter `expand-media-registry`
-  plan) — one table per tape system: DK (existing content), TZe,
-  HSe 2:1, HSe 3:1. Generated from `media.ts` by a
-  `scripts/build-media-doc.mjs` so the doc and code can't drift.
-  Per-model support matrix from §6.1 included so users can tell
-  which tapes work with which printer.
+- `docs/hardware.md` — split the device table by `engine.protocol`
+  (`ql-raster` vs `pt-raster`) and by head-dot family (720 / 1296
+  for QL; 128 / 560 for PT). Each section gets the same `🟢/🔲`
+  status column.
+- `docs/core.md` — add a high-res-mode subsection covering
+  `BrotherQLPrintOptions.highRes` and the
+  `engines[].capabilities.highResDpi` requirement. Note that the
+  per-protocol wire-format constants (`pt-raster` feed-margin = 14,
+  `ql-raster` feed-margin = 35; QL invalidate-byte derivation from
+  `twoColor`) live inside `src/protocols.ts` and aren't user-facing.
+- `docs/media.md` (new — mirroring the labelwriter
+  `expand-media-registry` plan) — one table per tape system: DK
+  (existing content), TZe, HSe 2:1, HSe 3:1. Generated from
+  `data/media.json5` by a `scripts/build-media-doc.mjs` so the doc
+  and code can't drift. Per-model support matrix from §6.1 included
+  so users can tell which tapes work with which printer.
 - `docs/troubleshooting.md` — section on the missing
-  `massStoragePid` for most PT models (§5.2); section on PT-E550W
-  cutter requiring compression (§7.4 / §12.12).
-- `docs/verification-checklist.md` — add a per-line section: PT
+  `capabilities.massStoragePid` for most PT models (§5.2); section
+  on PT-E550W cutter requiring compression (§7.2 / §12.12).
+- `docs/verification-checklist.md` — add a per-engine section: PT
   models need explicit tape-width capture in the report (registry
   built from nbuchwitz/ptouch's transcription of Brother's spec
-  PDFs, with two known "shifted N pins" corrections from
-  testing — see §12.10), and high-res mode should be exercised
-  on at least one model per family.
+  PDFs, with two known "shifted N pins" corrections from testing —
+  see §12.10), and high-res mode should be exercised on at least
+  one model per head-dot family.
 - `HARDWARE.md` — top-level table updated; PT-P and PT-E sections
   underneath the QL ones; one-paragraph "unsupported models"
   section calling out the handheld P-touch line (§12.7).
 - `DECISIONS.md` — new entries:
   - `D9 — Combined Brother driver` (record the QL-vs-PT decision and
     the labelmanager-analogy rebuttal here so it can't be re-asked).
-  - `D10 — Package rename brother-ql → brother`.
-  - `D11 — TZe/HSe id ranges 400–499; lookup gated by `tapeSystem` and `device.headPins`.`
+  - ~~`D10 — Package rename brother-ql → brother`~~ — moved to
+    `rename-to-brother.md`'s decision record.
+  - `D11 — TZe/HSe id ranges 400–499; lookup gated by `tapeSystem`
+    and `engine.headDots` via the `resolveTapeGeometry` helper.`
   - `D12 — nbuchwitz/ptouch is the source-of-truth for PT PIDs and
     pin configs; libptouch.c kept as secondary source; brother-label
     Python kept only as a golden-byte-stream generator.`
-  - `D13 — PT-P750W stores both `pid: 0x2062` (libptouch.c, primary)
-    and `massStoragePid: 0x2065` (corroborated by both libptouch.c
-    and nbuchwitz, but the two disagree on which mode it is); flip
-    if a contributor reports otherwise.`
+  - `D13 — PT-P750W stores both `transports.usb.pid: '0x2062'`
+    (libptouch.c, primary) and `capabilities.massStoragePid: '0x2065'`
+    (corroborated by both libptouch.c and nbuchwitz, but the two
+    disagree on which mode it is); flip if a contributor reports
+    otherwise.`
   - `D14 — HSe heat-shrink tubes ship in 0.4.x rather than deferred,
     since the catalogue work is the same and HSe is the differentiator
     for the P900-series buyer.`
@@ -841,6 +866,11 @@ per family during phase 4/5; HSe should be exercised on at least one
     The misnamed `QL_820NWB` entry was dropped — PID `0x20a7` is
     actually QL-1100; the 820-series is covered by `QL_820NWBc` at
     `0x209d` since the two marketing names share that PID.`
+  - `D16 — Per-protocol wire-format details (feed-margin,
+    invalidate-byte count, PT-E550W cutter quirk) live inside
+    `src/protocols.ts`, not as registry capabilities. A registry
+    capability is justified iff ≥2 active drivers implement it
+    AND a registry consumer branches on it.`
 
 ---
 
@@ -880,32 +910,37 @@ per family during phase 4/5; HSe should be exercised on at least one
    contracts-shape release) — without the rename, no major bump
    is forced.
 
-2. **TZe catalogue + HSe catalogue** (1-2 days). Port the
-   nbuchwitz/ptouch tape configs into `media.ts` with id ranges
-   400–407 (TZe), 421–425 (HSe 2:1), 441–445 (HSe 3:1). Both
-   `narrow` and `wide` geometries per row where the tape is
+2. **TZe catalogue + HSe catalogue + `pt-raster` protocol** (2-3 days).
+   Port the nbuchwitz/ptouch tape configs into `data/media.json5`
+   with id ranges 400–407 (TZe), 421–425 (HSe 2:1), 441–445 (HSe 3:1).
+   Both `narrow` and `wide` geometries per row where the tape is
    supported; `undefined` where not (e.g. 36 mm TZe has no `narrow`
-   entry). Tests for: non-collision with DK, `(width, device)`
-   lookup correctness, and "36 mm TZe is unreachable from a 128-pin
-   device" / "31 mm HSe-3:1 is unreachable from a 128-pin device" /
-   "PT-P910BT lookups never return HSe."
+   entry). Land the `pt-raster` protocol module in
+   `src/protocols.ts` with the three constants from §7.1; it has no
+   consumers yet (no PT device entries shipped) but the unit tests
+   from §9 can run against it. Tests for: non-collision with DK on
+   `id`, `findMediaByDimensions(width, height, engine)` lookup
+   correctness, and "36 mm TZe is unreachable from a 128-dot
+   engine" / "31 mm HSe-3:1 is unreachable from a 128-dot engine" /
+   "PT-P910BT engine lookups never return HSe."
 
-3. **All six PT device entries land** (1 day). Add PT-E550W,
-   PT-P750W, PT-P900, PT-P900W, PT-P950NW, PT-P910BT to
-   `devices.ts` with HIGH-confidence PIDs from §5.1. Per-device
-   doc-comments cite nbuchwitz/ptouch source paths and the Brother
-   spec PDFs. Golden-byte tests for each model using
-   brother-label Python output as the reference. All entries marked
-   `🔲 Expected` in `docs/hardware.md` — none `🟢 Verified` yet.
-   Ship as `0.4.1`.
+3. **All six PT device entries land** (1 day). Add `PT_E550W`,
+   `PT_P750W`, `PT_P900`, `PT_P900W`, `PT_P950NW`, `PT_P910BT` as
+   `data/devices/<KEY>.json5` files with HIGH-confidence PIDs from
+   §5.1, each `engines[0].protocol: 'pt-raster'`. Per-entry
+   `hardwareQuirks` cites nbuchwitz/ptouch source paths and the
+   Brother spec PDFs. Golden-byte tests for each model using
+   brother-label Python output as the reference. All entries ship
+   with `support: { status: 'untested' }`. Ship as `0.4.1`.
 
 4. **First hardware verification** (2-3 days, gated on hardware
    availability). Pick the smallest available PT (likely PT-P750W
    or PT-E550W). Run the integration test, validate the encoder
-   gates work, capture mass-storage PID if reachable, verify the
-   `feedMarginDots` value against actual print output. Verify
-   PT-E550W's "compression-required-for-cutter" gotcha if E550W is
-   the test unit. Promote that one model to `🟢 Verified`.
+   path, capture mass-storage PID if reachable, verify the
+   `pt-raster` feed-margin constant against actual print output.
+   Verify PT-E550W's "compression-required-for-cutter" gotcha if
+   E550W is the test unit. Promote that one model's `support.status`
+   to `'verified'` in its JSON5 entry.
 
 5. **High-res mode** (1 day). Land §7.3 encoder support and
    `BrotherQLPrintOptions.highRes`. Tests: golden bytes show
@@ -915,22 +950,22 @@ per family during phase 4/5; HSe should be exercised on at least one
 
 6. **Remaining PT models** (rolling, contributor-driven). Each
    addition is just an integration-test pass that promotes one
-   `🔲 Expected` row to `🟢 Verified` plus a fixture in
-   `docs/verification-checklist.md`. PT-P910BT verification
-   includes the §5.3 Bluetooth-transport check (classic SPP vs BLE
-   GATT).
+   entry's `support.status` from `'untested'` to `'verified'` plus
+   a `support.reports[]` entry transcribed from the GitHub issue
+   that filed the verification. PT-P910BT verification includes the
+   §5.3 Bluetooth-transport check (classic SPP vs BLE GATT).
 
 7. **Docs + media.md generation** (1 day, can run parallel to phases
    3-5). New page, sidebar entry, verification-checklist updates,
-   `DECISIONS.md` entries D9–D11.
+   `DECISIONS.md` entries D9, D11–D16 (D10 went to the rename plan).
 
 Total: ~1 week of plan-driven work (phases 1–3, 5, 7) ships the
-schema + catalogue + all six device entries + high-res encoder.
-Hardware verification (phases 4, 6) runs on its own clock as units
-become available. Schema/catalogue/device-entry work in phases 1–3
-ships independently of any hardware access — meaningful difference
-from the prior plan revision, which had phases 3-4 fully blocked on
-unknown PIDs.
+schema + catalogue + `pt-raster` protocol + all six device entries +
+high-res encoder. Hardware verification (phases 4, 6) runs on its
+own clock as units become available. Schema/catalogue/device-entry
+work in phases 1–3 ships independently of any hardware access —
+meaningful difference from the prior plan revision, which had
+phases 3-4 fully blocked on unknown PIDs.
 
 ---
 
@@ -1023,32 +1058,24 @@ range) but **no USB PID** — useless for PID lookup, by design.
 A future maintainer should not waste a research pass re-checking
 this — go to nbuchwitz/ptouch instead.
 
-### 12.4 Migration noise for existing brother-ql users
+### 12.4 Migration noise for existing brother-ql users *(moved)*
 
-This is real but small. We're at 0.x; the user base is the maintainer
-+ a handful of early adopters. The deprecation path:
+The package-rename migration noise (npm deprecate, README pointer)
+is now scoped to `plans/backlog/rename-to-brother.md` along with the
+rest of the rename. PT-series support lands without a rename, so
+this plan's release doesn't itself disrupt existing brother-ql
+installs.
 
-```
-npm deprecate @thermal-label/brother-ql-core "Renamed to @thermal-label/brother-core"
-npm deprecate @thermal-label/brother-ql-node "Renamed to @thermal-label/brother-node"
-npm deprecate @thermal-label/brother-ql-web  "Renamed to @thermal-label/brother-web"
-```
+### 12.5 Coordination with the cross-driver MediaDescriptor refactor *(resolved)*
 
-…plus one paragraph at the top of each old-package README. Anyone
-following npm deprecation prompts will land on the right place. Do
-**not** ship a transitional dual-publish — that doubles the release
-maintenance burden and splits issue triage.
-
-### 12.5 Coordination with the cross-driver MediaDescriptor refactor
-
-`plans/implemented/media-descriptor-refactor.md` already changed the
-shape of `MediaDescriptor` across drivers in `contracts@0.2.0`. This
-plan slots cleanly onto that — the new `tapeSystem` field is a
-driver-specific extension, not a contracts change. Verify by reading
-the refactor plan's "non-goals" section; if it claims to forbid
-driver-side `MediaDescriptor` extensions, this plan needs a different
-approach (likely: encode tapeSystem in the id range alone, using
-400–499 ⇒ TZe by convention with no explicit field).
+`plans/implemented/media-descriptor-refactor.md` (and subsequently
+`migrate-to-contracts-shape.md`) settled the shape question:
+contracts 0.3.0 ships `MediaDescriptor` with the open extension
+pattern this plan needs. `BrotherQLMedia` already extends it with
+driver-specific fields (`printAreaDots`, `leftMarginPins`,
+`rightMarginPins`, `dieCutMaskedAreaDots`); adding `tapeSystem` and
+`geometry` is a continuation of that pattern, not a contracts
+change.
 
 ### 12.6 Coordination with labelwriter `expand-media-registry`
 
@@ -1075,9 +1102,9 @@ answered before the issue gets filed.
 The Python project marks no PT model as two-colour, and Brother's
 manuals don't list any two-colour PT-P / PT-E. But if a PT model is
 ever released with red+black, the existing two-colour code path
-should Just Work — the encoder already gates on `device.twoColor`
-and the multi-plane render path is already in place. Leave as-is;
-flag if discovered.
+should Just Work — the encoder gates on
+`engine.capabilities.twoColor` and the multi-plane render path is
+already in place. Leave as-is; flag if discovered.
 
 ### 12.9 `feedMarginDots` is unverified for PT
 
@@ -1143,15 +1170,16 @@ without re-litigating these values.
 
 ### 12.12 PT-E550W cutter requires compression *(model-specific gotcha)*
 
-Per §7.4 / `nbuchwitz/ptouch:PTE550W`: the PT-E550W will not cut if
+Per §7.2 / `nbuchwitz/ptouch:PTE550W`: the PT-E550W will not cut if
 compression is disabled. This is undocumented in Brother's manual
-and was discovered through testing. Mitigation: model-specific
-validation in `buildJob()` that throws when `autocut: true && compression: false`
-on PT-E550W. Verify on hardware in phase 4 if E550W is the test unit.
+and was discovered through testing. Mitigation: per-name guard
+inside `pt-raster.encode()` that throws (or coerces to compress) when
+`autocut: true && options.compress === false` on PT-E550W. Verify
+on hardware in phase 4 if E550W is the test unit.
 
 If we discover other model-specific gotchas during hardware
-verification, the same per-model validation pattern scales — better
-than a generic feature flag for one model.
+verification, the same per-name pattern scales — better than a
+generic engine-capability flag for one model.
 
 ### 12.13 HSe heat-shrink tubes — scope decision
 
@@ -1175,26 +1203,28 @@ the catalogue.
 
 ### 12.14 High-res mode opt-in surface
 
-§7.5 adds a `highRes?: boolean` to `BrotherPrintOptions`. Two
+§7.3 adds a `highRes?: boolean` to `BrotherQLPrintOptions`. Two
 considerations for the API surface:
 
 - **Discoverability:** users won't know high-res exists unless docs
   surface it. `docs/printing.md` should have a "high-resolution mode"
   subsection per device line, with the dpi-doubling clearly stated.
-- **Failure mode:** opting in on a device without `highResDpi` set
-  (any QL) should throw at job-build time with a clear message,
-  not silently fall back to native dpi. Test for this in
-  `encoder.test.ts`.
+- **Failure mode:** opting in on an engine without
+  `capabilities.highResDpi` set (any QL) should throw at job-build
+  time with a clear message, not silently fall back to native dpi.
+  Test for this in `encoder.test.ts`.
 
 ---
 
 ## 13. Open questions
 
-- **Should `BrotherLine` also include `'pt-handheld'` as a
-  reserved-but-unused value, to make the future driver split more
-  graceful?** Argued no — adding a value the encoder rejects on every
-  branch is dead code. If the handheld driver ever ships, it'll be a
-  separate package and a separate `family` value entirely.
+- **Should the registry reserve a `'pt-handheld'` engine protocol
+  for the consumer P-touch line?** Argued no — adding a tag the
+  encoder rejects on every branch is dead code. If the handheld
+  driver ever ships, it'll be a separate package and a separate
+  `family` value entirely. (The prior revision asked the same
+  question against the now-removed `BrotherLine` discriminator;
+  same answer applies to `engine.protocol`.)
 - **Do PT-P models support TCP printing on port 9100 like QL?**
   PT-P900W and PT-P950NW advertise wired/Wi-Fi network printing on
   spec sheets; PT-P900 is USB-only; PT-P910BT is Bluetooth-only;
@@ -1203,22 +1233,23 @@ considerations for the API surface:
   per-model from spec sheets in phase 3, refine in phase 4 hardware
   verification. Mark unverified entries in `docs/hardware.md`.
 - **Does PT-P910BT use classic Bluetooth SPP or BLE GATT?** Plan
-  defaults to classic SPP (`'serial'` / `'web-serial'`) per §5.3.
-  If GATT, that's a major scope expansion blocked on the niimbot
-  plan's BLE work.
+  defaults to classic SPP (declared as the `bluetooth-spp` transport
+  per §5.3, the same key QL-820NWBc already uses). If GATT, that's a
+  major scope expansion blocked on the niimbot plan's BLE work and
+  the device should drop from the initial scope.
 - **Can the `lsusb` output for the missing mass-storage PIDs be
   sourced from a community member without a hardware purchase?**
   Worth asking on the issue tracker — every hour of contributor
   PID-capture is one fewer device on the maintainer's desk. Phase 6
   is the natural collection point.
-- **Should `BrotherMedia.geometry` use `'narrow' | 'wide'` keys or
-  numeric `headPins` keys?** §6.2's helper uses `'narrow' | 'wide'`
+- **Should `BrotherQLMedia.geometry` use `'narrow' | 'wide'` keys
+  or numeric `headDots` keys?** §6.2's helper uses `'narrow' | 'wide'`
   for readability and to leave room for a future `'extra-wide'` if
-  Brother ships a >560-pin PT model. Numeric keys would be more
-  type-safe (the union of literal `HeadPins` values). Decide during
+  Brother ships a >560-dot PT model. Numeric keys (`128` / `560`)
+  would be more type-safe but less self-documenting. Decide during
   phase 1; the choice is reversible and trivial.
 - **High-res mode default?** Currently `highRes` is opt-in via
-  `BrotherPrintOptions`. Alternative: per-device default
+  `BrotherQLPrintOptions`. Alternative: per-engine default
   (e.g. PT-P900 defaults to high-res because that's what Brother's
   own software does). Probably keep opt-in for predictability and
   let docs surface the option clearly. Revisit if hardware testing
