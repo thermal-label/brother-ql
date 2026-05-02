@@ -31,6 +31,25 @@ Baud rate override; defaults to 9600.
 
 ***
 
+### deviceKey?
+
+> `optional` **deviceKey?**: `string`
+
+Registry key of the device descriptor to use. Required by drivers
+when the transport carries no model signal (serial / RFCOMM); ignored
+when the transport enumerates (USB / TCP / mDNS).
+
+Each driver matches the key against its own registry — pass
+`'LW_330'` to the labelwriter driver, `'QL_820NWB'` to the Brother
+driver, etc. Unknown keys behave like any other "no match" —
+`openPrinter` throws.
+
+#### Inherited from
+
+`OpenOptions.deviceKey`
+
+***
+
 ### host?
 
 > `optional` **host?**: `string`

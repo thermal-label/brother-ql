@@ -6,17 +6,16 @@
 
 # Type Alias: TransportType
 
-> **TransportType** = `"usb"` \| `"tcp"` \| `"serial"` \| `"webusb"` \| `"web-serial"` \| `"web-bluetooth"`
+> **TransportType** = `"usb"` \| `"tcp"` \| `"serial"` \| `"bluetooth-spp"` \| `"bluetooth-gatt"`
 
-Supported transport types a driver can use to talk to a printer.
+Wire-protocol-only transport types.
 
-- `usb`: raw USB via a platform USB API (e.g. `node-usb`).
-- `tcp`: network printer on port 9100 (JetDirect) or a driver-specific port.
-- `serial`: Node.js serial port — physical UART, USB-serial adapter, or
-  Bluetooth SPP bound to `/dev/rfcomm0` / `COM3`.
-- `webusb`: WebUSB in the browser.
-- `web-serial`: Web Serial API in the browser — covers USB-serial adapters
-  and OS-paired Bluetooth SPP devices.
-- `web-bluetooth`: Web Bluetooth GATT in the browser. Classic Bluetooth
-  SPP printers (e.g. Brother QL-820NWB) do NOT use this — they use
-  `serial` / `web-serial` instead.
+Distinct runtime APIs (node-usb vs WebUSB, node serialport vs Web
+Serial, classic Bluetooth SPP vs BLE GATT) are *implementations* of
+these transport keys, not separate keys. Per-platform packages
+declare which transport types their implementations satisfy; the
+registry stays wire-protocol-honest.
+
+The two Bluetooth keys stay split — BR/EDR vs BLE radios, SDP vs
+advertisement discovery, classic vs BLE pairing flows, and Web
+Bluetooth being GATT-only by spec all force the separation.

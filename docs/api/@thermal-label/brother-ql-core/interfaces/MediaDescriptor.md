@@ -69,6 +69,15 @@ const m: MediaDescriptor = {
 
 ## Properties
 
+### category?
+
+> `optional` **category?**: `"continuous"` \| `"die-cut"` \| `"address"` \| `"shipping"` \| `"file-folder"` \| `"multi-purpose"` \| `"name-badge"` \| `"barcode"` \| `"price-tag"` \| `"cartridge"` \| `"tape"`
+
+Coarse category for grouping in docs and UI. Driver-extensible;
+common values listed for cross-driver consistency.
+
+***
+
 ### cornerRadiusMm?
 
 > `optional` **cornerRadiusMm?**: `number`
@@ -172,6 +181,29 @@ safe to design within.
 #### topMm
 
 > `readonly` **topMm**: `number`
+
+***
+
+### skus?
+
+> `optional` **skus?**: readonly `string`[]
+
+Vendor SKUs for this media — e.g. Dymo `'30321'` / `'S0722400'`,
+Brother `'DK-22251'`. Mixed formats allowed; the registry does no
+validation. Used by docs (per-device "supported media" table) and
+by UI consumers that let users search by SKU.
+
+***
+
+### targetModels?
+
+> `optional` **targetModels?**: readonly `string`[]
+
+Devices this media is compatible with. Driver-defined string set;
+matched against `PrintEngine.mediaCompatibility`. Examples:
+`['standard']` (paper roll fits 672-dot heads),
+`['4xl', '5xl']` (wide-head only), `['duo']` (D1 cartridges).
+Omit = fits every device in the family.
 
 ***
 

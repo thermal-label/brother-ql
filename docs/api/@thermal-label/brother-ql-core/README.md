@@ -21,7 +21,7 @@ Protocol encoding, device registry, and media registry for Brother QL label prin
 
 ## Requirements
 
-- Node.js `>=24.0.0`
+- Node.js `>=20.9.0` (Node 24 LTS recommended)
 - Runs in browser and Node.js — no Node.js built-ins used
 
 ## License
@@ -35,11 +35,13 @@ MIT © Mannes Brak
 
 ## Interfaces
 
-- [BrotherQLDevice](interfaces/BrotherQLDevice.md)
+- [BrotherEngineCapabilities](interfaces/BrotherEngineCapabilities.md)
 - [BrotherQLMedia](interfaces/BrotherQLMedia.md)
 - [BrotherQLPrintOptions](interfaces/BrotherQLPrintOptions.md)
 - [BrotherQLStatus](interfaces/BrotherQLStatus.md)
-- [DeviceDescriptor](interfaces/DeviceDescriptor.md)
+- [DeviceEntry](interfaces/DeviceEntry.md)
+- [DeviceRegistry](interfaces/DeviceRegistry.md)
+- [DeviceTransports](interfaces/DeviceTransports.md)
 - [JobOptions](interfaces/JobOptions.md)
 - [LabelBitmap](interfaces/LabelBitmap.md)
 - [MediaDescriptor](interfaces/MediaDescriptor.md)
@@ -49,43 +51,58 @@ MIT © Mannes Brak
 - [PreviewOptions](interfaces/PreviewOptions.md)
 - [PreviewPlane](interfaces/PreviewPlane.md)
 - [PreviewResult](interfaces/PreviewResult.md)
+- [PrintEngine](interfaces/PrintEngine.md)
+- [PrintEngineCapabilities](interfaces/PrintEngineCapabilities.md)
 - [PrinterAdapter](interfaces/PrinterAdapter.md)
 - [PrinterError](interfaces/PrinterError.md)
 - [PrinterStatus](interfaces/PrinterStatus.md)
 - [PrintOptions](interfaces/PrintOptions.md)
+- [RasterProtocolConfig](interfaces/RasterProtocolConfig.md)
 - [RawImageData](interfaces/RawImageData.md)
+- [TapeGeometry](interfaces/TapeGeometry.md)
 - [Transport](interfaces/Transport.md)
+- [UsbTransport](interfaces/UsbTransport.md)
 
 ## Type Aliases
 
+- [BrotherQLDevice](type-aliases/BrotherQLDevice.md)
 - [ColorMode](type-aliases/ColorMode.md)
+- [EncoderEngine](type-aliases/EncoderEngine.md)
 - [HeadWidth](type-aliases/HeadWidth.md)
 - [MediaType](type-aliases/MediaType.md)
-- [NetworkSupport](type-aliases/NetworkSupport.md)
 - [RotateDirection](type-aliases/RotateDirection.md)
+- [TapeSystem](type-aliases/TapeSystem.md)
 - [TransportType](type-aliases/TransportType.md)
 
 ## Variables
 
 - [DEFAULT\_MEDIA](variables/DEFAULT_MEDIA.md)
+- [DEFAULT\_PT\_MEDIA](variables/DEFAULT_PT_MEDIA.md)
+- [DEVICE\_REGISTRY](variables/DEVICE_REGISTRY.md)
 - [DEVICES](variables/DEVICES.md)
 - [MEDIA](variables/MEDIA.md)
+- [PT\_PROTOCOL\_CONFIG](variables/PT_PROTOCOL_CONFIG.md)
+- [QL\_PROTOCOL\_CONFIG](variables/QL_PROTOCOL_CONFIG.md)
 - [ROTATE\_DIRECTION](variables/ROTATE_DIRECTION.md)
 - [STATUS\_REQUEST](variables/STATUS_REQUEST.md)
 
 ## Functions
 
 - [createPreviewOffline](functions/createPreviewOffline.md)
+- [defaultMediaForEngine](functions/defaultMediaForEngine.md)
 - [encodeJob](functions/encodeJob.md)
+- [encodeJobForEngine](functions/encodeJobForEngine.md)
 - [findDevice](functions/findDevice.md)
 - [findMedia](functions/findMedia.md)
 - [findMediaByDimensions](functions/findMediaByDimensions.md)
 - [findMediaByWidth](functions/findMediaByWidth.md)
 - [flipHorizontal](functions/flipHorizontal.md)
+- [getUsbIds](functions/getUsbIds.md)
 - [isMassStorageMode](functions/isMassStorageMode.md)
 - [parseStatus](functions/parseStatus.md)
 - [pickRotation](functions/pickRotation.md)
 - [renderImage](functions/renderImage.md)
 - [renderMultiPlaneImage](functions/renderMultiPlaneImage.md)
 - [renderText](functions/renderText.md)
+- [resolveTapeGeometry](functions/resolveTapeGeometry.md)
 - [rotateBitmap](functions/rotateBitmap.md)

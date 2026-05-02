@@ -25,9 +25,9 @@ Whether the printer is currently connected.
 
 ### device?
 
-> `readonly` `optional` **device?**: [`DeviceDescriptor`](DeviceDescriptor.md)
+> `readonly` `optional` **device?**: [`DeviceEntry`](DeviceEntry.md)
 
-The device descriptor for the connected printer.
+The device entry for the connected printer.
 
 Useful for logging, diagnostics, and displaying VID/PID. Undefined
 if the connection was established without device matching (e.g. a

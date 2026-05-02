@@ -6,7 +6,7 @@
 
 # Function: parseStatus()
 
-> **parseStatus**(`bytes`): [`BrotherQLStatus`](../interfaces/BrotherQLStatus.md)
+> **parseStatus**(`bytes`, `engine?`): [`BrotherQLStatus`](../interfaces/BrotherQLStatus.md)
 
 Parse a Brother QL 32-byte status response.
 
@@ -17,6 +17,8 @@ Fields:
   byte 11 — media type (0x0A continuous, 0x0B die-cut)
   byte 17 — media length (mm), 0 for continuous
   byte 18 — status type (0x02 = error response)
+  byte 25 — bit 7 set when the loaded roll is two-color (DK-22251);
+            clear on single-color rolls. See scripts/STATUS-CAPTURE.md.
 
 `detectedMedia` is resolved against the media registry via
 `findMediaByDimensions`. `editorLiteMode` is a driver-specific
@@ -30,6 +32,10 @@ discovery) without changing the return type.
 ### bytes
 
 `Uint8Array`
+
+### engine?
+
+`Pick`\<[`PrintEngine`](../interfaces/PrintEngine.md), `"headDots"` \| `"mediaCompatibility"`\>
 
 ## Returns
 

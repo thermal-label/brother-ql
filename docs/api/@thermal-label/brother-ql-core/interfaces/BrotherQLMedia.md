@@ -18,6 +18,19 @@ multi-plane mode — only DK-22251 declares one in the registry.
 
 ## Properties
 
+### category?
+
+> `optional` **category?**: `"continuous"` \| `"die-cut"` \| `"address"` \| `"shipping"` \| `"file-folder"` \| `"multi-purpose"` \| `"name-badge"` \| `"barcode"` \| `"price-tag"` \| `"cartridge"` \| `"tape"`
+
+Coarse category for grouping in docs and UI. Driver-extensible;
+common values listed for cross-driver consistency.
+
+#### Inherited from
+
+[`MediaDescriptor`](MediaDescriptor.md).[`category`](MediaDescriptor.md#category)
+
+***
+
 ### cornerRadiusMm?
 
 > `optional` **cornerRadiusMm?**: `number`
@@ -64,6 +77,28 @@ Die-cut masked area in dots (registration windows).
 
 ***
 
+### geometry?
+
+> `optional` **geometry?**: `object`
+
+Per-head-family geometry. `narrow` = 128-pin head (PT-E550W,
+PT-P750W); `wide` = 560-pin head (PT-P900 family). DK entries
+leave both unset and use the flat fields below; TZe / HSe entries
+leave the flat fields undefined and populate `narrow` and/or
+`wide` per the *Raster Command Reference* PDFs. `undefined` on a
+head family means "this tape doesn't fit this head" (e.g. 36 mm
+TZe and 31 mm HSe-3:1 have no `narrow` entry).
+
+#### narrow?
+
+> `optional` **narrow?**: [`TapeGeometry`](TapeGeometry.md)
+
+#### wide?
+
+> `optional` **wide?**: [`TapeGeometry`](TapeGeometry.md)
+
+***
+
 ### heightMm?
 
 > `optional` **heightMm?**: `number`
@@ -91,9 +126,9 @@ Unique identifier within the driver family.
 
 ***
 
-### leftMarginPins
+### leftMarginPins?
 
-> **leftMarginPins**: `number`
+> `optional` **leftMarginPins?**: `number`
 
 ***
 
@@ -129,9 +164,11 @@ For DK-22251 (the only multi-ink media we ship today):
 
 ***
 
-### printAreaDots
+### printAreaDots?
 
-> **printAreaDots**: `number`
+> `optional` **printAreaDots?**: `number`
+
+DK-only flat geometry. PT-* entries populate `geometry` instead.
 
 ***
 
@@ -172,9 +209,50 @@ safe to design within.
 
 ***
 
-### rightMarginPins
+### rightMarginPins?
 
-> **rightMarginPins**: `number`
+> `optional` **rightMarginPins?**: `number`
+
+***
+
+### skus?
+
+> `optional` **skus?**: readonly `string`[]
+
+Vendor SKUs for this media — e.g. Dymo `'30321'` / `'S0722400'`,
+Brother `'DK-22251'`. Mixed formats allowed; the registry does no
+validation. Used by docs (per-device "supported media" table) and
+by UI consumers that let users search by SKU.
+
+#### Inherited from
+
+[`MediaDescriptor`](MediaDescriptor.md).[`skus`](MediaDescriptor.md#skus)
+
+***
+
+### tapeSystem
+
+> **tapeSystem**: [`TapeSystem`](../type-aliases/TapeSystem.md)
+
+Tape system this entry belongs to. Drives lookup gating in
+`findMediaByDimensions(width, height, engine)` so QL engines never
+resolve TZe / HSe entries and vice versa.
+
+***
+
+### targetModels?
+
+> `optional` **targetModels?**: readonly `string`[]
+
+Devices this media is compatible with. Driver-defined string set;
+matched against `PrintEngine.mediaCompatibility`. Examples:
+`['standard']` (paper roll fits 672-dot heads),
+`['4xl', '5xl']` (wide-head only), `['duo']` (D1 cartridges).
+Omit = fits every device in the family.
+
+#### Inherited from
+
+[`MediaDescriptor`](MediaDescriptor.md).[`targetModels`](MediaDescriptor.md#targetmodels)
 
 ***
 

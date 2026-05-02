@@ -6,7 +6,7 @@
 
 # Function: findDevice()
 
-> **findDevice**(`vid`, `pid`): [`BrotherQLDevice`](../interfaces/BrotherQLDevice.md) \| `undefined`
+> **findDevice**(`vid`, `pid`): [`DeviceEntry`](../interfaces/DeviceEntry.md) \| `undefined`
 
 ## Parameters
 
@@ -20,4 +20,4 @@
 
 ## Returns
 
-[`BrotherQLDevice`](../interfaces/BrotherQLDevice.md) \| `undefined`
+[`DeviceEntry`](../interfaces/DeviceEntry.md) \| `undefined`

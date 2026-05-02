@@ -34,7 +34,7 @@ them out of Editor Lite manually). Network printers open via
 
 > `readonly` **family**: `"brother-ql"` = `'brother-ql'`
 
-Driver family identifier — matches `DeviceDescriptor.family`.
+Driver family identifier — matches `DeviceEntry.family`.
 
 #### Implementation of
 

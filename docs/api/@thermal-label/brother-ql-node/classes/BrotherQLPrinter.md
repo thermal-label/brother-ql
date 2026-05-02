@@ -36,7 +36,7 @@ with `options.rotate`.
 
 ##### device
 
-[`BrotherQLDevice`](../../brother-ql-core/interfaces/BrotherQLDevice.md)
+[`DeviceEntry`](../../brother-ql-core/interfaces/DeviceEntry.md)
 
 ##### transport
 
@@ -54,9 +54,9 @@ with `options.rotate`.
 
 ### device
 
-> `readonly` **device**: [`BrotherQLDevice`](../../brother-ql-core/interfaces/BrotherQLDevice.md)
+> `readonly` **device**: [`DeviceEntry`](../../brother-ql-core/interfaces/DeviceEntry.md)
 
-The device descriptor for the connected printer.
+The device entry for the connected printer.
 
 Useful for logging, diagnostics, and displaying VID/PID. Undefined
 if the connection was established without device matching (e.g. a
