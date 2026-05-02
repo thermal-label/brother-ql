@@ -1,0 +1,33 @@
+// PT-E550W — 128-pin Wi-Fi handheld labeller (TZe + HSe).
+// PID 0x2060 from nbuchwitz/ptouch:PTE550W (cites Brother spec
+// cv_pte550wp750wp710bt_eng_raster_102.pdf, page 20 §2.3 for pin
+// configurations). Mass-storage PID unknown; capture during phase 4
+// hardware verification and backfill.
+{
+  key: 'PT_E550W',
+  name: 'PT-E550W',
+  family: 'brother-ql',
+  transports: {
+    usb: { vid: '0x04f9', pid: '0x2060' },
+    // TCP advertised by Brother spec sheet (Wi-Fi); port and mDNS
+    // service type unverified — phase 4 to confirm before promoting
+    // support.transports.tcp from 'untested'.
+    tcp: { port: 9100 },
+  },
+  engines: [
+    {
+      role: 'primary',
+      protocol: 'pt-raster',
+      dpi: 180,
+      headDots: 128,
+      mediaCompatibility: ['tze', 'hse-2to1', 'hse-3to1'],
+      capabilities: {
+        autocut: true,
+        mediaDetection: true,
+        highResDpi: 360,
+      },
+    },
+  ],
+  hardwareQuirks: 'Cutter requires compression to be enabled — encoder enforces this when (autocut: true && compress: false). Source: nbuchwitz/ptouch:PTE550W ("E550W requires compression ON for cutting to work"). Pin configurations from Brother spec cv_pte550wp750wp710bt_eng_raster_102.pdf p.20 §2.3, transcribed into media.json5 via nbuchwitz/ptouch.',
+  support: { status: 'untested' },
+}

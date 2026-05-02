@@ -1,0 +1,27 @@
+// PT-P950NW — 560-pin Wi-Fi + Ethernet P-touch. PID 0x2086 from
+// nbuchwitz/ptouch:PTP950NW (sequential to PT-P900W as predicted).
+{
+  key: 'PT_P950NW',
+  name: 'PT-P950NW',
+  family: 'brother-ql',
+  transports: {
+    usb: { vid: '0x04f9', pid: '0x2086' },
+    tcp: { port: 9100 },
+  },
+  engines: [
+    {
+      role: 'primary',
+      protocol: 'pt-raster',
+      dpi: 360,
+      headDots: 560,
+      mediaCompatibility: ['tze', 'hse-2to1', 'hse-3to1'],
+      capabilities: {
+        autocut: true,
+        mediaDetection: true,
+        highResDpi: 720,
+      },
+    },
+  ],
+  hardwareQuirks: 'PID 0x2086 sourced from nbuchwitz/ptouch:PTP950NW. Pin configurations from Brother spec cv_ptp900_eng_raster_102.pdf via nbuchwitz/ptouch.',
+  support: { status: 'untested' },
+}

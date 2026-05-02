@@ -1,0 +1,28 @@
+// PT-P900W — 560-pin Wi-Fi P-touch. PID 0x2085 from
+// nbuchwitz/ptouch:PTP900W (active driver source corroboration —
+// stronger evidence than absence-from-public-USB-databases).
+{
+  key: 'PT_P900W',
+  name: 'PT-P900W',
+  family: 'brother-ql',
+  transports: {
+    usb: { vid: '0x04f9', pid: '0x2085' },
+    tcp: { port: 9100 },
+  },
+  engines: [
+    {
+      role: 'primary',
+      protocol: 'pt-raster',
+      dpi: 360,
+      headDots: 560,
+      mediaCompatibility: ['tze', 'hse-2to1', 'hse-3to1'],
+      capabilities: {
+        autocut: true,
+        mediaDetection: true,
+        highResDpi: 720,
+      },
+    },
+  ],
+  hardwareQuirks: 'PID 0x2085 sourced from nbuchwitz/ptouch:PTP900W; not in most public USB-ID databases — phase 4 hardware verification should confirm.',
+  support: { status: 'untested' },
+}

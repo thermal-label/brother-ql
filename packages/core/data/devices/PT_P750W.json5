@@ -1,0 +1,42 @@
+// PT-P750W — 128-pin Wi-Fi P-touch (TZe + HSe).
+// Two driver projects disagree on which PID is the printer-class
+// endpoint:
+//   - hannesweisbach/ptouch-print/src/libptouch.c: 0x2062 = printer,
+//     0x2065 = PLite mass-storage.
+//   - nbuchwitz/ptouch/src/ptouch/printers.py:PTP750W: 0x2065 = printer.
+// We treat libptouch.c as authoritative (`transports.usb.pid: '0x2062'`,
+// `capabilities.massStoragePid: '0x2065'`) so the existing
+// MASS_STORAGE_PIDS discovery filter handles the dual-PID case via the
+// QL-700 / QL-1100 pattern. Most public USB-ID databases (the-sz,
+// linux-usb.org/usb.ids) list ONLY 0x2065 under the name "PT-P750W" —
+// per libptouch.c that's the PLite mode the unit ships in by default,
+// not the printer mode. If a contributor's findDevice() lookup fails
+// on real hardware, flip the assignment.
+{
+  key: 'PT_P750W',
+  name: 'PT-P750W',
+  family: 'brother-ql',
+  transports: {
+    usb: { vid: '0x04f9', pid: '0x2062' },
+    tcp: { port: 9100 },
+  },
+  engines: [
+    {
+      role: 'primary',
+      protocol: 'pt-raster',
+      dpi: 180,
+      headDots: 128,
+      mediaCompatibility: ['tze', 'hse-2to1', 'hse-3to1'],
+      capabilities: {
+        autocut: true,
+        mediaDetection: true,
+        highResDpi: 360,
+      },
+    },
+  ],
+  capabilities: {
+    massStoragePid: '0x2065',
+  },
+  hardwareQuirks: 'PID disagreement between driver projects on which mode 0x2062 vs 0x2065 represents: libptouch.c says 0x2062 is the printer PID and 0x2065 is PLite mass-storage; nbuchwitz/ptouch says 0x2065 is the printer PID. We treat libptouch.c as authoritative; flip via a contributor report if discovery fails on real hardware. Pin configurations from Brother spec cv_pte550wp750wp710bt_eng_raster_102.pdf p.20 §2.3.',
+  support: { status: 'untested' },
+}

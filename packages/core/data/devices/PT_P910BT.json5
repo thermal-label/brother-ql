@@ -1,0 +1,36 @@
+// PT-P910BT — 560-pin Bluetooth P-touch. PID 0x20C7 from
+// nbuchwitz/ptouch:PTP910BT. TZe-only — does NOT support HSe per
+// nbuchwitz/ptouch (PIN_CONFIGS contains only the 7 TZe widths);
+// engine.mediaCompatibility reflects this so HSe lookups are filtered
+// out in findMediaByDimensions.
+//
+// Bluetooth assumed to be classic SPP, matching how QL-820NWBc is
+// declared. If hardware verification finds the unit speaks BLE GATT
+// instead, the entry needs `bluetooth-gatt` declared instead — that's
+// blocked on the niimbot plan's BLE adapter and the device should
+// drop from the supported list until then.
+{
+  key: 'PT_P910BT',
+  name: 'PT-P910BT',
+  family: 'brother-ql',
+  transports: {
+    usb: { vid: '0x04f9', pid: '0x20c7' },
+    'bluetooth-spp': { namePrefix: 'PT-P910' },
+  },
+  engines: [
+    {
+      role: 'primary',
+      protocol: 'pt-raster',
+      dpi: 360,
+      headDots: 560,
+      mediaCompatibility: ['tze'],
+      capabilities: {
+        autocut: true,
+        mediaDetection: true,
+        highResDpi: 720,
+      },
+    },
+  ],
+  hardwareQuirks: 'Bluetooth assumed classic SPP per nbuchwitz/ptouch — phase 4 hardware verification should confirm classic vs BLE GATT before users rely on it. HSe heat-shrink unsupported (TZe-only); engine.mediaCompatibility excludes hse-2to1 and hse-3to1 so the lookup never returns those entries.',
+  support: { status: 'untested' },
+}

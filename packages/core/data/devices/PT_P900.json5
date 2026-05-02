@@ -1,0 +1,28 @@
+// PT-P900 — 560-pin USB-only P-touch (TZe + HSe, including 36 mm /
+// 31 mm exclusives). PID 0x2083 from nbuchwitz/ptouch:PTP900 (cites
+// Brother spec cv_ptp900_eng_raster_102.pdf, pp.23-24 §2.3.5 for pin
+// configurations). Mass-storage PID unknown; capture during phase 4.
+{
+  key: 'PT_P900',
+  name: 'PT-P900',
+  family: 'brother-ql',
+  transports: {
+    usb: { vid: '0x04f9', pid: '0x2083' },
+  },
+  engines: [
+    {
+      role: 'primary',
+      protocol: 'pt-raster',
+      dpi: 360,
+      headDots: 560,
+      mediaCompatibility: ['tze', 'hse-2to1', 'hse-3to1'],
+      capabilities: {
+        autocut: true,
+        mediaDetection: true,
+        highResDpi: 720,
+      },
+    },
+  ],
+  hardwareQuirks: 'Pin configurations from Brother spec cv_ptp900_eng_raster_102.pdf pp.23-24 §2.3.5, transcribed into media.json5 via nbuchwitz/ptouch:PTP900Series. Note nbuchwitz/ptouch:PTP900Series.DEFAULT_USE_COMPRESSION = False — unlike PT-E550W, P900 does NOT require compression for the cutter.',
+  support: { status: 'untested' },
+}

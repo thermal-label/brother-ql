@@ -85,3 +85,99 @@ describe('Device registry invariants', () => {
     }
   });
 });
+
+describe('PT-* device entries', () => {
+  const PT_KEYS = ['PT_E550W', 'PT_P750W', 'PT_P900', 'PT_P900W', 'PT_P950NW', 'PT_P910BT'];
+
+  it('every PT entry resolves by (vid, pid)', () => {
+    const expected: Record<string, number> = {
+      PT_E550W: 0x2060,
+      PT_P750W: 0x2062,
+      PT_P900: 0x2083,
+      PT_P900W: 0x2085,
+      PT_P950NW: 0x2086,
+      PT_P910BT: 0x20c7,
+    };
+    for (const key of PT_KEYS) {
+      const pid = expected[key]!;
+      const dev = findDevice(0x04f9, pid);
+      expect(dev, key).toBeDefined();
+      expect(dev!.key).toBe(key);
+    }
+  });
+
+  it('every PT engine uses the pt-raster protocol', () => {
+    for (const key of PT_KEYS) {
+      const dev = DEVICES[key as keyof typeof DEVICES]!;
+      expect(dev.engines[0]?.protocol, key).toBe('pt-raster');
+    }
+  });
+
+  it('every PT engine has headDots in {128, 560}', () => {
+    for (const key of PT_KEYS) {
+      const dev = DEVICES[key as keyof typeof DEVICES]!;
+      expect([128, 560]).toContain(dev.engines[0]?.headDots);
+    }
+  });
+
+  it('PT high-res dpi is exactly 2× the native dpi', () => {
+    for (const key of PT_KEYS) {
+      const dev = DEVICES[key as keyof typeof DEVICES]!;
+      const engine = dev.engines[0]!;
+      const dpi = engine.dpi as number;
+      const highResDpi = engine.capabilities?.highResDpi as number | undefined;
+      expect(highResDpi, `${key} highResDpi`).toBeDefined();
+      expect(highResDpi).toBe(dpi * 2);
+    }
+  });
+
+  it('128-dot family is 180 dpi, 560-dot family is 360 dpi', () => {
+    for (const key of PT_KEYS) {
+      const dev = DEVICES[key as keyof typeof DEVICES]!;
+      const engine = dev.engines[0]!;
+      if (engine.headDots === 128) expect(engine.dpi).toBe(180);
+      else if (engine.headDots === 560) expect(engine.dpi).toBe(360);
+    }
+  });
+
+  it('every PT entry ships untested', () => {
+    for (const key of PT_KEYS) {
+      const dev = DEVICES[key as keyof typeof DEVICES]!;
+      expect(dev.support?.status).toBe('untested');
+    }
+  });
+
+  it('PT-P910BT is TZe-only (no HSe in mediaCompatibility)', () => {
+    const dev = DEVICES.PT_P910BT!;
+    expect(dev.engines[0]?.mediaCompatibility).toEqual(['tze']);
+  });
+
+  it('all other PT models declare TZe + HSe 2:1 + HSe 3:1', () => {
+    for (const key of ['PT_E550W', 'PT_P750W', 'PT_P900', 'PT_P900W', 'PT_P950NW']) {
+      const dev = DEVICES[key as keyof typeof DEVICES]!;
+      expect(dev.engines[0]?.mediaCompatibility, key).toEqual([
+        'tze',
+        'hse-2to1',
+        'hse-3to1',
+      ]);
+    }
+  });
+
+  it('PT-P750W carries both printer PID 0x2062 and mass-storage PID 0x2065', () => {
+    const dev = DEVICES.PT_P750W!;
+    expect(dev.transports.usb?.pid).toBe('0x2062');
+    expect(dev.capabilities?.massStoragePid).toBe('0x2065');
+    expect(isMassStorageMode(0x2065)).toBe(true);
+  });
+
+  it('PT-P910BT declares bluetooth-spp transport', () => {
+    const dev = DEVICES.PT_P910BT!;
+    expect(dev.transports['bluetooth-spp']).toBeDefined();
+    expect(dev.transports['bluetooth-spp']?.namePrefix).toBe('PT-P910');
+  });
+
+  it('PT-P900 is USB-only (no tcp / bluetooth)', () => {
+    const dev = DEVICES.PT_P900!;
+    expect(Object.keys(dev.transports).sort()).toEqual(['usb']);
+  });
+});
