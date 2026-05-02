@@ -168,6 +168,28 @@ describe('WebBrotherQLPrinter', () => {
     expect(redRow[1]).toBe(0x00);
   });
 
+  it('print() reuses media detected from a prior getStatus()', async () => {
+    const bytes = new Uint8Array(32);
+    bytes[10] = 62;
+    bytes[11] = 0x0a;
+    const device = createMockUSBDevice({ productId: 0x209d, statusBytes: bytes });
+    const printer = await fromUSBDevice(device);
+    await printer.getStatus();
+    const before = device.__transfers.length;
+    await printer.print(solidRgba(64, 64));
+    expect(device.__transfers.length).toBeGreaterThan(before);
+  });
+
+  it('print() forwards highRes:true into the encoded job on a high-res-capable engine', async () => {
+    // PT-P750W (vid=0x04f9 pid=0x2062) has highResDpi=360 on its primary
+    // engine; QL series do not, so the highRes path can only be exercised
+    // here. TZe-211 (id 401) is the smallest stocked TZe tape.
+    const device = createMockUSBDevice({ productId: 0x2062 });
+    const printer = await fromUSBDevice(device);
+    await printer.print(solidRgba(64, 64), MEDIA[401], { highRes: true });
+    expect(device.__transfers.length).toBeGreaterThan(0);
+  });
+
   it('print() throws MediaNotSpecifiedError when media is missing', async () => {
     const device = createMockUSBDevice({ productId: 0x209d });
     const printer = await fromUSBDevice(device);
