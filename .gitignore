@@ -12,3 +12,7 @@ docs/.vitepress/cache/
 packages/*/src/*.generated.ts
 packages/*/data/devices.json
 packages/*/data/media.json
+
+# Reference PNGs emitted at repo root by scripts/print-*.mjs
+# (orientation-test*.png, color-label.png, big-label.png, …).
+/*.png
