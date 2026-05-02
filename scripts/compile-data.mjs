@@ -34,6 +34,11 @@ const DRIVER = 'brother-ql';
 const SCHEMA_VERSION = 1;
 const KNOWN_PROTOCOLS = new Set(['ql-raster', 'pt-raster']);
 const KNOWN_TAPE_SYSTEMS = new Set(['dk', 'tze', 'hse-2to1', 'hse-3to1']);
+// Substrate tags engines may declare in `mediaCompatibility` and media
+// in `targetModels`. Wide-tier QL chassis (1296-dot) accept both 'dk'
+// and 'dk-wide'; narrow-tier QL chassis accept only 'dk'. PT engines
+// list one or more of the tape-system tags directly.
+const KNOWN_SUBSTRATE_TAGS = new Set(['dk', 'dk-wide', 'tze', 'hse-2to1', 'hse-3to1']);
 const STATUS_VALUES = new Set(['verified', 'partial', 'broken', 'untested']);
 const TRANSPORT_KEYS = new Set(['usb', 'tcp', 'serial', 'bluetooth-spp', 'bluetooth-gatt']);
 
@@ -80,7 +85,9 @@ function loadDevices() {
     } else {
       for (const k of Object.keys(transports)) {
         if (!TRANSPORT_KEYS.has(k)) {
-          fail(`${filename}: unknown transport key "${k}" (allowed: ${[...TRANSPORT_KEYS].join('|')})`);
+          fail(
+            `${filename}: unknown transport key "${k}" (allowed: ${[...TRANSPORT_KEYS].join('|')})`,
+          );
         }
       }
       if (transports.usb) {
@@ -117,6 +124,27 @@ function loadDevices() {
         }
         if (typeof eng?.role !== 'string') {
           fail(`${filename}: engines[${i}].role must be a string`);
+        }
+        if (Array.isArray(eng?.mediaCompatibility)) {
+          for (const tag of eng.mediaCompatibility) {
+            if (!KNOWN_SUBSTRATE_TAGS.has(tag)) {
+              fail(
+                `${filename}: engines[${i}].mediaCompatibility has unknown tag "${tag}" (allowed: ${[...KNOWN_SUBSTRATE_TAGS].join('|')})`,
+              );
+            }
+          }
+          // Wide tier implies base: a chassis that takes 102 mm DK
+          // rolls also takes everything narrower. Catches a typo that
+          // declares only `['dk-wide']` and would silently reject
+          // every standard DK roll the QL-1xxx ships with.
+          if (
+            eng.mediaCompatibility.includes('dk-wide') &&
+            !eng.mediaCompatibility.includes('dk')
+          ) {
+            fail(
+              `${filename}: engines[${i}].mediaCompatibility includes 'dk-wide' but not 'dk' (wide tier must also accept narrow DK)`,
+            );
+          }
         }
       }
     }
@@ -162,6 +190,38 @@ function loadMedia() {
       if (!narrow && !wide) {
         fail(
           `media[${i}] (id ${m?.id}): tape-system "${m.tapeSystem}" requires \`geometry.narrow\` or \`geometry.wide\``,
+        );
+      }
+    }
+
+    // Substrate gate (consumed by `mediaCompatibleWith()` from
+    // `@thermal-label/contracts`). Without `targetModels`, the helper
+    // falls to its "either side omits → unrestricted" rule and the
+    // entry would silently match every engine, defeating the gate.
+    if (!Array.isArray(m?.targetModels) || m.targetModels.length === 0) {
+      fail(`media[${i}] (id ${m?.id}): \`targetModels\` must be a non-empty array`);
+    } else {
+      for (const tag of m.targetModels) {
+        if (!KNOWN_SUBSTRATE_TAGS.has(tag)) {
+          fail(
+            `media[${i}] (id ${m?.id}): unknown targetModels tag "${tag}" (allowed: ${[...KNOWN_SUBSTRATE_TAGS].join('|')})`,
+          );
+        }
+      }
+      // Belt-and-suspenders: targetModels must include the tapeSystem
+      // value (or, for DK, the wider 'dk-wide' substrate sibling). Two
+      // fields encoding the same substrate; this catches drift if
+      // someone updates one without the other.
+      if (m.tapeSystem === 'dk') {
+        const ok = m.targetModels.includes('dk') || m.targetModels.includes('dk-wide');
+        if (!ok) {
+          fail(
+            `media[${i}] (id ${m?.id}): DK entry must include 'dk' or 'dk-wide' in targetModels (got ${JSON.stringify(m.targetModels)})`,
+          );
+        }
+      } else if (m?.tapeSystem && !m.targetModels.includes(m.tapeSystem)) {
+        fail(
+          `media[${i}] (id ${m?.id}): targetModels must include tapeSystem "${m.tapeSystem}" (got ${JSON.stringify(m.targetModels)})`,
         );
       }
     }

@@ -11,7 +11,7 @@
       protocol: 'ql-raster',
       dpi: 300,
       headDots: 1296,
-      mediaCompatibility: ['dk'],
+      mediaCompatibility: ['dk', 'dk-wide'],
       capabilities: {
         autocut: true,
         mediaDetection: true,

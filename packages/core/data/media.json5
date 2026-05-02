@@ -12,6 +12,12 @@
 // `renderMultiPlaneImage`. Rectangular die-cut entries set
 // `defaultOrientation: 'horizontal'` so landscape input auto-rotates
 // to read along tape feed direction.
+//
+// `targetModels` is the substrate gate consumed by the contracts
+// helper `mediaCompatibleWith()`. The three 102 mm DK rows declare
+// `'dk-wide'` so they only resolve on QL-1xxx engines (which list
+// both `'dk'` and `'dk-wide'`); narrow-chassis QL engines list only
+// `'dk'` and reject them by set-intersection.
 
 [
   // Continuous length tape
@@ -21,6 +27,9 @@
     name: '12mm continuous (DK-22214)',
     type: 'continuous',
     widthMm: 12,
+    targetModels: ['dk'],
+    skus: ['DK-22214'],
+    category: 'continuous',
     printAreaDots: 106,
     leftMarginPins: 585,
     rightMarginPins: 29,
@@ -31,6 +40,9 @@
     name: '29mm continuous (DK-22210)',
     type: 'continuous',
     widthMm: 29,
+    targetModels: ['dk'],
+    skus: ['DK-22210'],
+    category: 'continuous',
     printAreaDots: 306,
     leftMarginPins: 408,
     rightMarginPins: 6,
@@ -41,6 +53,9 @@
     name: '38mm continuous (DK-22225)',
     type: 'continuous',
     widthMm: 38,
+    targetModels: ['dk'],
+    skus: ['DK-22225'],
+    category: 'continuous',
     printAreaDots: 413,
     leftMarginPins: 295,
     rightMarginPins: 12,
@@ -51,6 +66,9 @@
     name: '50mm continuous (DK-22246)',
     type: 'continuous',
     widthMm: 50,
+    targetModels: ['dk'],
+    skus: ['DK-22246'],
+    category: 'continuous',
     printAreaDots: 554,
     leftMarginPins: 154,
     rightMarginPins: 12,
@@ -61,6 +79,9 @@
     name: '54mm continuous (DK-N55224)',
     type: 'continuous',
     widthMm: 54,
+    targetModels: ['dk'],
+    skus: ['DK-N55224'],
+    category: 'continuous',
     printAreaDots: 590,
     leftMarginPins: 130,
     rightMarginPins: 0,
@@ -71,6 +92,9 @@
     name: '62mm continuous (DK-22205)',
     type: 'continuous',
     widthMm: 62,
+    targetModels: ['dk'],
+    skus: ['DK-22205'],
+    category: 'continuous',
     printAreaDots: 696,
     leftMarginPins: 12,
     rightMarginPins: 12,
@@ -81,6 +105,9 @@
     name: '62mm continuous two-color (DK-22251)',
     type: 'continuous',
     widthMm: 62,
+    targetModels: ['dk'],
+    skus: ['DK-22251'],
+    category: 'continuous',
     palette: [
       { name: 'black', rgb: [0, 0, 0] },
       { name: 'red', rgb: [255, 0, 0] },
@@ -95,6 +122,9 @@
     name: '102mm continuous (DK-22243)',
     type: 'continuous',
     widthMm: 102,
+    targetModels: ['dk-wide'],
+    skus: ['DK-22243'],
+    category: 'continuous',
     printAreaDots: 1164,
     leftMarginPins: 76,
     rightMarginPins: 56,
@@ -110,6 +140,9 @@
     heightMm: 54,
     defaultOrientation: 'horizontal',
     cornerRadiusMm: 3,
+    targetModels: ['dk'],
+    skus: ['DK-11204'],
+    category: 'die-cut',
     printAreaDots: 165,
     leftMarginPins: 0,
     rightMarginPins: 0,
@@ -124,6 +157,9 @@
     heightMm: 87,
     defaultOrientation: 'horizontal',
     cornerRadiusMm: 3,
+    targetModels: ['dk'],
+    skus: ['DK-11203'],
+    category: 'die-cut',
     printAreaDots: 165,
     leftMarginPins: 0,
     rightMarginPins: 0,
@@ -138,6 +174,8 @@
     heightMm: 23,
     defaultOrientation: 'horizontal',
     cornerRadiusMm: 3,
+    targetModels: ['dk'],
+    category: 'die-cut',
     printAreaDots: 236,
     leftMarginPins: 0,
     rightMarginPins: 0,
@@ -152,6 +190,9 @@
     heightMm: 90,
     defaultOrientation: 'horizontal',
     cornerRadiusMm: 3,
+    targetModels: ['dk'],
+    skus: ['DK-11201'],
+    category: 'die-cut',
     printAreaDots: 306,
     leftMarginPins: 0,
     rightMarginPins: 0,
@@ -166,6 +207,9 @@
     heightMm: 90,
     defaultOrientation: 'horizontal',
     cornerRadiusMm: 3,
+    targetModels: ['dk'],
+    skus: ['DK-11218'],
+    category: 'die-cut',
     printAreaDots: 413,
     leftMarginPins: 0,
     rightMarginPins: 0,
@@ -180,6 +224,9 @@
     heightMm: 48,
     defaultOrientation: 'horizontal',
     cornerRadiusMm: 3,
+    targetModels: ['dk'],
+    skus: ['DK-11219'],
+    category: 'die-cut',
     printAreaDots: 425,
     leftMarginPins: 0,
     rightMarginPins: 0,
@@ -194,6 +241,8 @@
     heightMm: 29,
     defaultOrientation: 'horizontal',
     cornerRadiusMm: 3,
+    targetModels: ['dk'],
+    category: 'die-cut',
     printAreaDots: 578,
     leftMarginPins: 0,
     rightMarginPins: 0,
@@ -208,6 +257,9 @@
     heightMm: 29,
     defaultOrientation: 'horizontal',
     cornerRadiusMm: 3,
+    targetModels: ['dk'],
+    skus: ['DK-11209'],
+    category: 'die-cut',
     printAreaDots: 696,
     leftMarginPins: 0,
     rightMarginPins: 0,
@@ -222,6 +274,9 @@
     heightMm: 100,
     defaultOrientation: 'horizontal',
     cornerRadiusMm: 3,
+    targetModels: ['dk'],
+    skus: ['DK-11202'],
+    category: 'die-cut',
     printAreaDots: 696,
     leftMarginPins: 0,
     rightMarginPins: 0,
@@ -236,6 +291,9 @@
     heightMm: 51,
     defaultOrientation: 'horizontal',
     cornerRadiusMm: 3,
+    targetModels: ['dk-wide'],
+    skus: ['DK-11240'],
+    category: 'die-cut',
     printAreaDots: 1164,
     leftMarginPins: 0,
     rightMarginPins: 0,
@@ -250,6 +308,9 @@
     heightMm: 152,
     defaultOrientation: 'horizontal',
     cornerRadiusMm: 3,
+    targetModels: ['dk-wide'],
+    skus: ['DK-11241'],
+    category: 'die-cut',
     printAreaDots: 1164,
     leftMarginPins: 0,
     rightMarginPins: 0,
@@ -263,6 +324,8 @@
     widthMm: 12,
     heightMm: 12,
     cornerRadiusMm: 6,
+    targetModels: ['dk'],
+    category: 'die-cut',
     printAreaDots: 94,
     leftMarginPins: 0,
     rightMarginPins: 0,
@@ -276,6 +339,9 @@
     widthMm: 24,
     heightMm: 24,
     cornerRadiusMm: 12,
+    targetModels: ['dk'],
+    skus: ['DK-11221'],
+    category: 'die-cut',
     printAreaDots: 236,
     leftMarginPins: 0,
     rightMarginPins: 0,
@@ -289,6 +355,9 @@
     widthMm: 58,
     heightMm: 58,
     cornerRadiusMm: 29,
+    targetModels: ['dk'],
+    skus: ['DK-11207'],
+    category: 'die-cut',
     printAreaDots: 618,
     leftMarginPins: 0,
     rightMarginPins: 0,
@@ -313,6 +382,11 @@
   //
   // TZ-legacy and TZeFA share TZe geometry per width; the name field
   // includes "TZe / TZ" so search hits work for either term.
+  //
+  // `skus` deliberately omitted: Brother sells dozens of TZe-XXX
+  // variants per width (TZe-231, TZe-FX231, TZe-S231, …). A single
+  // SKU per width would be misleading; an exhaustive list belongs in
+  // a separate catalogue, not the geometry registry.
   // ---------------------------------------------------------------
   {
     id: 401,
@@ -320,6 +394,8 @@
     name: '3.5mm TZe / TZ laminated tape',
     type: 'continuous',
     widthMm: 3.5,
+    targetModels: ['tze'],
+    category: 'tape',
     geometry: {
       narrow: { printAreaDots: 24, leftMarginPins: 52, rightMarginPins: 52 },
       wide: { printAreaDots: 48, leftMarginPins: 248, rightMarginPins: 264 },
@@ -331,6 +407,8 @@
     name: '6mm TZe / TZ laminated tape',
     type: 'continuous',
     widthMm: 6,
+    targetModels: ['tze'],
+    category: 'tape',
     geometry: {
       narrow: { printAreaDots: 32, leftMarginPins: 48, rightMarginPins: 48 },
       wide: { printAreaDots: 64, leftMarginPins: 240, rightMarginPins: 256 },
@@ -342,6 +420,8 @@
     name: '9mm TZe / TZ laminated tape',
     type: 'continuous',
     widthMm: 9,
+    targetModels: ['tze'],
+    category: 'tape',
     geometry: {
       narrow: { printAreaDots: 50, leftMarginPins: 39, rightMarginPins: 39 },
       wide: { printAreaDots: 106, leftMarginPins: 219, rightMarginPins: 235 },
@@ -353,6 +433,8 @@
     name: '12mm TZe / TZ laminated tape',
     type: 'continuous',
     widthMm: 12,
+    targetModels: ['tze'],
+    category: 'tape',
     geometry: {
       narrow: { printAreaDots: 70, leftMarginPins: 29, rightMarginPins: 29 },
       wide: { printAreaDots: 150, leftMarginPins: 197, rightMarginPins: 213 },
@@ -364,6 +446,8 @@
     name: '18mm TZe / TZ laminated tape',
     type: 'continuous',
     widthMm: 18,
+    targetModels: ['tze'],
+    category: 'tape',
     geometry: {
       narrow: { printAreaDots: 112, leftMarginPins: 8, rightMarginPins: 8 },
       wide: { printAreaDots: 234, leftMarginPins: 155, rightMarginPins: 171 },
@@ -375,6 +459,8 @@
     name: '24mm TZe / TZ laminated tape',
     type: 'continuous',
     widthMm: 24,
+    targetModels: ['tze'],
+    category: 'tape',
     geometry: {
       narrow: { printAreaDots: 128, leftMarginPins: 0, rightMarginPins: 0 },
       wide: { printAreaDots: 320, leftMarginPins: 112, rightMarginPins: 128 },
@@ -389,6 +475,8 @@
     name: '36mm TZe / TZ laminated tape',
     type: 'continuous',
     widthMm: 36,
+    targetModels: ['tze'],
+    category: 'tape',
     geometry: {
       wide: { printAreaDots: 454, leftMarginPins: 45, rightMarginPins: 61 },
     },
@@ -415,6 +503,8 @@
     name: '5.8mm HSe heat-shrink tube (2:1)',
     type: 'continuous',
     widthMm: 5.8,
+    targetModels: ['hse-2to1'],
+    category: 'tape',
     geometry: {
       narrow: { printAreaDots: 28, leftMarginPins: 52, rightMarginPins: 48 },
       wide: { printAreaDots: 56, leftMarginPins: 261, rightMarginPins: 243 },
@@ -426,6 +516,8 @@
     name: '8.8mm HSe heat-shrink tube (2:1)',
     type: 'continuous',
     widthMm: 8.8,
+    targetModels: ['hse-2to1'],
+    category: 'tape',
     geometry: {
       narrow: { printAreaDots: 48, leftMarginPins: 42, rightMarginPins: 38 },
       wide: { printAreaDots: 96, leftMarginPins: 241, rightMarginPins: 223 },
@@ -437,6 +529,8 @@
     name: '11.7mm HSe heat-shrink tube (2:1)',
     type: 'continuous',
     widthMm: 11.7,
+    targetModels: ['hse-2to1'],
+    category: 'tape',
     geometry: {
       narrow: { printAreaDots: 66, leftMarginPins: 33, rightMarginPins: 29 },
       wide: { printAreaDots: 132, leftMarginPins: 223, rightMarginPins: 205 },
@@ -448,6 +542,8 @@
     name: '17.7mm HSe heat-shrink tube (2:1)',
     type: 'continuous',
     widthMm: 17.7,
+    targetModels: ['hse-2to1'],
+    category: 'tape',
     geometry: {
       narrow: { printAreaDots: 106, leftMarginPins: 13, rightMarginPins: 9 },
       wide: { printAreaDots: 212, leftMarginPins: 183, rightMarginPins: 165 },
@@ -459,6 +555,8 @@
     name: '23.6mm HSe heat-shrink tube (2:1)',
     type: 'continuous',
     widthMm: 23.6,
+    targetModels: ['hse-2to1'],
+    category: 'tape',
     geometry: {
       narrow: { printAreaDots: 128, leftMarginPins: 0, rightMarginPins: 0 },
       wide: { printAreaDots: 256, leftMarginPins: 161, rightMarginPins: 143 },
@@ -478,6 +576,8 @@
     name: '5.2mm HSe heat-shrink tube (3:1)',
     type: 'continuous',
     widthMm: 5.2,
+    targetModels: ['hse-3to1'],
+    category: 'tape',
     geometry: {
       narrow: { printAreaDots: 20, leftMarginPins: 56, rightMarginPins: 52 },
       wide: { printAreaDots: 40, leftMarginPins: 269, rightMarginPins: 251 },
@@ -489,6 +589,8 @@
     name: '9.0mm HSe heat-shrink tube (3:1)',
     type: 'continuous',
     widthMm: 9,
+    targetModels: ['hse-3to1'],
+    category: 'tape',
     geometry: {
       narrow: { printAreaDots: 44, leftMarginPins: 44, rightMarginPins: 40 },
       wide: { printAreaDots: 88, leftMarginPins: 245, rightMarginPins: 227 },
@@ -500,6 +602,8 @@
     name: '11.2mm HSe heat-shrink tube (3:1)',
     type: 'continuous',
     widthMm: 11.2,
+    targetModels: ['hse-3to1'],
+    category: 'tape',
     geometry: {
       narrow: { printAreaDots: 50, leftMarginPins: 41, rightMarginPins: 37 },
       wide: { printAreaDots: 100, leftMarginPins: 239, rightMarginPins: 221 },
@@ -511,6 +615,8 @@
     name: '21.0mm HSe heat-shrink tube (3:1)',
     type: 'continuous',
     widthMm: 21,
+    targetModels: ['hse-3to1'],
+    category: 'tape',
     geometry: {
       narrow: { printAreaDots: 120, leftMarginPins: 6, rightMarginPins: 2 },
       wide: { printAreaDots: 240, leftMarginPins: 169, rightMarginPins: 151 },
@@ -523,6 +629,8 @@
     name: '31.0mm HSe heat-shrink tube (3:1)',
     type: 'continuous',
     widthMm: 31,
+    targetModels: ['hse-3to1'],
+    category: 'tape',
     geometry: {
       wide: { printAreaDots: 360, leftMarginPins: 109, rightMarginPins: 91 },
     },

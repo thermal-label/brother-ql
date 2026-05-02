@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { mediaCompatibleWith, type PrintEngine } from '@thermal-label/contracts';
 import {
   MEDIA,
   defaultMediaForEngine,
@@ -7,6 +8,7 @@ import {
   findMediaByWidth,
   resolveTapeGeometry,
 } from '../media.js';
+import { DEVICES } from '../devices.js';
 
 const NARROW_PT_ENGINE = {
   protocol: 'pt-raster' as const,
@@ -157,17 +159,15 @@ describe('Media registry invariants', () => {
       if (m.tapeSystem === 'dk') continue;
       if (m.geometry?.narrow) {
         const { leftMarginPins, printAreaDots, rightMarginPins } = m.geometry.narrow;
-        expect(
-          leftMarginPins + printAreaDots + rightMarginPins,
-          `${m.name} narrow head sum`,
-        ).toBe(128);
+        expect(leftMarginPins + printAreaDots + rightMarginPins, `${m.name} narrow head sum`).toBe(
+          128,
+        );
       }
       if (m.geometry?.wide) {
         const { leftMarginPins, printAreaDots, rightMarginPins } = m.geometry.wide;
-        expect(
-          leftMarginPins + printAreaDots + rightMarginPins,
-          `${m.name} wide head sum`,
-        ).toBe(560);
+        expect(leftMarginPins + printAreaDots + rightMarginPins, `${m.name} wide head sum`).toBe(
+          560,
+        );
       }
     }
   });
@@ -268,5 +268,122 @@ describe('defaultMediaForEngine', () => {
 
   it('returns 12 mm TZe for PT engines', () => {
     expect(defaultMediaForEngine({ protocol: 'pt-raster' }).id).toBe(404);
+  });
+});
+
+describe('Substrate-gate field-shape invariants', () => {
+  it('every entry declares a non-empty targetModels', () => {
+    for (const m of Object.values(MEDIA)) {
+      expect(m.targetModels, m.name).toBeDefined();
+      expect(m.targetModels!.length, m.name).toBeGreaterThan(0);
+    }
+  });
+
+  it('every entry declares a category', () => {
+    for (const m of Object.values(MEDIA)) {
+      expect(m.category, m.name).toBeDefined();
+    }
+  });
+
+  it('targetModels is consistent with tapeSystem', () => {
+    for (const m of Object.values(MEDIA)) {
+      // DK rolls allow either 'dk' or 'dk-wide' in targetModels — both
+      // are DK-substrate tags. Other tape systems carry the bare value.
+      if (m.tapeSystem === 'dk') {
+        const ok = m.targetModels!.includes('dk') || m.targetModels!.includes('dk-wide');
+        expect(ok, `${m.name} targetModels=${JSON.stringify(m.targetModels)}`).toBe(true);
+      } else {
+        expect(m.targetModels, m.name).toContain(m.tapeSystem);
+      }
+    }
+  });
+
+  it('every DK row with widthMm > 62 is tagged dk-wide', () => {
+    for (const m of Object.values(MEDIA)) {
+      if (m.tapeSystem === 'dk' && m.widthMm > 62) {
+        expect(m.targetModels, `${m.name} (id ${m.id.toString()})`).toContain('dk-wide');
+      }
+    }
+  });
+
+  it('every QL-1xxx engine accepts both dk and dk-wide', () => {
+    const wideKeys = ['QL_1050', 'QL_1060N', 'QL_1100', 'QL_1110NWB', 'QL_1115NWB'] as const;
+    for (const key of wideKeys) {
+      const compat = DEVICES[key].engines[0]!.mediaCompatibility;
+      expect(compat, key).toContain('dk');
+      expect(compat, key).toContain('dk-wide');
+    }
+  });
+
+  it('no narrow QL chassis lists dk-wide', () => {
+    for (const d of Object.values(DEVICES)) {
+      if (!d.key.startsWith('QL_')) continue;
+      // The five 1296-dot chassis are the wide tier; everything else is 720-dot.
+      const headDots = d.engines[0]!.headDots;
+      if (headDots === 720) {
+        expect(d.engines[0]!.mediaCompatibility, d.key).not.toContain('dk-wide');
+      }
+    }
+  });
+});
+
+describe('Substrate-gate enforcement matrix (mediaCompatibleWith)', () => {
+  // Representative engines for each compatibility class. The matrix
+  // walks every media row against each and asserts the cell — catches
+  // a row losing its targetModels (would falsely match every engine),
+  // an HSe row mistagged 'tze', a 102 mm row losing 'dk-wide', or a
+  // future engine dropping the substrate tag.
+  const CLASSES: Record<string, PrintEngine> = {
+    qlStandard: DEVICES.QL_700.engines[0]!,
+    qlWide: DEVICES.QL_1100.engines[0]!,
+    ptTzeHse: DEVICES.PT_P900.engines[0]!,
+    ptTzeOnly: DEVICES.PT_P910BT.engines[0]!,
+  };
+
+  type ClassKey = keyof typeof CLASSES;
+  // For a media row, returns the set of class keys that should accept it.
+  function expectedClassesFor(m: {
+    tapeSystem: string;
+    targetModels?: readonly string[];
+  }): Set<ClassKey> {
+    const isWide = m.targetModels?.includes('dk-wide') ?? false;
+    const set = new Set<ClassKey>();
+    if (m.tapeSystem === 'dk') {
+      if (isWide) {
+        set.add('qlWide');
+      } else {
+        set.add('qlStandard');
+        set.add('qlWide');
+      }
+    } else if (m.tapeSystem === 'tze') {
+      set.add('ptTzeHse');
+      set.add('ptTzeOnly');
+    } else if (m.tapeSystem === 'hse-2to1' || m.tapeSystem === 'hse-3to1') {
+      set.add('ptTzeHse');
+    }
+    return set;
+  }
+
+  it('every (engine class, media row) cell matches expectation', () => {
+    for (const m of Object.values(MEDIA)) {
+      const expected = expectedClassesFor(m);
+      for (const key of Object.keys(CLASSES)) {
+        const got = mediaCompatibleWith(m, CLASSES[key]!);
+        const want = expected.has(key);
+        expect(got, `${m.name} (id ${m.id.toString()}) on ${key}`).toBe(want);
+      }
+    }
+  });
+
+  it('PT-P910BT does not surface HSe media', () => {
+    // Strictly redundant with the matrix above, but worth keeping
+    // separately so a future bisect on a "P910BT shows HSe media"
+    // report finds a test named after the case.
+    const engine = DEVICES.PT_P910BT.engines[0]!;
+    for (const m of Object.values(MEDIA)) {
+      if (m.tapeSystem === 'hse-2to1' || m.tapeSystem === 'hse-3to1') {
+        expect(mediaCompatibleWith(m, engine), m.name).toBe(false);
+      }
+    }
   });
 });
