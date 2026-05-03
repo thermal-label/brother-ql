@@ -81,6 +81,7 @@ MIT © Mannes Brak
 - [DEVICE\_REGISTRY](variables/DEVICE_REGISTRY.md)
 - [DEVICES](variables/DEVICES.md)
 - [MEDIA](variables/MEDIA.md)
+- [PROTOCOLS](variables/PROTOCOLS.md)
 - [PT\_PROTOCOL\_CONFIG](variables/PT_PROTOCOL_CONFIG.md)
 - [QL\_PROTOCOL\_CONFIG](variables/QL_PROTOCOL_CONFIG.md)
 - [ROTATE\_DIRECTION](variables/ROTATE_DIRECTION.md)

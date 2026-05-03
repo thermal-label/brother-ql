@@ -171,7 +171,11 @@ For offline preview without a live connection, use the static
 
 > **getStatus**(): `Promise`\<[`BrotherQLStatus`](../../brother-ql-core/interfaces/BrotherQLStatus.md)\>
 
-Query printer status including detected media.
+Send ESC iS and resolve with the next status frame the printer
+emits. The read loop is the sole reader of the bulk-IN pipe —
+`getStatus()` subscribes transiently, writes the request, and the
+subscription receives the response (alongside any spontaneous
+frames; see `onStatus()`).
 
 #### Returns
 
@@ -180,6 +184,31 @@ Query printer status including detected media.
 #### Implementation of
 
 [`PrinterAdapter`](../../brother-ql-core/interfaces/PrinterAdapter.md).[`getStatus`](../../brother-ql-core/interfaces/PrinterAdapter.md#getstatus)
+
+***
+
+### onStatus()
+
+> **onStatus**(`cb`): () => `void`
+
+Subscribe to push-based status updates. Brother QL printers emit
+unsolicited frames on lid open/close, media insert, errors, and
+end-of-job — each one fires `cb` synchronously after parsing.
+Returns an unsubscribe function.
+
+#### Parameters
+
+##### cb
+
+(`status`) => `void`
+
+#### Returns
+
+() => `void`
+
+#### Implementation of
+
+[`PrinterAdapter`](../../brother-ql-core/interfaces/PrinterAdapter.md).[`onStatus`](../../brother-ql-core/interfaces/PrinterAdapter.md#onstatus)
 
 ***
 

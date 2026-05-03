@@ -115,6 +115,42 @@ Query printer status including detected media.
 
 ***
 
+### onStatus()?
+
+> `optional` **onStatus**(`cb`): () => `void`
+
+Subscribe to push-based status updates. Drivers whose printers
+spontaneously emit status frames (e.g. Brother QL over USB pushes
+on lid open/close, media insert, end-of-job, errors) implement
+this; consumers that prefer push semantics call this for instant
+updates instead of polling `getStatus()` on a timer.
+
+Drivers without push capability leave this undefined; consumers
+fall back to periodic `getStatus()` calls.
+
+The driver invokes `cb` for every status frame it receives —
+spontaneous ones AND the response to `getStatus()` — so a
+subscriber sees both unsolicited events and request-driven
+updates. Returns an unsubscribe function.
+
+Implementations are responsible for starting any underlying read
+loop on first subscription (or earlier) and stopping it on
+`close()`. Errors inside the read loop are reported via the
+callback's parent driver layer (e.g. logged); they do not throw
+out of `onStatus` after subscription.
+
+#### Parameters
+
+##### cb
+
+(`status`) => `void`
+
+#### Returns
+
+() => `void`
+
+***
+
 ### print()
 
 > **print**(`image`, `media?`, `options?`): `Promise`\<`void`\>
