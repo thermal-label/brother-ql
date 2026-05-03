@@ -11,12 +11,13 @@ For the closely related Brother **PT** lineup (PT-P / PT-E), see
 geometry, feed margin, two-colour support, and high-resolution mode.
 
 ::: tip Related pages
+
 - [Protocol overview](./) — index of all protocols implemented in this driver.
 - [Core](../core) documents the TypeScript API (`encodeJob`, `parseStatus`,
   etc.) that generates the byte streams described here.
 - [Hardware](../hardware) — full QL device list with USB PIDs, head sizes,
   and verification status.
-:::
+  :::
 
 ## Models and engines
 
@@ -28,10 +29,10 @@ are surfaced through `engine.capabilities` and chassis-level features
 in the registry. Concrete VID/PID pairs and per-model status are on the
 [Hardware](../hardware) page.
 
-| Head dots | Models                               |
-| --------- | ------------------------------------ |
+| Head dots | Models                                                                                    |
+| --------- | ----------------------------------------------------------------------------------------- |
 | 720       | QL-500 / 550 / 560 / 570 / 580N / 600 / 650TD / 700 / 710W / 720NW / 800 / 810W / 820NWBc |
-| 1296      | QL-1050 / 1060N / 1100 / 1110NWB / 1115NWB |
+| 1296      | QL-1050 / 1060N / 1100 / 1110NWB / 1115NWB                                                |
 
 Two-colour printing is gated on `engine.capabilities.twoColor` and is
 present only on QL-800 / QL-810W / QL-820NWB.
@@ -394,7 +395,7 @@ in Chrome 89+ and Edge 89+. Firefox and Safari do not implement WebUSB.
   hierarchy. Source for the QL-vs-PT feature flags
   (`compression`, `mode_setting`, `feed_margin = 35`,
   `num_invalidate_bytes`, `two_color`).
-- *Brother Raster Command Reference Manual* (Brother). Vendor
+- _Brother Raster Command Reference Manual_ (Brother). Vendor
   documentation for the QL raster command set; cited inline. Not
   redistributed.
 - Implementation in this driver:

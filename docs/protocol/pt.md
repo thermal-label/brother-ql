@@ -9,33 +9,34 @@ haven't; this page focuses on the deltas.
 
 ::: warning Scope
 "PT" here means the PC-connectable PT-P / PT-E lineup that Brother
-publishes the *Raster Command Reference* PDFs for. The handheld P-touch
+publishes the _Raster Command Reference_ PDFs for. The handheld P-touch
 line (PT-D210, PT-H110, PT-1010, etc.) uses a different ESC/P-style
 command set and is **not** covered by this driver.
 :::
 
 ::: tip Related pages
+
 - [QL raster protocol](./ql) — the canonical raster reference.
 - [Protocol overview](./) — index of all protocols implemented here.
 - [Core](../core) — the TypeScript API.
-:::
+  :::
 
 ## Models and engines
 
 Six PC-connectable models, in two head-pin families:
 
-| Model      | USB PID | Head dots | Native DPI | High-res DPI | Two-colour |
-| ---------- | ------- | --------- | ---------- | ------------ | ---------- |
-| PT-E550W   | `0x2060` | 128 | 180 | 360 | — |
-| PT-P750W   | `0x2062` | 128 | 180 | 360 | — |
-| PT-P900    | `0x2083` | 560 | 360 | 720 | — |
-| PT-P900W   | `0x2085` | 560 | 360 | 720 | — |
-| PT-P950NW  | `0x2086` | 560 | 360 | 720 | — |
-| PT-P910BT  | `0x20C7` | 560 | 360 | 720 | — |
+| Model     | USB PID  | Head dots | Native DPI | High-res DPI | Two-colour |
+| --------- | -------- | --------- | ---------- | ------------ | ---------- |
+| PT-E550W  | `0x2060` | 128       | 180        | 360          | —          |
+| PT-P750W  | `0x2062` | 128       | 180        | 360          | —          |
+| PT-P900   | `0x2083` | 560       | 360        | 720          | —          |
+| PT-P900W  | `0x2085` | 560       | 360        | 720          | —          |
+| PT-P950NW | `0x2086` | 560       | 360        | 720          | —          |
+| PT-P910BT | `0x20C7` | 560       | 360        | 720          | —          |
 
 PIDs sourced from
 [`nbuchwitz/ptouch`](https://github.com/nbuchwitz/ptouch/blob/main/src/ptouch/printers.py),
-which transcribes Brother's official *Raster Command Reference* PDFs
+which transcribes Brother's official _Raster Command Reference_ PDFs
 (`cv_pte550wp750wp710bt_eng_raster_102.pdf` for the 128-pin family,
 `cv_ptp900_eng_raster_102.pdf` for the 560-pin family). PT-P750W has a
 mass-storage sibling PID `0x2065` (PLite mode); the other five models'
@@ -135,15 +136,13 @@ The encoder enforces this with a per-name guard:
 
 ```ts
 if (deviceName === 'PT-E550W' && autoCut && !compress) {
-  throw new Error(
-    'PT-E550W requires compression to be enabled when autocut is on',
-  );
+  throw new Error('PT-E550W requires compression to be enabled when autocut is on');
 }
 ```
 
 This is implemented as a per-device-name guard rather than a registry
 capability because no other PT model shares the constraint (the P900
-family explicitly defaults compression *off*).
+family explicitly defaults compression _off_).
 
 ## Tape system
 
@@ -183,7 +182,7 @@ implement WebUSB.
 - [`hannesweisbach/ptouch-print`](https://github.com/hannesweisbach/ptouch-print)
   — older C driver; secondary cross-reference, especially for the
   PT-P750W PLite-vs-printer PID disagreement.
-- *Brother Raster Command Reference Manual* —
+- _Brother Raster Command Reference Manual_ —
   `cv_pte550wp750wp710bt_eng_raster_102.pdf` (128-pin family, §2.3
   "Print Area" on p. 20) and `cv_ptp900_eng_raster_102.pdf` (560-pin
   family, §2.3.5 on pp. 23–24). Vendor documents; cited inline, not

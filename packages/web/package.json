@@ -1,6 +1,6 @@
 {
   "name": "@thermal-label/brother-ql-web",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "WebUSB browser driver for Brother QL label printers",
   "keywords": [
     "brother",
@@ -59,8 +59,8 @@
   },
   "dependencies": {
     "@thermal-label/brother-ql-core": "workspace:*",
-    "@thermal-label/contracts": "^0.3.1",
-    "@thermal-label/transport": "^0.3.0"
+    "@thermal-label/contracts": "^0.5.0",
+    "@thermal-label/transport": "^0.5.0"
   },
   "peerDependencies": {
     "typescript": ">=5.0"
