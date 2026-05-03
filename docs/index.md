@@ -34,8 +34,8 @@ features:
     linkText: Hardware guide
   - icon: 📡
     title: Protocol reference
-    details: Complete raster command documentation, USB endpoint topology, status byte layout, and a porting checklist.
-    link: /protocol
+    details: Complete raster command documentation for both QL and PT-P / PT-E lineups — USB endpoint topology, status byte layout, and a porting checklist per protocol.
+    link: /protocol/
     linkText: Protocol guide
   - icon: 🖨️
     title: Live demo
@@ -55,11 +55,11 @@ features:
     </span>
     <span class="ref-arrow">→</span>
   </a>
-  <a href="./protocol.html" class="ref-link">
+  <a href="./protocol/" class="ref-link">
     <span class="ref-icon">📡</span>
     <span class="ref-body">
       <strong>Protocol reference</strong>
-      <span>Raster commands, status bytes, USB topology, porting guide</span>
+      <span>QL + PT raster commands, status bytes, USB topology, porting guide</span>
     </span>
     <span class="ref-arrow">→</span>
   </a>

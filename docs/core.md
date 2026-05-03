@@ -13,9 +13,10 @@ pnpm add @thermal-label/brother-ql-core
 ```
 
 ::: tip Looking for byte-level details?
-The [Protocol reference](./protocol) documents the exact USB byte
+The [Protocol reference](./protocol/) documents the exact USB byte
 sequences, raster row format, status response layout, and a porting
-checklist for other languages.
+checklist — see [QL raster](./protocol/ql) for QL-series printers and
+[PT raster](./protocol/pt) for the PT-P / PT-E lineup.
 :::
 
 ## Exports

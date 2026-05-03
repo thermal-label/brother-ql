@@ -61,7 +61,7 @@ Full docs at **<https://thermal-label.github.io/brother-ql/>**.
 - [Getting started](https://thermal-label.github.io/brother-ql/getting-started)
 - [Hardware list](https://thermal-label.github.io/brother-ql/hardware)
 - [Media + DK roll reference](https://thermal-label.github.io/brother-ql/media)
-- [Protocol reference](https://thermal-label.github.io/brother-ql/protocol)
+- [Protocol reference](https://thermal-label.github.io/brother-ql/protocol/) — [QL raster](https://thermal-label.github.io/brother-ql/protocol/ql) · [PT raster](https://thermal-label.github.io/brother-ql/protocol/pt)
 - [Troubleshooting](https://thermal-label.github.io/brother-ql/troubleshooting)
 - [API reference](https://thermal-label.github.io/brother-ql/api/)
 - [Live demo](https://thermal-label.github.io/demo/brother-ql)

@@ -1,13 +1,19 @@
-# Protocol Reference
+# QL Raster Protocol
 
-This page documents the USB topology and raster print protocol of Brother QL
-label printers, based on hands-on reverse engineering conducted while building
-this driver. It is written for developers porting the driver to new languages,
-debugging hardware issues, or extending the existing packages.
+This page documents the USB topology and raster print protocol of Brother **QL**
+label printers (`engine.protocol === 'ql-raster'`), based on hands-on reverse
+engineering conducted while building this driver. It is written for developers
+porting the driver to new languages, debugging hardware issues, or extending
+the existing packages.
 
-::: tip Related page
-[Core](./core) documents the TypeScript API (`encodeJob`, `parseStatus`, etc.)
-that generates the byte streams described here.
+For the closely related Brother **PT** lineup (PT-P / PT-E), see
+[PT raster protocol](./pt). The two share most opcodes but differ in head
+geometry, feed margin, two-colour support, and high-resolution mode.
+
+::: tip Related pages
+- [Protocol overview](./) — index of all protocols implemented in this driver.
+- [Core](../core) documents the TypeScript API (`encodeJob`, `parseStatus`,
+  etc.) that generates the byte streams described here.
 :::
 
 ## USB device topology
