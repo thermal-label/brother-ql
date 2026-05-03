@@ -20,7 +20,7 @@ command set and is **not** covered by this driver.
 - [Core](../core) — the TypeScript API.
 :::
 
-## Models and head families
+## Models and engines
 
 Six PC-connectable models, in two head-pin families:
 
@@ -55,18 +55,7 @@ Brother VID is `0x04F9`. Unlike QL there is no `editorLite` mode (the
 PT-P750W's `0x2065` PLite is a USB-mode mode-switch quirk handled at
 discovery time, not a printer-side feature).
 
-## Tape system
-
-PT prints on **TZe** (laminated tape, 3.5–36 mm) and, on most P900-series
-models and the PT-E550W, **HSe** heat-shrink tubing in 2:1 and 3:1 ratios.
-PT-P910BT does **not** support HSe — TZe only.
-
-Per-model tape support and pin geometry per width are documented in
-[Hardware](../hardware). The lookup helper resolves a `(widthMm, engine)`
-to the right registry row, picking `geometry.narrow` for 128-pin heads
-and `geometry.wide` for 560-pin heads.
-
-## Status request and response
+## Status
 
 Identical to QL. Send `1B 69 53` (`ESC i S`) to the OUT endpoint; the
 printer replies with 32 bytes on the IN endpoint. Bytes 0–3 are fixed
@@ -156,6 +145,17 @@ This is implemented as a per-device-name guard rather than a registry
 capability because no other PT model shares the constraint (the P900
 family explicitly defaults compression *off*).
 
+## Tape system
+
+PT prints on **TZe** (laminated tape, 3.5–36 mm) and, on most P900-series
+models and the PT-E550W, **HSe** heat-shrink tubing in 2:1 and 3:1 ratios.
+PT-P910BT does **not** support HSe — TZe only.
+
+Per-model tape support and pin geometry per width are documented in
+[Hardware](../hardware). The lookup helper resolves a `(widthMm, engine)`
+to the right registry row, picking `geometry.narrow` for 128-pin heads
+and `geometry.wide` for 560-pin heads.
+
 ## TCP and Bluetooth
 
 Brother spec sheets advertise raw 9100 TCP on PT-P750W, PT-P900W,
@@ -167,43 +167,29 @@ declares `bluetooth-spp` (classic Bluetooth Serial Port Profile) for it
 GATT instead, the transport key changes (and the missing Node BLE
 adapter would need to be supplied).
 
-## Porting checklist
+## WebUSB
 
-If you're implementing PT raster in another language or runtime:
+Identical wire format to USB; the browser package opens the
+Printer-class interface, `transferOut` for the encoded job, `transferIn`
+for the 32-byte status reply. WebUSB requires HTTPS or `localhost` and
+is supported in Chrome 89+ and Edge 89+. Firefox and Safari do not
+implement WebUSB.
 
-- [ ] Use VID `0x04F9` and the per-model PIDs above; claim the
-      Printer-class interface directly.
-- [ ] Same preamble as QL: raster mode (`1B 69 61 01`), 200-byte
-      invalidate, init (`1B 40`).
-- [ ] Per page: status request → print info → various mode → cut each
-      → expanded mode → margin → rows → print command.
-- [ ] Feed margin = **14 dots** (28 in high-res).
-- [ ] High-res flag bit = **bit 6** (`0x40`) in `ESC i K`. Set
-      `engine.capabilities.highResDpi` to gate at the API surface.
-- [ ] When high-res is on, **send each raster line twice** and **double
-      the feed margin**.
-- [ ] Raster rows use single-plane `0x67` opcode; PT has no two-colour
-      models.
-- [ ] Row byte count = `headDots / 8`: 16 for 128-pin, 70 for 560-pin.
-- [ ] Use `geometry.narrow` for 128-pin heads and `geometry.wide` for
-      560-pin heads when resolving per-tape pin offsets.
-- [ ] PT-E550W: require compression when `autocut` is on, or the
-      cutter silently won't fire.
-- [ ] PT-P910BT: TZe only — never resolve an HSe entry for it.
-- [ ] End the last page with `0x1A`.
+## References
 
-## Source references
-
-- *Brother Raster Command Reference* — `cv_pte550wp750wp710bt_eng_raster_102.pdf`
-  (128-pin family, see §2.3 "Print Area" on p. 20) and
-  `cv_ptp900_eng_raster_102.pdf` (560-pin family, see §2.3.5 on
-  pp. 23–24). Brother documents; not redistributed here.
 - [`nbuchwitz/ptouch`](https://github.com/nbuchwitz/ptouch) — active
-  LGPL-2.1 driver; primary reference for PIDs, tape pin configurations,
-  and cutter quirks.
+  LGPL-2.1 driver; primary reference for PIDs, tape pin
+  configurations, and cutter quirks.
 - [`hannesweisbach/ptouch-print`](https://github.com/hannesweisbach/ptouch-print)
   — older C driver; secondary cross-reference, especially for the
   PT-P750W PLite-vs-printer PID disagreement.
+- *Brother Raster Command Reference Manual* —
+  `cv_pte550wp750wp710bt_eng_raster_102.pdf` (128-pin family, §2.3
+  "Print Area" on p. 20) and `cv_ptp900_eng_raster_102.pdf` (560-pin
+  family, §2.3.5 on pp. 23–24). Vendor documents; cited inline, not
+  redistributed.
 - Implementation in this driver:
-  `packages/core/src/protocol.ts` (`PT_PROTOCOL_CONFIG` and the
-  `encodeRasterJob` shared encoder).
+  - `packages/core/src/protocol.ts` — encoder
+    (`PT_PROTOCOL_CONFIG` and the shared `encodeRasterJob`).
+  - `packages/core/src/devices.generated.ts` — PT model registry
+    (head sizes, capabilities, mass-storage PIDs).

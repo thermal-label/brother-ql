@@ -14,9 +14,29 @@ geometry, feed margin, two-colour support, and high-resolution mode.
 - [Protocol overview](./) — index of all protocols implemented in this driver.
 - [Core](../core) documents the TypeScript API (`encodeJob`, `parseStatus`,
   etc.) that generates the byte streams described here.
+- [Hardware](../hardware) — full QL device list with USB PIDs, head sizes,
+  and verification status.
 :::
 
-## USB device topology
+## Models and engines
+
+The QL family covers ~14 models from the entry-level QL-500 through the
+two-colour QL-820NWB and the wide-head QL-1100 series. All models share
+the `ql-raster` protocol slug; per-chassis differences (Editor Lite
+hardware mode, two-colour ribbon, mass-storage PIDs, network transports)
+are surfaced through `engine.capabilities` and chassis-level features
+in the registry. Concrete VID/PID pairs and per-model status are on the
+[Hardware](../hardware) page.
+
+| Head dots | Models                               |
+| --------- | ------------------------------------ |
+| 720       | QL-500 / 550 / 560 / 570 / 580N / 600 / 650TD / 700 / 710W / 720NW / 800 / 810W / 820NWBc |
+| 1296      | QL-1050 / 1060N / 1100 / 1110NWB / 1115NWB |
+
+Two-colour printing is gated on `engine.capabilities.twoColor` and is
+present only on QL-800 / QL-810W / QL-820NWB.
+
+## USB topology
 
 After the device is attached, it enumerates as a composite USB device with a
 single configuration. For example, the QL-820NWB:
@@ -64,7 +84,7 @@ console warning. `isMassStorageMode(pid)` is exported from
 **To exit Editor Lite mode:** hold the Editor Lite button on the printer until
 the green LED turns off. The device will reconnect under its normal PID.
 
-## Status communication
+## Status
 
 Before printing, the driver queries the printer for the currently loaded media.
 
@@ -286,7 +306,7 @@ the printer handles the margins internally.
 The last page of every job **must** end with `0x1A`. Ending with `0x0C` causes
 the final page to sit in the printer buffer unprinted until the next job starts.
 
-## TIFF compression (run-length encoding)
+## TIFF compression
 
 Before the raster rows, optionally send:
 
@@ -330,7 +350,7 @@ driver automatically sets expanded mode bit 0 and sends an empty red plane when
 no red bitmap is provided. The `valid_flags` byte in the Print Information
 command is `0xCE` for all QL-820NWB series jobs (single-color and two-color).
 
-## TCP printing (port 9100)
+## TCP printing
 
 Brother QL printers with Wi-Fi or LAN connectivity accept the same raster byte
 stream over a raw TCP connection on **port 9100**. The protocol is identical to
@@ -345,7 +365,7 @@ unreliable.
 const printer = await discovery.openPrinter({ host: '192.168.1.100' }); // default port 9100
 ```
 
-## WebUSB (browser)
+## WebUSB
 
 The `@thermal-label/brother-ql-web` package uses the browser
 [WebUSB API](https://developer.mozilla.org/en-US/docs/Web/API/WebUSB_API).
@@ -363,22 +383,23 @@ status is read via `device.transferIn(1, 32)` (endpoint 1 = IN endpoint address
 WebUSB requires a secure context (`https://` or `localhost`) and is supported
 in Chrome 89+ and Edge 89+. Firefox and Safari do not implement WebUSB.
 
-## Porting checklist
+## References
 
-If you are implementing the protocol in another language or runtime:
-
-- [ ] Use `libusb` (or equivalent) and claim Interface 0 directly
-- [ ] Send `1B 69 61 01` (raster mode) **first**, then 200 zero bytes (invalidate), then `1B 40` (initialize)
-- [ ] Per page: raster mode → `1B 69 53` (status request) → print info → various mode → cut each → expanded mode → margin → rows → print command
-- [ ] Include the Print Information command with correct media type, width, and total row count
-- [ ] Use `valid_flags = 0xCE` for all QL-820NWB/800/810W jobs
-- [ ] Raster rows are 93 bytes: 3-byte header + 90 bytes data
-- [ ] Single-color row header: `67 00 5A`; two-color black: `77 01 5A`; two-color red: `77 02 5A`
-- [ ] Two-color rows are interleaved per line (black N, red N, black N+1, red N+1, …)
-- [ ] Set expanded mode **bit 0** for all two-color jobs
-- [ ] DK-22251 tape: must use two-color mode even for black-only jobs, or the printer returns "wrong roll type"
-- [ ] Raster rows must be full-width (90 data bytes) regardless of label width — place content at `leftMarginPins` bit offset
-- [ ] End the last page with `0x1A`, not `0x0C`
-- [ ] Bitmaps are in print orientation: rows across the 720-dot print head width, columns along the feed direction
-- [ ] Query status with `1B 69 53` and read 32 bytes before printing to confirm media matches
-- [ ] Detect Editor Lite / mass-storage PIDs (`0x20a9`, `0x20aa`, `0x20ac`) and warn the user
+- [`pklaus/brother_ql`](https://github.com/pklaus/brother_ql) — the
+  reference Python driver. The byte sequences on this page were
+  cross-checked against live captures from this library on a
+  QL-820NWBc with DK-22251 tape.
+- [`fuzeman/brother-label`](https://github.com/fuzeman/brother-label)
+  — Python project that ships QL and PT in a single `BrotherDevice`
+  hierarchy. Source for the QL-vs-PT feature flags
+  (`compression`, `mode_setting`, `feed_margin = 35`,
+  `num_invalidate_bytes`, `two_color`).
+- *Brother Raster Command Reference Manual* (Brother). Vendor
+  documentation for the QL raster command set; cited inline. Not
+  redistributed.
+- Implementation in this driver:
+  - `packages/core/src/protocol.ts` — encoder
+    (`QL_PROTOCOL_CONFIG` and `encodeRasterJob`).
+  - `packages/core/src/status.ts` — 32-byte status parser.
+  - `packages/core/src/devices.generated.ts` — Editor Lite
+    PID detection.
