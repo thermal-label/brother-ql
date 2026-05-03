@@ -18,7 +18,9 @@
     "prepare": "node -e \"try{require('node:child_process').execSync('git config core.hooksPath .githooks',{stdio:'ignore'})}catch{}\"",
     "changeset": "changeset",
     "version": "changeset version",
-    "release": "changeset publish"
+    "release": "changeset publish",
+    "docs:hardware": "node scripts/build-hardware-table.mjs",
+    "predocs:hardware": "pnpm --filter ./packages/core run compile-data"
   },
   "devDependencies": {
     "@changesets/cli": "^2.0.0",
