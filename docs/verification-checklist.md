@@ -158,7 +158,7 @@ If you're verifying PT-E550W, attempt a print with
 Then attempt with `{ autoCut: true, compress: true }` and confirm the
 cutter actually severs the tape. This is the
 "compression-required-for-cutter" quirk documented in
-[`DECISIONS.md`](./decisions) D14 / `nbuchwitz/ptouch:PTE550W`.
+[`DECISIONS.md`](https://github.com/thermal-label/brother-ql/blob/main/DECISIONS.md) D14 / `nbuchwitz/ptouch:PTE550W`.
 
 ### PT-P910BT — Bluetooth route
 

@@ -4,7 +4,7 @@ This driver covers two Brother families that share the raster command
 set: the **QL series** (DK paper labels, 300 dpi, head widths 720 or 1296) and the **PT-P / PT-E series** (TZe laminated tape and HSe
 heat-shrink, 180 / 360 dpi, head widths 128 or 560). The encoder
 branches on `engine.protocol` (`'ql-raster'` vs `'pt-raster'`); see
-[`DECISIONS.md`](./decisions) D12 for why both live in one driver.
+[`DECISIONS.md`](https://github.com/thermal-label/brother-ql/blob/main/DECISIONS.md) D12 for why both live in one driver.
 
 ## QL series (DK labels)
 
@@ -52,7 +52,7 @@ ship as 🔲 Untested until a hardware report is filed.
 
 PT-E550W will not cut when compression is disabled — the encoder
 throws on `autocut: true && compress: false` for that model. PT-P750W's
-PID is contested between driver projects ([`DECISIONS.md`](./decisions) D15).
+PID is contested between driver projects ([`DECISIONS.md`](https://github.com/thermal-label/brother-ql/blob/main/DECISIONS.md) D15).
 
 ### 560-pin family — 360 dpi native, 720 dpi high-res
 
