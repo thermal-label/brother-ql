@@ -15,6 +15,10 @@ function solidRgba(
   return { width, height, data: new Uint8Array(width * height * 4).fill(0) };
 }
 
+function noop(): void {
+  // intentionally empty — used to silence console.warn in tests
+}
+
 function redRgba(
   width: number,
   height: number,
@@ -264,6 +268,34 @@ describe('WebBrotherQLPrinter', () => {
   it('throws for unknown USB devices', async () => {
     const device = createMockUSBDevice({ vendorId: 0x1234, productId: 0x5678 });
     await expect(fromUSBDevice(device)).rejects.toThrow('Unsupported USB device');
+  });
+
+  it('keeps dispatching to remaining listeners when one throws', async () => {
+    const bytes = new Uint8Array(32);
+    bytes[10] = 62;
+    bytes[11] = 0x0a;
+    const device = createMockUSBDevice({ productId: 0x209d, statusBytes: bytes });
+    const printer = await fromUSBDevice(device);
+
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(noop);
+    const otherListener = vi.fn();
+    const throwingUnsub = printer.onStatus(() => {
+      throw new Error('listener boom');
+    });
+    const otherUnsub = printer.onStatus(otherListener);
+
+    device.__pushUnsolicited(bytes);
+    await new Promise<void>(r => setTimeout(r, 0));
+
+    throwingUnsub();
+    otherUnsub();
+
+    expect(otherListener).toHaveBeenCalled();
+    expect(warnSpy).toHaveBeenCalledWith(
+      '[brother-ql-web] status listener threw:',
+      expect.any(Error),
+    );
+    warnSpy.mockRestore();
   });
 });
 
