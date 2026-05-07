@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  '@thermal-label/contracts': link:../contracts
+
 importers:
 
   .:
@@ -20,6 +23,9 @@ importers:
       '@mbtech-nl/tsconfig':
         specifier: ^1.1.0
         version: 1.1.0
+      '@thermal-label/contracts':
+        specifier: link:../contracts
+        version: link:../contracts
       eslint:
         specifier: ^9.0.0
         version: 9.39.4
@@ -51,8 +57,8 @@ importers:
         specifier: ^1.3.0
         version: 1.3.0
       '@thermal-label/contracts':
-        specifier: ^0.5.0
-        version: 0.5.0
+        specifier: link:../../../contracts
+        version: link:../../../contracts
     devDependencies:
       '@mbtech-nl/tsconfig':
         specifier: ^1.1.0
@@ -82,8 +88,8 @@ importers:
         specifier: workspace:*
         version: link:../core
       '@thermal-label/contracts':
-        specifier: ^0.5.0
-        version: 0.5.0
+        specifier: link:../../../contracts
+        version: link:../../../contracts
       '@thermal-label/transport':
         specifier: ^0.5.0
         version: 0.5.0(usb@2.17.0)
@@ -117,8 +123,8 @@ importers:
         specifier: workspace:*
         version: link:../core
       '@thermal-label/contracts':
-        specifier: ^0.5.0
-        version: 0.5.0
+        specifier: link:../../../contracts
+        version: link:../../../contracts
       '@thermal-label/transport':
         specifier: ^0.5.0
         version: 0.5.0(usb@2.17.0)
@@ -758,10 +764,6 @@ packages:
 
   '@shikijs/vscode-textmate@10.0.2':
     resolution: {integrity: sha512-83yeghZ2xxin3Nj8z1NMd/NCuca+gsYXswywDy5bHvwlWL8tpTQmzGeUuHd9FC3E/SBEMvzJRwWEOz5gGes9Qg==}
-
-  '@thermal-label/contracts@0.5.0':
-    resolution: {integrity: sha512-RurcHh2ncDqsgY2m7Z+W19b9CQsrYSPRmgLR60LOTilRiNgeSRlR6B1sG6OPEkyJ+OLUJtp11VAt2eHSbp2g8w==}
-    engines: {node: '>=20.9.0'}
 
   '@thermal-label/transport@0.5.0':
     resolution: {integrity: sha512-kHdVlNbMfxv4hLGZPCHKNTrKsjj6R0u29V0DQn0hFgwIZl0Xm4eWn01JeGhRr7Gv6dLHgc0TRINkp/3BM3bq6Q==}
@@ -2824,13 +2826,9 @@ snapshots:
 
   '@shikijs/vscode-textmate@10.0.2': {}
 
-  '@thermal-label/contracts@0.5.0':
-    dependencies:
-      '@mbtech-nl/bitmap': 1.3.0
-
   '@thermal-label/transport@0.5.0(usb@2.17.0)':
     dependencies:
-      '@thermal-label/contracts': 0.5.0
+      '@thermal-label/contracts': link:../contracts
     optionalDependencies:
       usb: 2.17.0
 

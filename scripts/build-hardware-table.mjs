@@ -1,8 +1,16 @@
 #!/usr/bin/env node
-// Generates a simple supported-hardware table from the JSON5 device
-// entries and injects it between marker comments in:
+// Generates a simple supported-hardware table from the compiled
+// `packages/core/data/devices.json` registry (rich projection — carries
+// the rolled-up `supportStatus` from the verification grid alongside
+// each device) and injects it between marker comments in:
 //   - README.md            (so npm/GitHub readers see it on first contact)
 //   - docs/hardware.md     (so the driver's own docs page stays in sync)
+//
+// Reads from the generated registry (not raw JSON5) so the badge in
+// each row reflects the propagated effective status from
+// `expandVerifications`, not just the legacy device-level
+// `support.status`. Sequenced as `predocs:hardware` runs `compile-data`
+// first.
 //
 // The fancy interactive cross-driver table lives at
 // https://thermal-label.github.io/hardware/. This script gives each
@@ -18,14 +26,13 @@
 // DRIVER constant differing — extract to a shared package once edits
 // here start getting copy-pasted three times in a row.
 
-import { readdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import JSON5 from 'json5';
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(SCRIPT_DIR, '..');
-const DEVICES_DIR = resolve(REPO_ROOT, 'packages/core/data/devices');
+const DEVICES_JSON = resolve(REPO_ROOT, 'packages/core/data/devices.json');
 const README_PATH = resolve(REPO_ROOT, 'README.md');
 const HW_DOC_PATH = resolve(REPO_ROOT, 'docs/hardware.md');
 
@@ -34,11 +41,18 @@ const HW_DOC_PATH = resolve(REPO_ROOT, 'docs/hardware.md');
 const DRIVER = 'brother-ql';
 const SITE_BASE = 'https://thermal-label.github.io';
 
+// Keys are `EffectiveStatus` values surfaced after `expandVerifications`
+// (verified | partial | unsupported | expected | unverified). Legacy
+// `broken` / `untested` retained as fallback for the rare case the
+// registry lacks `supportStatus` (pre-codegen-migration debug runs).
 const STATUS_BADGE = {
-  verified: '✅ verified',
-  partial:  '⚠️ partial',
-  broken:   '❌ broken',
-  untested: '⏳ untested',
+  verified:    '✅ verified',
+  partial:     '⚠️ partial',
+  unsupported: '❌ unsupported',
+  expected:    '🔄 expected',
+  unverified:  '⏳ unverified',
+  broken:      '❌ broken',
+  untested:    '⏳ untested',
 };
 
 const TRANSPORT_LABEL = {
@@ -56,11 +70,12 @@ function log(msg) { process.stdout.write(`[build-hardware-table] ${msg}\n`); }
 function die(msg) { process.stderr.write(`[build-hardware-table] error: ${msg}\n`); process.exit(1); }
 
 function loadDevices() {
-  if (!existsSync(DEVICES_DIR)) die(`devices dir not found at ${DEVICES_DIR}`);
-  const files = readdirSync(DEVICES_DIR).filter(f => f.endsWith('.json5'));
-  return files
-    .map(f => JSON5.parse(readFileSync(join(DEVICES_DIR, f), 'utf8')))
-    .sort((a, b) => a.name.localeCompare(b.name, 'en', { numeric: true }));
+  if (!existsSync(DEVICES_JSON)) {
+    die(`devices registry not found at ${DEVICES_JSON} — run \`pnpm --filter @thermal-label/brother-ql-core compile-data\` first`);
+  }
+  const registry = JSON.parse(readFileSync(DEVICES_JSON, 'utf8'));
+  if (!Array.isArray(registry?.devices)) die(`${DEVICES_JSON}: malformed registry (missing \`devices\` array)`);
+  return [...registry.devices].sort((a, b) => a.name.localeCompare(b.name, 'en', { numeric: true }));
 }
 
 function devSlug(key) {
@@ -74,7 +89,10 @@ function transportList(dev) {
 }
 
 function statusBadge(dev) {
-  const s = dev.support?.status ?? 'untested';
+  // `supportStatus` is the rolled-up effective status emitted by
+  // `expandVerifications` during codegen. Falls back to the legacy
+  // `support.status` if running against a pre-migration registry.
+  const s = dev.supportStatus ?? dev.support?.status ?? 'unverified';
   return STATUS_BADGE[s] ?? s;
 }
 
@@ -83,9 +101,14 @@ function detailUrl(dev) {
 }
 
 function renderCounts(devices) {
-  const c = { total: devices.length, verified: 0, partial: 0, broken: 0, untested: 0 };
-  for (const d of devices) c[d.support?.status ?? 'untested']++;
-  return `**${c.total} devices** — ${c.verified} verified · ${c.partial} partial · ${c.broken} broken · ${c.untested} untested`;
+  const c = { total: devices.length, verified: 0, partial: 0, unsupported: 0, expected: 0, unverified: 0 };
+  for (const d of devices) {
+    const s = d.supportStatus ?? d.support?.status ?? 'unverified';
+    // Coalesce legacy `untested` → `unverified`, `broken` → `unsupported`.
+    const k = s === 'untested' ? 'unverified' : s === 'broken' ? 'unsupported' : s;
+    if (k in c) c[k]++;
+  }
+  return `**${c.total} devices** — ${c.verified} verified · ${c.partial} partial · ${c.expected} expected · ${c.unsupported} unsupported · ${c.unverified} unverified`;
 }
 
 function renderTable(devices) {

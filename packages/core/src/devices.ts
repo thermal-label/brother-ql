@@ -1,5 +1,10 @@
 import type { BrotherQLDevice } from './types.js';
-import { DEVICES, DEVICE_REGISTRY } from './devices.generated.js';
+import { DEVICES, REGISTRY } from './devices.generated.js';
+
+// Re-exported under the historical name so external consumers keep
+// importing `DEVICE_REGISTRY` while the generated module exports the
+// labelwriter-aligned `REGISTRY` symbol.
+export const DEVICE_REGISTRY = REGISTRY;
 
 // Mass-storage PIDs aligned to Linux usb-ids (gowdy.us / linux-usb.org).
 // Each large-format printer with Editor Lite enumerates as USB Mass
@@ -13,7 +18,7 @@ const MASS_STORAGE_PIDS = new Set<number>(
   }),
 );
 
-export { DEVICE_REGISTRY, DEVICES };
+export { DEVICES };
 
 /**
  * Numeric VID/PID extracted from a device's USB transport.
