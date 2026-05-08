@@ -291,3 +291,19 @@ This rule was applied to drop the proposed `compression`,
 `numInvalidateBytes`, `feedMarginDots`, `modeSetting`, `expandedMode`,
 `bytesPerRow`, and `line` fields that an earlier revision of the plan
 proposed adding to the registry.
+
+## D19 — `printableArea` stays zero on every QL/PT engine; brother solved this in firmware
+
+Contracts `0.6.0` ships an optional `PrintEngine.printableArea` field
+(see [`../../plans/backlog/08-dead-zone-model.md`](../../plans/backlog/08-dead-zone-model.md)
+§4 + §5) that other drivers will populate to model the head-to-cutter /
+sensor-window dead zone. On QL/PT engines the field stays at the
+default `{ leading: 0, trailing: 0, left: 0, right: 0 }` — that's
+not "not yet measured", it's "by design": Brother's `ESC i d` /
+`feedMarginDots` (35 dots QL, 14 dots PT, on `RasterProtocolConfig`
+in `src/protocol.ts`; provenance per plan §3 / D18) already enacts
+the equivalent leading feed at the firmware level, and trailing
+clearance is the firmware's autocut. The new field is the
+encoder-side pad amount, which is zero here. The field becomes
+relevant if a future Brother device ever ships without firmware feed
+support; until then, omit / default.
