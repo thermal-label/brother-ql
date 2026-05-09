@@ -2,3 +2,6 @@
 # typedoc owns the format; prettier reformatting it conflicts with the
 # pre-push hook that diffs typedoc's output against the working tree.
 docs/api/
+
+pnpm-lock.yaml
+**/pnpm-lock.yaml
