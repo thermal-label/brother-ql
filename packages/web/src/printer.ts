@@ -3,6 +3,8 @@ import {
   DEVICES,
   ROTATE_DIRECTION,
   STATUS_REQUEST,
+  buildInitialize,
+  buildInvalidate,
   createPreviewOffline,
   encodeJobForEngine,
   findDevice,
@@ -73,6 +75,24 @@ export class WebBrotherQLPrinter implements PrinterAdapter {
   private readonly statusListeners = new Set<(status: BrotherQLStatus) => void>();
   private readLoopStarted = false;
   private readLoopStopped = false;
+  /**
+   * Serialises every bulk-OUT operation (print + getStatus). Required
+   * because `getStatus()` may write the QL preamble (`buildInvalidate` —
+   * 200×0x00 + `ESC @`) to put the parser in a known state, and the
+   * preamble's "invalidate" cancels any in-flight print job. Polling
+   * concurrently with a print would shred the raster stream. Any new
+   * caller chains a `.then()` onto this promise so writes happen
+   * strictly in order.
+   */
+  private writeLock: Promise<void> = Promise.resolve();
+  /**
+   * Whether the printer's command parser is in a known-clean state.
+   * Set to `true` after a successful `getStatus()`; flipped back to
+   * `false` on timeout so the next attempt re-sends the preamble. The
+   * preamble (200-byte invalidate + `ESC @`) is only needed once per
+   * session unless the parser falls back into a confused state.
+   */
+  private parserReady = false;
 
   constructor(device: BrotherQLDevice, transport: Transport) {
     this.device = device;
@@ -102,7 +122,16 @@ export class WebBrotherQLPrinter implements PrinterAdapter {
     // on the right side of the printed face when the leading edge is held
     // up. Mirror the rendered bitmap so the input image's x-axis matches
     // the printed x-axis. Verified on QL-820NWBc + DK-22251.
-    const pageOptions = options?.highRes === true ? { highResolution: true } : undefined;
+    // PackBits compression on by default for the web path. Bench
+    // experience: WebUSB pacing alone (1024 / 20 ms) isn't enough on
+    // QL_700-class firmware — uncompressed raster rows can stall the
+    // print engine even when bytes are arriving. Compression keeps
+    // each row small enough to ride the firmware's buffer comfortably
+    // and matches the encoding the Brother driver itself emits.
+    const pageOptions = {
+      compress: true,
+      ...(options?.highRes === true ? { highResolution: true } : {}),
+    };
 
     let page: PageData;
     if (resolvedMedia.palette) {
@@ -114,21 +143,42 @@ export class WebBrotherQLPrinter implements PrinterAdapter {
         bitmap: flipHorizontal(black),
         redBitmap: flipHorizontal(red),
         media: resolvedMedia,
-        ...(pageOptions ? { options: pageOptions } : {}),
+        options: pageOptions,
       };
     } else {
       const bitmap = flipHorizontal(renderImage(image, { dither: true, rotate }));
       page = {
         bitmap,
         media: resolvedMedia,
-        ...(pageOptions ? { options: pageOptions } : {}),
+        options: pageOptions,
       };
     }
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- every brother-ql device has at least one engine (data invariant)
     const engine = this.device.engines[0]!;
     const bytes = encodeJobForEngine([page], {}, engine, this.device.name);
-    await this.writeChunked(bytes);
+    await this.runLocked(() => this.writeChunked(bytes));
+  }
+
+  /**
+   * Chain a write operation onto the printer's serial write lock.
+   * Concurrent callers wait their turn; errors propagate to the
+   * caller but don't poison the lock for subsequent writes.
+   */
+  private async runLocked<T>(fn: () => Promise<T>): Promise<T> {
+    const prior = this.writeLock;
+    let release: () => void = () => {
+      // Will be replaced.
+    };
+    this.writeLock = new Promise<void>(resolve => {
+      release = resolve;
+    });
+    try {
+      await prior;
+      return await fn();
+    } finally {
+      release();
+    }
   }
 
   private async writeChunked(bytes: Uint8Array): Promise<void> {
@@ -158,11 +208,33 @@ export class WebBrotherQLPrinter implements PrinterAdapter {
    * `getStatus()` subscribes transiently, writes the request, and the
    * subscription receives the response (alongside any spontaneous
    * frames; see `onStatus()`).
+   *
+   * The QL preamble (200×0x00 invalidate + `ESC @` initialize) is
+   * sent only when the parser hasn't been confirmed clean — first
+   * call of the session, or after a previous timeout. Steady-state
+   * polls send bare `ESC iS`. Bench observation: a freshly-opened QL
+   * doesn't reply to bare `ESC iS` until the invalidate flushes any
+   * stale parser state from a prior session.
    */
   async getStatus(): Promise<BrotherQLStatus> {
-    const next = this.nextStatusFrame(STATUS_RESPONSE_TIMEOUT_MS);
-    await this.transport.write(STATUS_REQUEST);
-    return next;
+    return this.runLocked(async () => {
+      const next = this.nextStatusFrame(STATUS_RESPONSE_TIMEOUT_MS);
+      if (!this.parserReady) {
+        await this.transport.write(buildInvalidate());
+        await this.transport.write(buildInitialize());
+      }
+      await this.transport.write(STATUS_REQUEST);
+      try {
+        const status = await next;
+        this.parserReady = true;
+        return status;
+      } catch (err) {
+        // Timeout / read failure — printer may be in a confused
+        // state. Re-arm the preamble for the next attempt.
+        this.parserReady = false;
+        throw err;
+      }
+    });
   }
 
   /**
@@ -256,11 +328,33 @@ export const DEFAULT_FILTERS: USBDeviceFilter[] = Object.values(DEVICES)
  *
  * Requires a user gesture. Opens the device and claims interface 0 via
  * `WebUsbTransport.fromDevice()`.
+ *
+ * Single-instance entry point — preserved for back-compat with existing
+ * consumers (CLIs, ad-hoc scripts). For the symmetric driver-web shape
+ * (1-key map keyed by engine role) call `requestPrinters()` instead;
+ * the harness shell uses that path.
  */
 export async function requestPrinter(options: RequestOptions = {}): Promise<WebBrotherQLPrinter> {
   const filters = options.filters ?? DEFAULT_FILTERS;
   const usbDevice = await navigator.usb.requestDevice({ filters });
   return fromUSBDevice(usbDevice);
+}
+
+/**
+ * Show the browser's USB picker and return one `PrinterAdapter` per
+ * drivable engine on the selected device, keyed by engine role.
+ *
+ * Brother QL devices are always single-engine — this returns a 1-key
+ * record keyed by the device's `engines[0].role` (typically `'primary'`).
+ * Mirrors the labelwriter driver's `requestPrinters()` factory so harness
+ * adapters can stay symmetric across driver families.
+ */
+export async function requestPrinters(
+  options: RequestOptions = {},
+): Promise<Record<string, WebBrotherQLPrinter>> {
+  const filters = options.filters ?? DEFAULT_FILTERS;
+  const usbDevice = await navigator.usb.requestDevice({ filters });
+  return fromUSBDeviceAll(usbDevice);
 }
 
 /**
@@ -277,4 +371,30 @@ export async function fromUSBDevice(usbDevice: USBDevice): Promise<WebBrotherQLP
   }
   const transport = await WebUsbTransport.fromDevice(usbDevice);
   return new WebBrotherQLPrinter(descriptor, transport);
+}
+
+/**
+ * Wrap an already-selected `USBDevice` and return a 1-key adapter map
+ * keyed by the device's `engines[0].role`. Public surface for
+ * `requestPrinters()`; exported so harnesses that already hold a
+ * `USBDevice` (e.g. picked-up via `navigator.usb.getDevices()` on a
+ * returning visit) can skip the picker.
+ *
+ * Brother QL is single-engine and single-interface (IF 0).
+ */
+export async function fromUSBDeviceAll(
+  usbDevice: USBDevice,
+): Promise<Record<string, WebBrotherQLPrinter>> {
+  const descriptor = findDevice(usbDevice.vendorId, usbDevice.productId);
+  if (!descriptor) {
+    throw new Error(
+      `Unsupported USB device: VID=0x${usbDevice.vendorId.toString(16)} PID=0x${usbDevice.productId.toString(16)}`,
+    );
+  }
+  const engine = descriptor.engines[0];
+  if (!engine) {
+    throw new Error(`Device ${descriptor.key} has no engines.`);
+  }
+  const transport = await WebUsbTransport.fromDevice(usbDevice);
+  return { [engine.role]: new WebBrotherQLPrinter(descriptor, transport) };
 }
