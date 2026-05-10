@@ -118,11 +118,6 @@ export interface BrotherQLMedia extends MediaDescriptor {
  */
 export interface BrotherQLStatus extends PrinterStatus {
   editorLiteMode: boolean;
-  /**
-   * True when the loaded roll reports two-color capability via byte 25
-   * bit 7 of the status response. Undefined when no media is loaded.
-   */
-  twoColorRoll?: boolean;
 }
 
 export interface PageData {

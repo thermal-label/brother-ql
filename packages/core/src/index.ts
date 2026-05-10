@@ -54,6 +54,8 @@ export {
 } from './media.js';
 export { ROTATE_DIRECTION } from './orientation.js';
 export {
+  buildInitialize,
+  buildInvalidate,
   encodeJob,
   encodeJobForEngine,
   PT_PROTOCOL_CONFIG,

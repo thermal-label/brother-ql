@@ -81,7 +81,6 @@ export function parseStatus(
     ready: errors.length === 0 && statusType !== 0x02,
     mediaLoaded,
     ...(detected === undefined ? {} : { detectedMedia: detected }),
-    ...(mediaLoaded ? { twoColorRoll: twoColorFlag } : {}),
     errors,
     editorLiteMode: false,
     rawBytes: bytes,

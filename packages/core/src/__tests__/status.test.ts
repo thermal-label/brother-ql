@@ -128,34 +128,34 @@ describe('parseStatus', () => {
     expect(status.editorLiteMode).toBe(false);
   });
 
-  it('byte 25 bit 7 set → twoColorRoll=true and resolves to DK-22251', () => {
+  it('byte 25 bit 7 set → resolves to DK-22251 (two-color, palette set)', () => {
     const status = parseStatus(
       makeStatusBytes({ mediaWidthMm: 62, mediaTypeByte: 0x0a, byte25: 0x81 }),
     );
-    expect(status.twoColorRoll).toBe(true);
     expect(status.detectedMedia?.id).toBe(251);
+    expect(status.detectedMedia?.palette).toBeDefined();
   });
 
-  it('byte 25 bit 7 clear → twoColorRoll=false and resolves to DK-22205', () => {
+  it('byte 25 bit 7 clear → resolves to DK-22205 (single-color, no palette)', () => {
     const status = parseStatus(
       makeStatusBytes({ mediaWidthMm: 62, mediaTypeByte: 0x0a, byte25: 0x01 }),
     );
-    expect(status.twoColorRoll).toBe(false);
     expect(status.detectedMedia?.id).toBe(259);
+    expect(status.detectedMedia?.palette).toBeUndefined();
   });
 
-  it('twoColorRoll is omitted when no media is loaded', () => {
+  it('detectedMedia is omitted when no media is loaded', () => {
     const status = parseStatus(makeStatusBytes({ mediaWidthMm: 0, mediaTypeByte: 0 }));
-    expect(status.twoColorRoll).toBeUndefined();
+    expect(status.detectedMedia).toBeUndefined();
   });
 });
 
 describe('parseStatus — real hardware captures', () => {
-  it('DK-22251 (62mm two-color continuous) resolves to id 251', () => {
+  it('DK-22251 (62mm two-color continuous) resolves to id 251 with palette', () => {
     const status = parseStatus(CAPTURE_DK_22251);
     expect(status.mediaLoaded).toBe(true);
     expect(status.detectedMedia?.id).toBe(251);
-    expect(status.twoColorRoll).toBe(true);
+    expect(status.detectedMedia?.palette).toBeDefined();
     expect(status.errors).toEqual([]);
   });
 
@@ -163,7 +163,7 @@ describe('parseStatus — real hardware captures', () => {
     const status = parseStatus(CAPTURE_DK_22205);
     expect(status.mediaLoaded).toBe(true);
     expect(status.detectedMedia?.id).toBe(259);
-    expect(status.twoColorRoll).toBe(false);
+    expect(status.detectedMedia?.palette).toBeUndefined();
     expect(status.errors).toEqual([]);
   });
 
@@ -171,7 +171,6 @@ describe('parseStatus — real hardware captures', () => {
     const status = parseStatus(CAPTURE_DK_11201);
     expect(status.mediaLoaded).toBe(true);
     expect(status.detectedMedia?.id).toBe(271);
-    expect(status.twoColorRoll).toBe(false);
     expect(status.errors).toEqual([]);
   });
 
@@ -179,7 +178,6 @@ describe('parseStatus — real hardware captures', () => {
     const status = parseStatus(CAPTURE_DK_22214);
     expect(status.mediaLoaded).toBe(true);
     expect(status.detectedMedia?.id).toBe(257);
-    expect(status.twoColorRoll).toBe(false);
     expect(status.errors).toEqual([]);
   });
 });

@@ -194,8 +194,13 @@
     skus: ['DK-11201'],
     category: 'die-cut',
     printAreaDots: 306,
-    leftMarginPins: 0,
-    rightMarginPins: 0,
+    // Left/right margins from Python brother_ql canonical for QL-class
+    // (720-pin) heads: leftMarginPins + printAreaDots + rightMarginPins
+    // = 720. Other DK entries in this file still have 0/0 placeholders
+    // and will need the same backfill — TODO(brother-ql): backfill
+    // remaining DK margin pairs from prior art.
+    leftMarginPins: 6,
+    rightMarginPins: 408,
     dieCutMaskedAreaDots: 991,
   },
   {
