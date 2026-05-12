@@ -89,6 +89,8 @@ MIT © Mannes Brak
 
 ## Functions
 
+- [buildInitialize](functions/buildInitialize.md)
+- [buildInvalidate](functions/buildInvalidate.md)
 - [createPreviewOffline](functions/createPreviewOffline.md)
 - [defaultMediaForEngine](functions/defaultMediaForEngine.md)
 - [encodeJob](functions/encodeJob.md)

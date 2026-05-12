@@ -71,11 +71,18 @@ Human-readable model name, e.g. `'LabelWriter 450'`.
 
 ***
 
-### support
+### ~~support~~
 
 > **support**: `DeviceSupport`
 
 Always defined; defaults to `{ status: 'untested' }`.
+
+#### Deprecated
+
+Author `verifications` instead. Kept populated by
+codegen (synthesised from `verifications` if present, else mapped
+from legacy authoring) so existing consumers keep working
+unchanged. Removed in the cleanup PR once all drivers migrate.
 
 ***
 
@@ -84,3 +91,14 @@ Always defined; defaults to `{ status: 'untested' }`.
 > **transports**: [`DeviceTransports`](DeviceTransports.md)
 
 Wire-protocol transports this device exposes.
+
+***
+
+### verifications?
+
+> `optional` **verifications?**: `Partial`\<`Record`\<[`TransportType`](../type-aliases/TransportType.md), `VerificationCell`\>\>
+
+Per-transport stored verifications. Authored by hardware-report
+PRs; expanded at codegen time into a derived grid (see
+`expandVerifications` in `./expand.js`). When absent, codegen
+falls back to legacy `support.status`.

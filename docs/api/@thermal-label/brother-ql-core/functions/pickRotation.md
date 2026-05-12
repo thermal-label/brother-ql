@@ -50,7 +50,7 @@ Driver family's rotation direction.
 
 ### override?
 
-`0` \| `"auto"` \| `90` \| `180` \| `270`
+`0` \| `180` \| `"auto"` \| `90` \| `270`
 
 Caller's per-print override. `'auto'` means
                         "use the heuristic" (same as omitted).

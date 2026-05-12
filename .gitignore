@@ -16,3 +16,6 @@ packages/*/data/media.json
 # Reference PNGs emitted at repo root by scripts/print-*.mjs
 # (orientation-test*.png, color-label.png, big-label.png, …).
 /*.png
+
+# Vendor reference PDFs — drafting input only, not ours to redistribute
+*.pdf

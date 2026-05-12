@@ -92,12 +92,3 @@ Printer is ready to accept a print job.
 #### Inherited from
 
 [`PrinterStatus`](PrinterStatus.md).[`ready`](PrinterStatus.md#ready)
-
-***
-
-### twoColorRoll?
-
-> `optional` **twoColorRoll?**: `boolean`
-
-True when the loaded roll reports two-color capability via byte 25
-bit 7 of the status response. Undefined when no media is loaded.

@@ -1,406 +1,522 @@
 # QL Raster Protocol
 
-This page documents the USB topology and raster print protocol of Brother **QL**
-label printers (`engine.protocol === 'ql-raster'`), based on hands-on reverse
-engineering conducted while building this driver. It is written for developers
-porting the driver to new languages, debugging hardware issues, or extending
-the existing packages.
+The wire protocol of Brother's QL family of DK-tape label printers —
+the QL-500, 550, 560, 570, 580N, 600, 650TD, 700, 710W, 720NW, 800,
+810W, 820NWB, 1050, 1060N, 1100, 1110NWB, and 1115NWB. Two-colour
+ribbon printing is exclusive to the QL-800, QL-810W, and QL-820NWB
+chassis; everything else is shared across the family.
 
-For the closely related Brother **PT** lineup (PT-P / PT-E), see
-[PT raster protocol](./pt). The two share most opcodes but differ in head
-geometry, feed margin, two-colour support, and high-resolution mode.
-
-::: tip Related pages
-
-- [Protocol overview](./) — index of all protocols implemented in this driver.
-- [Core](../core) documents the TypeScript API (`encodeJob`, `parseStatus`,
-  etc.) that generates the byte streams described here.
-- [Hardware](../hardware) — full QL device list with USB PIDs, head sizes,
-  and verification status.
-  :::
-
-## Models and engines
-
-The QL family covers ~14 models from the entry-level QL-500 through the
-two-colour QL-820NWB and the wide-head QL-1100 series. All models share
-the `ql-raster` protocol slug; per-chassis differences (Editor Lite
-hardware mode, two-colour ribbon, mass-storage PIDs, network transports)
-are surfaced through `engine.capabilities` and chassis-level features
-in the registry. Concrete VID/PID pairs and per-model status are on the
-[Hardware](../hardware) page.
-
-| Head dots | Models                                                                                    |
-| --------- | ----------------------------------------------------------------------------------------- |
-| 720       | QL-500 / 550 / 560 / 570 / 580N / 600 / 650TD / 700 / 710W / 720NW / 800 / 810W / 820NWBc |
-| 1296      | QL-1050 / 1060N / 1100 / 1110NWB / 1115NWB                                                |
-
-Two-colour printing is gated on `engine.capabilities.twoColor` and is
-present only on QL-800 / QL-810W / QL-820NWB.
+The sibling [PT raster protocol](./pt) covers Brother's P-touch
+PT-P / PT-E lineup. PT shares most of QL's opcode shape but differs
+in head geometry, feed margin, high-resolution flag, and per-line
+raster duplication.
 
 ## USB topology
 
-After the device is attached, it enumerates as a composite USB device with a
-single configuration. For example, the QL-820NWB:
-
-```
-Bus 001 Device 004: ID 04f9:20a7 Brother Industries, Ltd. QL-820NWB
-```
+Composite USB device, single configuration. Vendor ID **`0x04F9`**
+(Brother Industries). Per-model PIDs are listed on the
+[Hardware](../hardware) page.
 
 ```
 Configuration 1
-  Interface 0  —  Printer class  (bInterfaceClass 0x07)
-  Interface 1  —  CDC Data       (used by some models for Wi-Fi management)
+  Interface 0 — Printer class (bInterfaceClass 0x07)
+    Bulk OUT  (print data)
+    Bulk IN   (status responses)
+  Interface 1 — CDC Data (Wi-Fi management on networked models)
 ```
 
-### Interface 0 — Printer class (the printing path)
+Networked chassis (QL-710W, 720NW, 810W, 820NWB, 1110NWB, 1115NWB)
+additionally accept the same raster byte stream over raw TCP on port
+**9100**; the QL-820NWB also offers Bluetooth SPP and Bluetooth GATT
+transports. The wire protocol is identical across transports — no
+framing or handshake layer is added.
+
+Several models (QL-700 and later) expose an **Editor Lite** hardware
+mode that re-enumerates the device as USB Mass Storage under a
+different PID. Raster commands are silently discarded while Editor
+Lite is active; the printer must be returned to its normal PID by
+holding the Editor Lite button on the chassis.
+
+## Opcode vocabulary
+
+The byte values below are what the firmware accepts. Multi-byte
+opcodes are listed in alphabetical order of the ASCII spelling.
+
+| Opcode                                                                | Bytes                       | Description                                                       |
+| --------------------------------------------------------------------- | --------------------------- | ----------------------------------------------------------------- |
+| [`NULL`](#null-—-invalidate)                                          | `00`                        | Invalidate — one byte of parser-reset padding.                    |
+| [`ESC @`](#esc-—-initialize)                                          | `1B 40`                     | Initialize — reset mode settings; cancel any in-progress job.     |
+| [`ESC i !`](#esc-i--—-switch-automatic-status-notification-mode)      | `1B 69 21 n`                | Switch automatic status notification mode.                        |
+| [`ESC i A`](#esc-i-a-—-specify-cut-each-n-labels)                     | `1B 69 41 n`                | Specify the page number in "cut each N labels".                   |
+| [`ESC i a`](#esc-i-a-—-switch-dynamic-command-mode)                   | `1B 69 61 n`                | Switch dynamic command mode (`01` = raster).                      |
+| [`ESC i d`](#esc-i-d-—-specify-margin-amount)                         | `1B 69 64 n1 n2`            | Specify margin (feed) amount, little-endian dot count.            |
+| [`ESC i K`](#esc-i-k-—-expanded-mode)                                 | `1B 69 4B n`                | Expanded mode — two-colour, cut-at-end, high-resolution flags.    |
+| [`ESC i M`](#esc-i-m-—-various-mode)                                  | `1B 69 4D n`                | Various mode — autocut flag.                                      |
+| [`ESC i S`](#esc-i-s-—-status-information-request)                    | `1B 69 53`                  | Status information request (32-byte reply).                       |
+| [`ESC i z`](#esc-i-z-—-print-information)                             | `1B 69 7A n1..n10`          | Print information — declare media type, width, length, rasters.   |
+| [`FF`](#ff-—-print-command)                                           | `0C`                        | Print command — end of a non-final page.                          |
+| [`Control-Z`](#control-z-—-print-command-with-feeding)                | `1A`                        | Print command with feeding — end of the final page.               |
+| [`g`](#g-—-raster-graphics-transfer)                                  | `67 00 n d1..dn`            | Raster graphics transfer (monochromatic).                         |
+| [`M`](#m-—-select-compression-mode)                                   | `4D n`                      | Select compression mode (`00` = none, `02` = TIFF/PackBits).      |
+| [`w`](#w-—-two-color-raster-graphics-transfer)                        | `77 c n d1..dn`             | Two-colour raster graphics transfer (`c` = plane: 01 black / 02 red). |
+| [`Z`](#z-—-zero-raster-graphics)                                      | `5A`                        | Zero raster graphics — one fully-blank raster line.               |
+
+## Print job structure
+
+A complete job is a single byte stream sent to the OUT endpoint:
 
 ```
-bInterfaceClass     7   Printer
-bInterfaceSubClass  1   Printer
-bInterfaceProtocol  2   Bidirectional
-  Endpoint 0x02  OUT   Bulk  512 bytes  (print data)
-  Endpoint 0x81  IN    Bulk  512 bytes  (status responses)
+NULL × invalidateBytes      — parser reset (manual: 400 bytes; 200 is the widely-deployed short form)
+ESC i a 01                  — switch to raster command mode
+ESC @                       — initialize
+
+[per page]
+  ESC i z n1..n10           — print information (media, raster count, page index)
+  ESC i M flags             — various mode (autocut)
+  ESC i A 01                — cut-each page count (when autocut is on)
+  ESC i K flags             — expanded mode (two-colour, cut-at-end, high-res)
+  ESC i d n1 n2             — margin (feed) amount in dots
+  [M 02]                    — optional: enable TIFF/PackBits compression
+  [for each raster row]
+    g 00 n d1..dn           — single-colour row
+    or
+    w 01 n d1..dn           — two-colour black plane row
+    w 02 n d1..dn           — two-colour red plane row
+    or
+    Z                       — fully-blank row (compressed mode only)
+  FF                        — non-final page
+  or
+  Control-Z                 — final page
 ```
 
-All print data and status communication flows through Interface 0. You must
-claim this interface via `libusb` (Node.js `usb` package) or the WebUSB API
-in the browser.
+Two-colour rows are interleaved **per raster line**: the black plane
+for row R, then the red plane for row R, then the black plane for row
+R+1, and so on. Planes are not batched.
 
-### Editor Lite / Mass Storage PIDs
+The QL-800 manual specifies a **400-byte** invalidate run and uses
+that length in its worked test-page example. A 200-byte run also
+resets the parser on every QL chassis tested in the field and is the
+length the `pklaus/brother_ql` driver has shipped for years; this
+encoder defaults to 200 and bumps to 400 on two-colour-capable
+chassis (QL-800 / QL-810W / QL-820NWB) to match the manual where it
+matters most. Either run length works in practice — what matters is
+that the run be longer than any in-flight multi-byte command the
+previous job may have left mid-parse.
 
-Models QL-700 and later have an **Editor Lite** hardware mode. When the green
-LED is lit, the device re-enumerates under different USB product IDs:
+The final page of every job must terminate with `Control-Z` (`1A`).
+Ending the last page with `FF` (`0C`) leaves the printed data in the
+buffer unprinted until the next job starts.
 
-| Normal PID | Editor Lite PID | Model      |
-| :--------: | :-------------: | ---------- |
-|  `0x20a7`  |    `0x20a9`     | QL-1100    |
-|  `0x20a8`  |    `0x20aa`     | QL-1110NWB |
-|  `0x20ab`  |    `0x20ac`     | QL-1115NWB |
+## `NULL` — invalidate
 
-In Editor Lite mode the printer presents a mass storage interface. Raster print
-commands are silently discarded. `listPrinters()` detects this and emits a
-console warning. `isMassStorageMode(pid)` is exported from
-`@thermal-label/brother-ql-core` for programmatic detection.
+```
+00
+```
 
-**To exit Editor Lite mode:** hold the Editor Lite button on the printer until
-the green LED turns off. The device will reconnect under its normal PID.
+A single `00` byte. Treated as a no-op by the parser. Sending a run
+of them at the start of a job guarantees the device leaves any partial
+command state from a previous interrupted job — useful precisely
+because the run can be longer than the longest possible mid-command
+expectation.
 
-## Status
+*Brother QL-800/810W/820NWB Raster Command Reference*, p. 22.
 
-Before printing, the driver queries the printer for the currently loaded media.
+## `ESC @` — initialize
 
-### Status request
+```
+1B 40
+```
 
-Send these 3 bytes to the OUT endpoint:
+Resets mode settings to their power-on defaults. Also cancels an
+in-progress job. Emitted immediately after the invalidate run, before
+the first per-page block.
+
+*Brother QL-800/810W/820NWB Raster Command Reference*, p. 28.
+
+## `ESC i !` — switch automatic status notification mode
+
+```
+1B 69 21 n
+```
+
+| `n`  | Behaviour                                              |
+| ---- | ------------------------------------------------------ |
+| `00` | Notify (default) — printer sends phase/status updates. |
+| `01` | Do not notify — printer is silent except on request.   |
+
+Persists until the printer is power-cycled. Useful when the host
+polls explicitly with `ESC i S` rather than reading async status
+frames mid-job.
+
+*Brother QL-800/810W/820NWB Raster Command Reference*, p. 30.
+
+## `ESC i A` — specify cut each N labels
+
+```
+1B 69 41 n
+```
+
+When autocut is enabled (via [`ESC i M`](#esc-i-m-—-various-mode)),
+`n` is the number of labels per cut, in the range `1..255`. Default
+`1` (cut after every label).
+
+*Brother QL-800/810W/820NWB Raster Command Reference*, p. 34.
+
+## `ESC i a` — switch dynamic command mode
+
+```
+1B 69 61 n
+```
+
+| `n`  | Command mode                          |
+| ---- | ------------------------------------- |
+| `00` | ESC/P (default)                       |
+| `01` | Raster — required before raster data. |
+| `03` | P-touch Template                      |
+
+The QL family ships in ESC/P mode by default; raster jobs must
+switch to mode `01` before any raster command will be honoured.
+
+*Brother QL-800/810W/820NWB Raster Command Reference*, p. 29.
+
+## `ESC i d` — specify margin amount
+
+```
+1B 69 64 n1 n2
+```
+
+Feed margin at each end of the printed area, in dots, as a
+little-endian 16-bit value (`margin = n1 + 256 × n2`). On continuous
+tape the margin lands before and after the print region; on die-cut
+labels the margin is fixed at zero regardless of the value sent.
+
+The QL family enforces a minimum feed margin imposed by cutter
+geometry — typical jobs use 35 dots (about 3 mm at 300 dpi).
+
+*Brother QL-800/810W/820NWB Raster Command Reference*, p. 28.
+
+## `ESC i K` — expanded mode
+
+```
+1B 69 4B n
+```
+
+`n` is a bit mask:
+
+| Bit | Mask   | Function                                                          |
+| --: | -----: | ----------------------------------------------------------------- |
+|   0 | `0x01` | Two-colour printing.                                              |
+|   3 | `0x08` | Cut at end (1 = cut after last page; 0 = leave uncut).            |
+|   4 | `0x10` | High-resolution mode (600 dpi in the feed direction; QL-only).    |
+
+Bits 1, 2, 5, 6, 7 are reserved per the encoder's reading (see the
+high-resolution divergence note below — the manual instead reserves
+bits 1, 2, 4, 5, 7 and places high-resolution on bit 6).
+
+Bit 0 is enforced by the firmware on two-colour-capable chassis: if
+DK-22251 (62 mm black-and-red on white) is loaded and bit 0 is
+clear, the printer rejects the job with a "replace media" error,
+even if the raster data itself is single-colour. Set bit 0 whenever
+the job carries `w`-plane raster rows or whenever the loaded tape is
+a multi-ink stock.
+
+The high-resolution bit selects 300 × 600 dpi printing on chassis
+that support it. The QL-800 manual (p. 35, parameter table for
+`ESC i K`) places this bit at **bit 6** (`0x40`, using 0-indexed
+bit numbering — the manual labels it "7bit" in 1-indexed style).
+The bit position that actually toggles 600 dpi on QL hardware in
+the field — and the position long-standing community drivers such
+as `pklaus/brother_ql` set — is **bit 4** (`0x10`). The encoder
+follows the field-observed bit 4; the sibling PT chassis use the
+manual's bit 6. The divergence is unresolved against Brother;
+the bit-4 reading is what ships.
+
+*Brother QL-800/810W/820NWB Raster Command Reference*, p. 35.
+
+## `ESC i M` — various mode
+
+```
+1B 69 4D n
+```
+
+`n` is a bit mask:
+
+| Bit | Mask   | Function                                |
+| --: | -----: | --------------------------------------- |
+|   6 | `0x40` | Autocut (1 = enabled, 0 = disabled).    |
+
+All other bits are reserved.
+
+When autocut is enabled, the number of labels per cut is set by
+[`ESC i A`](#esc-i-a-—-specify-cut-each-n-labels).
+
+*Brother QL-800/810W/820NWB Raster Command Reference*, p. 35.
+
+## `ESC i S` — status information request
 
 ```
 1B 69 53
 ```
 
-(`ESC i S`)
+The printer replies with a fixed-size **32-byte** frame on the IN
+endpoint. Layout:
 
-### Status response (32 bytes)
+| Offset | Size | Field            | Notes                                                              |
+| -----: | ---: | ---------------- | ------------------------------------------------------------------ |
+|      0 |    1 | Print head mark  | Fixed `0x80`. First-byte sanity check for the reply.               |
+|      1 |    1 | Size             | Fixed `0x20` (decimal 32).                                         |
+|      2 |    1 | Reserved         | Fixed `0x42` (`'B'`).                                              |
+|      3 |    1 | Series code      | Fixed `0x34` (`'4'`).                                              |
+|      4 |    1 | Model code       | `0x38` `'8'` = QL-800; `0x39` `'9'` = QL-810W; `0x41` `'A'` = QL-820NWB; other models follow the same one-byte convention. |
+|      5 |    1 | Reserved         | Fixed `0x30` (`'0'`).                                              |
+|      6 |    1 | Reserved         | Fixed `0x30` (`'0'`).                                              |
+|      7 |    1 | Reserved         | `0x00`.                                                            |
+|      8 |    1 | Error info 1     | Bit mask, see below.                                               |
+|      9 |    1 | Error info 2     | Bit mask, see below.                                               |
+|     10 |    1 | Media width (mm) | e.g. `0x3E` = 62 mm.                                               |
+|     11 |    1 | Media type       | `0x4A` continuous, `0x4B` die-cut, `0x00` no media.                |
+|     12 |    1 | Reserved         | `0x00`.                                                            |
+|     13 |    1 | Reserved         | `0x00`.                                                            |
+|     14 |    1 | Reserved         | `0x3F`.                                                            |
+|     15 |    1 | Mode             | Value last set via `ESC i M`, or `0x00`.                           |
+|     16 |    1 | Reserved         | `0x00`.                                                            |
+|     17 |    1 | Media length (mm)| `0x00` for continuous; label length for die-cut.                   |
+|     18 |    1 | Status type      | See below.                                                         |
+|     19 |    1 | Phase type       | `0x00` receiving, `0x01` printing.                                 |
+|     20 |    1 | Phase number high| Big-endian, currently `0x00`.                                      |
+|     21 |    1 | Phase number low | Big-endian, currently `0x00`.                                      |
+|     22 |    1 | Notification     | `0x00` none, `0x03` cooling started, `0x04` cooling finished.      |
+|     23 |    1 | Reserved         | `0x00`.                                                            |
+|  24–31 |    8 | Reserved         | `0x00`.                                                            |
 
-The printer replies with exactly 32 bytes on the IN endpoint:
+### Error info 1 (offset 8)
 
-| Offset | Field             | Notes                                                 |
-| -----: | ----------------- | ----------------------------------------------------- |
-|      0 | `0x80`            | Print head mark                                       |
-|      1 | `0x20`            | Size — always 32                                      |
-|      2 | `0x42`            | ASCII `'B'` — Brother                                 |
-|      3 | `0x30`            | ASCII `'0'` — QL series                               |
-|    4–5 | Model code        |                                                       |
-|      6 | Country code      |                                                       |
-|      8 | Error info 1      | See bit table below                                   |
-|      9 | Error info 2      | See bit table below                                   |
-|     10 | Media width (mm)  | e.g. `0x3E` = 62 mm                                   |
-|     11 | Media type        | `0x0A` continuous, `0x0B` die-cut                     |
-|     17 | Media length (mm) | `0x00` for continuous; label length in mm for die-cut |
-|     18 | Status type       | `0x00` reply, `0x02` error                            |
-|     19 | Phase type        |                                                       |
-|  20–21 | Phase number      | Big-endian                                            |
+| Bit | Mask   | Meaning                                                            |
+| --: | -----: | ------------------------------------------------------------------ |
+|   0 | `0x01` | No media.                                                          |
+|   1 | `0x02` | End of media (die-cut only).                                       |
+|   2 | `0x04` | Cutter jam.                                                        |
+|   3 | `0x08` | Not used (manual lists no name).                                   |
+|   4 | `0x10` | Printer in use.                                                    |
+|   5 | `0x20` | Printer turned off.                                                |
+|   6 | `0x40` | High-voltage adapter (manual notes "not used").                    |
+|   7 | `0x80` | Fan motor error (manual notes "not used").                         |
 
-Byte 0 (`0x80`) is the fastest way to confirm you got a valid response rather
-than leftover USB noise.
+### Error info 2 (offset 9)
 
-#### Error info 1 (byte 8)
+| Bit | Mask   | Meaning                                                            |
+| --: | -----: | ------------------------------------------------------------------ |
+|   0 | `0x01` | Replace media (wrong media for current job).                       |
+|   1 | `0x02` | Expansion buffer full.                                             |
+|   2 | `0x04` | Communication error.                                               |
+|   3 | `0x08` | Communication buffer full (manual notes "not used").               |
+|   4 | `0x10` | Cover open.                                                        |
+|   5 | `0x20` | Cancel key (manual notes "not used").                              |
+|   6 | `0x40` | Media cannot be fed (also: media end).                             |
+|   7 | `0x80` | System error.                                                      |
 
-| Bit | Error                |
-| --: | -------------------- |
-|   0 | No media             |
-|   1 | End of media         |
-|   2 | Cutter jam           |
-|   3 | Weak battery         |
-|   4 | Printer in use       |
-|   6 | High voltage adapter |
-|   7 | Fan motor error      |
+### Status type (offset 18)
 
-#### Error info 2 (byte 9)
+| Value         | Meaning                          |
+| ------------- | -------------------------------- |
+| `0x00`        | Reply to status request.         |
+| `0x01`        | Printing completed.              |
+| `0x02`        | Error occurred.                  |
+| `0x04`        | Turned off.                      |
+| `0x05`        | Notification.                    |
+| `0x06`        | Phase change.                    |
+| `0x08`–`0x20` | (Manual marks "not used".)       |
+| `0x21`–`0xFF` | Reserved.                        |
 
-| Bit | Error                     |
-| --: | ------------------------- |
-|   0 | Replace media             |
-|   1 | Expansion buffer full     |
-|   2 | Transmission error        |
-|   3 | Communication buffer full |
-|   4 | Cover open                |
-|   5 | Cancel key                |
-|   6 | Media cannot be fed       |
-|   7 | System error              |
+The encoder treats only `0x02` (error occurred) as a non-ready
+signal; the other defined values, including `0x04` "turned off",
+are not surfaced to callers as distinct conditions.
 
-## Print job structure
+Bytes 24–31 are documented as reserved (fixed `0x00`) in the
+manual. The driver code parses **bit 7 of offset 25** as a
+"two-colour roll loaded" flag on chassis that report it (i.e.
+DK-22251 on QL-800 / 810W / 820NWB); this bit is not described
+in the manual and the convention is inherited from on-the-wire
+analysis. All other bits of offsets 24–31 remain reserved.
 
-A complete job consists of a fixed preamble followed by one or more pages, each
-terminated by a print command. All values are hexadecimal.
+The status request should be issued **once** before sending print
+data; during printing the printer emits status frames autonomously
+unless silenced via [`ESC i !`](#esc-i--—-switch-automatic-status-notification-mode).
 
-::: tip Verified against hardware
-The sequence below was verified by byte-comparing against live captures from the
-Python `brother_ql` library on a QL-820NWBc with DK-22251 tape. Several details
-differ from older documentation and from the official command reference.
-:::
+*Brother QL-800/810W/820NWB Raster Command Reference*, pp. 22–27.
 
-```
-(0) RASTER MODE       — 1B 69 61 01          ← FIRST, before invalidate
-(1) INVALIDATE        — 200 × 0x00
-(2) INITIALIZE        — 1B 40
-(3) [for each page]
-    a) RASTER MODE    — 1B 69 61 01
-    b) STATUS REQUEST — 1B 69 53             ← triggers 32-byte response on IN
-    c) PRINT INFO     — 1B 69 7A [10 bytes]
-    d) VARIOUS MODE   — 1B 69 4D [flags]
-    e) CUT EACH       — 1B 69 41 01
-    f) EXPANDED MODE  — 1B 69 4B [flags]
-    g) MARGIN         — 1B 69 64 [n1] [n2]
-    [raster rows]
-    h) PRINT COMMAND  — 0C (not last page) / 1A (last page)
-```
-
-### (0) Raster mode before invalidate — `1B 69 61 01`
-
-The working sequence observed from hardware sends raster mode **before** the
-200-byte invalidate, not after it. Sending raster mode after initialize (as
-some documentation suggests) does not trigger the same response from the
-QL-820NWB series firmware.
-
-### (1) Invalidate — 200 × `0x00`
-
-Clears any partial command the printer may have buffered from a previous
-interrupted job. **200 null bytes**, not 400 — this is what the Python
-`brother_ql` library sends and what the printer expects.
-
-### (2) Initialize — `1B 40`
-
-Resets the printer's internal state machine.
-
-### (a) Raster mode — `1B 69 61 01`
-
-Sent again at the start of each page's control block.
-
-### (b) Status request — `1B 69 53`
-
-Sent per-page as part of the command stream. The printer responds with a
-32-byte status packet on the IN endpoint. The driver does not read this
-mid-job response; the printer continues processing subsequent commands
-regardless. This is distinct from `1B 69 21 00` (status notification
-disable), which is a different command.
-
-### (c) Print information — `1B 69 7A [10 bytes]`
-
-13 bytes total. The 10 parameter bytes:
-
-| Offset | Field             | Notes                                                          |
-| -----: | ----------------- | -------------------------------------------------------------- |
-|      0 | Valid flags       | Bit 1 = width valid, bit 2 = type valid, bit 6 = recovery mode |
-|      1 | Media type        | `0x0A` continuous, `0x0B` die-cut                              |
-|      2 | Media width (mm)  | e.g. `0x3E` = 62                                               |
-|      3 | Media length (mm) | `0x00` for continuous                                          |
-|    4–5 | Row count         | Total raster rows, little-endian 16-bit                        |
-|      6 | Page index        | 0-indexed                                                      |
-|    7–9 | Reserved          | `0x00`                                                         |
-
-Row count is the total number of raster rows in the page (i.e. the label height
-in pixels at the print resolution). For QL printers the print resolution is
-300 DPI along both axes; feed resolution can be doubled to 600 DPI via the
-expanded mode flag.
-
-### (d) Various mode — `1B 69 4D [flags]`
-
-One flag byte:
-
-| Bit | Function               |
-| --: | ---------------------- |
-|   6 | Auto-cut (1 = enabled) |
-|   3 | Mirror printing        |
-
-### (e) Cut each — `1B 69 41 01`
-
-Instructs the printer to cut after every label in a multi-page job. Send
-`0x01` unconditionally — the various mode auto-cut flag controls whether the
-final cut happens at all; this command controls cuts between pages.
-
-### (f) Expanded mode — `1B 69 4B [flags]`
-
-One flag byte:
-
-| Bit | Function                                 |
-| --: | ---------------------------------------- |
-|   0 | Two-color mode (required for DK-22251)   |
-|   3 | Cut at end of job                        |
-|   4 | High resolution (600 DPI feed direction) |
-
-**Bit 0 is critical for two-color tape.** The QL-820NWB series firmware checks
-this flag against the loaded media. If DK-22251 (black+red) tape is installed
-and bit 0 is not set, the printer displays "wrong roll type" and refuses to
-print — even if the raster data itself is valid. Set bit 0 whenever the job
-contains `0x77` (two-color) raster rows, or whenever the media descriptor has
-a `palette` defined.
-
-### (g) Margin — `1B 69 64 [n1] [n2]`
-
-Feed margin before the label, in dots, as a little-endian 16-bit value. QL
-printers have a minimum feed margin of a few mm imposed by the cutter geometry.
-Setting `n1 = 0x00, n2 = 0x00` uses the printer's hardware minimum.
-
-### Raster rows
-
-Each raster row is 93 bytes: a 3-byte command header followed by 90 bytes of
-pixel data (720 dots, 1 bit per pixel, MSB first).
-
-**Single-color (black):**
+## `ESC i z` — print information
 
 ```
-67 00 5A [90 bytes]
+1B 69 7A n1 n2 n3 n4 n5 n6 n7 n8 n9 n10
 ```
 
-(`0x67` = row command, `0x00` = plane ID, `0x5A` = length 90)
+Declares the media and raster geometry of the page that follows. The
+ten parameter bytes:
 
-**Two-color black layer:**
+| Byte    | Field            | Notes                                                              |
+| ------- | ---------------- | ------------------------------------------------------------------ |
+| `n1`    | Valid flags      | Bit 1 (`0x02`) media type valid; bit 2 (`0x04`) media width valid; bit 3 (`0x08`) media length valid; bit 6 (`0x40`) priority on print quality (manual marks this invalid for two-colour printing); bit 7 (`0x80`) printer recovery always on. |
+| `n2`    | Media type       | `0x0A` continuous tape, `0x0B` die-cut label, `0x00` unspecified.  |
+| `n3`    | Media width (mm) | e.g. `0x3E` = 62.                                                  |
+| `n4`    | Media length (mm)| `0x00` for continuous; label length for die-cut.                   |
+| `n5–n8` | Raster count     | Little-endian 32-bit total raster line count for this page.        |
+| `n9`    | Page position    | `0x00` first page of job, `0x01` subsequent pages.                 |
+| `n10`   | Reserved         | `0x00`.                                                            |
 
-```
-77 01 5A [90 bytes]
-```
+For two-colour pages the raster count is the number of complete
+black-plus-red line pairs, i.e. one less than the total wire-level
+raster opcodes the page will emit.
 
-**Two-color red layer:**
+If the loaded media does not match `n2`/`n3`/`n4` and the
+corresponding valid-flag bits are set, the printer raises bit 0 of
+Error info 2 (`replace media`) and aborts the page.
 
-```
-77 02 5A [90 bytes]
-```
+*Brother QL-800/810W/820NWB Raster Command Reference*, p. 32.
 
-(`0x77` = two-color row command, `0x01`/`0x02` = plane ID)
-
-For two-color jobs, rows are **interleaved per line**: black row N immediately
-followed by red row N, then black row N+1, red row N+1, and so on. The layers
-are not batched (all-black then all-red).
-
-For labels narrower than 720 dots, the pixel data must still be 90 bytes.
-Content is placed at `leftMarginPins` bit offset within the row; unused dots
-are zero. The Print Information command tells the printer the active dot count;
-the printer handles the margins internally.
-
-### (h) Print command
-
-|  Byte  | Meaning                       |
-| :----: | ----------------------------- |
-| `0x0C` | Print page, more pages follow |
-| `0x1A` | Print page, end of job        |
-
-The last page of every job **must** end with `0x1A`. Ending with `0x0C` causes
-the final page to sit in the printer buffer unprinted until the next job starts.
-
-## TIFF compression
-
-Before the raster rows, optionally send:
+## `FF` — print command
 
 ```
-4D 02
+0C
 ```
 
-This enables TIFF-style RLE compression for the remainder of the page. In
-compressed mode a fully blank raster row can be sent as the single byte `0x5A`
-instead of the full 92-byte row.
+Ends a non-final page. The printed page advances to the cutter and
+(if autocut is enabled) is cut. The next page begins immediately.
 
-| Mode         |   Empty row encoding   | Behavior                                        |
-| ------------ | :--------------------: | ----------------------------------------------- |
-| Uncompressed | 92 bytes (`67 00 00…`) | Printer prints rows as they arrive (concurrent) |
-| Compressed   |     1 byte (`5A`)      | Printer buffers the full page before printing   |
+*Brother QL-800/810W/820NWB Raster Command Reference*, p. 31.
 
-The Node.js driver uses **uncompressed** mode for USB (concurrent printing is
-safe and latency is low) and **compressed** mode for TCP (buffered mode avoids
-timing issues over network paths where packet delivery is less predictable).
+## `Control-Z` — print command with feeding
 
-## Two-color encoding rules
-
-Two-color printing is only available on devices with the `twoColor` flag set in
-the device descriptor (QL-800, QL-810W, QL-820NWB, QL-820NWBc).
-
-- Both bitmaps must have identical dimensions.
-- A pixel must not be set in both layers simultaneously. Black takes priority
-  if violated.
-- Expanded mode **bit 0 must be set** in the per-page command block.
-- Rows are interleaved: black row N, red row N, black row N+1, red row N+1, …
-
-### DK-22251 tape requires two-color mode
-
-The DK-22251 label (62mm black+red on white, marked "251" on the roll) is a
-two-color tape. When it is loaded, the printer **enforces** two-color mode and
-rejects single-color jobs with a "wrong roll type" error — even if you only
-intend to print black.
-
-Use `--media 251` (or media ID `251` in the API) to target this tape. The
-driver automatically sets expanded mode bit 0 and sends an empty red plane when
-no red bitmap is provided. The `valid_flags` byte in the Print Information
-command is `0xCE` for all QL-820NWB series jobs (single-color and two-color).
-
-## TCP printing
-
-Brother QL printers with Wi-Fi or LAN connectivity accept the same raster byte
-stream over a raw TCP connection on **port 9100**. The protocol is identical to
-USB — the same invalidate preamble, the same command sequence, the same raster
-rows — with no framing or handshake layer added.
-
-The driver uses compressed (TIFF RLE) mode over TCP because the network path
-may introduce reordering or fragmentation that makes concurrent printing
-unreliable.
-
-```typescript
-const printer = await discovery.openPrinter({ host: '192.168.1.100' }); // default port 9100
+```
+1A
 ```
 
-## WebUSB
+Ends the final page of a job. Performs the same advance as `FF` and
+then feeds the trailing margin so the cut lands cleanly. Every job
+must end with exactly one `Control-Z`; ending with `FF` leaves the
+final page in the buffer until the next job arrives.
 
-The `@thermal-label/brother-ql-web` package uses the browser
-[WebUSB API](https://developer.mozilla.org/en-US/docs/Web/API/WebUSB_API).
+*Brother QL-800/810W/820NWB Raster Command Reference*, p. 31.
 
-```typescript
-device.open()
-  → device.selectConfiguration(1)
-  → device.claimInterface(0)
+## `g` — raster graphics transfer
+
+```
+67 00 n d1..dn
 ```
 
-Print data is sent via `device.transferOut(2, chunk)` (endpoint 2 = OUT) and
-status is read via `device.transferIn(1, 32)` (endpoint 1 = IN endpoint address
-`0x81`). The byte stream is identical to what the Node.js USB driver sends.
+`0x67` is the single-plane raster opcode. The first parameter byte
+is fixed at `0x00`. The second is the byte length `n` of the pixel
+payload that follows: `0x5A` (90 bytes = 720 dots) on 720-pin heads,
+`0xA2` (162 bytes = 1296 dots) on 1296-pin heads, when no compression
+is in effect. With compression on (`M 02`), `n` is the post-PackBits
+byte length and may be smaller — but always decodes to the
+head's full pin width.
 
-WebUSB requires a secure context (`https://` or `localhost`) and is supported
-in Chrome 89+ and Edge 89+. Firefox and Safari do not implement WebUSB.
+Pixel data is MSB-first within each byte. Bit 7 of `d1` is the pin
+nearest pin 0 of the head; bit 0 of `dn` is the pin furthest from
+pin 0. Tapes narrower than the head are centred by placing the
+active payload at the correct bit offset within the row and zeroing
+the unused margin pins.
+
+The feed direction is **against** the print head: each raster row
+emitted advances the tape one dot row past the head.
+
+*Brother QL-800/810W/820NWB Raster Command Reference*, p. 30.
+
+## `M` — select compression mode
+
+```
+4D n
+```
+
+| `n`  | Compression                              |
+| ---- | ---------------------------------------- |
+| `00` | None (default).                          |
+| `01` | Reserved (manual marks disabled).        |
+| `02` | TIFF / PackBits.                         |
+
+Affects the encoding of `g` and `w` raster rows until the printer is
+re-initialized. In compressed mode a fully-blank raster row may also
+be emitted as the single-byte [`Z`](#z-—-zero-raster-graphics)
+opcode instead of a full PackBits payload.
+
+PackBits is standard TIFF run-length encoding (see References). Each
+encoded run is a signed header byte followed by data:
+
+| Header byte (signed) | Meaning                                             |
+| -------------------- | --------------------------------------------------- |
+| `0..127`             | Literal — the next `header + 1` bytes are verbatim. |
+| `-127..-1`           | Repeat — the next byte repeats `1 - header` times.  |
+| `-128`               | No-op (unused by typical encoders).                 |
+
+If the compressed output exceeds the uncompressed length (90 / 162
+bytes per row depending on chassis), the encoder falls back to
+sending the row verbatim.
+
+The QL-800 firmware does not implement compression mode; QL-810W,
+QL-820NWB, and the QL-1100 series do.
+
+*Brother QL-800/810W/820NWB Raster Command Reference*, p. 33.
+
+## `w` — two-colour raster graphics transfer
+
+```
+77 c n d1..dn
+```
+
+`0x77` is the two-plane raster opcode, supported on QL-800,
+QL-810W, and QL-820NWB. The first parameter byte selects the
+plane:
+
+| `c`  | Plane                          |
+| ---- | ------------------------------ |
+| `01` | First colour (high energy).    |
+| `02` | Second colour (low energy).    |
+
+`n` is the payload length, identical to the `g` opcode (`0x5A` for
+720-pin heads when uncompressed). Black-and-red DK tapes use plane
+`01` for the black layer (higher strobe energy) and plane `02` for
+the red layer.
+
+Both planes must be emitted for every raster line, interleaved
+black-then-red. A pixel set in both planes is printed black; the
+firmware does not blend.
+
+*Brother QL-800/810W/820NWB Raster Command Reference*, p. 30.
+
+## `Z` — zero raster graphics
+
+```
+5A
+```
+
+One-byte opcode that decodes to a fully-blank raster row at the
+current head width. Valid only when compression is enabled via
+[`M 02`](#m-—-select-compression-mode); the QL-800 firmware does not
+support it.
+
+*Brother QL-800/810W/820NWB Raster Command Reference*, p. 31.
 
 ## References
 
-- [`pklaus/brother_ql`](https://github.com/pklaus/brother_ql) — the
-  reference Python driver. The byte sequences on this page were
-  cross-checked against live captures from this library on a
-  QL-820NWBc with DK-22251 tape.
+- _Software Developer's Manual — Raster Command Reference,
+  QL-800 / 810W / 820NWB_, Brother Industries, Ltd., Version 1.01
+  (2016). Authoritative byte-level reference for the two-colour QL
+  chassis; the single-colour QL family (QL-500 through QL-720NW and
+  the QL-1050 / 1060N / 1100 series) follows the same command set
+  minus the `w` two-plane opcode and the `M` / `Z` compression
+  opcodes on QL-800. Cited inline by page; not redistributed.
+- _TIFF 6.0 Specification_, Aldus Corporation (1992), § 9
+  "PackBits compression". The compression scheme `M 02` selects.
+  Accessible mirror:
+  [libtiff TIFF 6.0 spec PDF](https://download.osgeo.org/libtiff/doc/TIFF6.pdf).
+- [`pklaus/brother_ql`](https://github.com/pklaus/brother_ql) —
+  Python driver implementing the QL command set against captured
+  hardware traces. Reference for the 200-byte invalidate length,
+  the per-line black/red interleave order, and the `ESC i K` bit-4
+  high-resolution flag observed on QL hardware (where the published
+  manual lists bit 6).
 - [`fuzeman/brother-label`](https://github.com/fuzeman/brother-label)
-  — Python project that ships QL and PT in a single `BrotherDevice`
-  hierarchy. Source for the QL-vs-PT feature flags
-  (`compression`, `mode_setting`, `feed_margin = 35`,
-  `num_invalidate_bytes`, `two_color`).
-- _Brother Raster Command Reference Manual_ (Brother). Vendor
-  documentation for the QL raster command set; cited inline. Not
-  redistributed.
-- Implementation in this driver:
-  - `packages/core/src/protocol.ts` — encoder
-    (`QL_PROTOCOL_CONFIG` and `encodeRasterJob`).
-  - `packages/core/src/status.ts` — 32-byte status parser.
-  - `packages/core/src/devices.generated.ts` — Editor Lite
-    PID detection.
+  — Python driver covering QL and PT in one device hierarchy.
+  Reference for the 35-dot QL feed margin and the QL-vs-PT
+  high-resolution flag-bit split.

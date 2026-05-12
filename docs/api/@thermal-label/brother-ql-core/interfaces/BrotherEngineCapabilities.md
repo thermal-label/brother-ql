@@ -44,7 +44,7 @@ Auto-cutter on this engine's paper path.
 
 ### highResDpi?
 
-> `optional` **highResDpi?**: `720` \| `360`
+> `optional` **highResDpi?**: `360` \| `720`
 
 Doubled-density mode along the feed axis (`ESC i K` bit 6).
 `360` on PT-E550W / PT-P750W (native 180); `720` on the PT-P900

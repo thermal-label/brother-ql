@@ -177,6 +177,13 @@ emits. The read loop is the sole reader of the bulk-IN pipe —
 subscription receives the response (alongside any spontaneous
 frames; see `onStatus()`).
 
+The QL preamble (200×0x00 invalidate + `ESC @` initialize) is
+sent only when the parser hasn't been confirmed clean — first
+call of the session, or after a previous timeout. Steady-state
+polls send bare `ESC iS`. Bench observation: a freshly-opened QL
+doesn't reply to bare `ESC iS` until the invalidate flushes any
+stale parser state from a prior session.
+
 #### Returns
 
 `Promise`\<[`BrotherQLStatus`](../../brother-ql-core/interfaces/BrotherQLStatus.md)\>

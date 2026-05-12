@@ -86,4 +86,4 @@ at job-build time otherwise. PT-* only — QL ignores the option.
 
 ### rotate?
 
-> `optional` **rotate?**: `0` \| `"auto"` \| `90` \| `180` \| `270`
+> `optional` **rotate?**: `0` \| `180` \| `"auto"` \| `90` \| `270`
