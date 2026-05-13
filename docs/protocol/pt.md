@@ -53,7 +53,7 @@ TCP on port 9100. The wire format is identical across transports.
 ## Print job structure
 
 ```
-NULL × 200           — invalidate (560-pin family; the 128-pin family is reported by third-party drivers to use 100, but the encoder ships 200 for both)
+NULL × 200           — invalidate (560-pin family; third-party drivers report 100 for the 128-pin family — treat 200 as a safe over-count)
 ESC @                — initialize
 ESC i a 01           — switch to raster mode
 [per page]
@@ -79,8 +79,8 @@ Compressed and uncompressed rows must not be mixed within a single
 page — `M 02` is sticky for the rest of the job and applies to every
 subsequent `G` payload until the next `ESC @`. In uncompressed mode,
 each `G` row carries exactly `headDots / 8` bytes — `70` on the
-560-pin head (manual p. 20), and the encoder hardcodes `16` on the
-128-pin head. In compressed mode, `G`'s `n1/n2` bytes carry the
+560-pin head (manual p. 20), `16` on the 128-pin head. In
+compressed mode, `G`'s `n1/n2` bytes carry the
 post-compression payload length and the decoded line is always
 `headDots / 8` bytes wide. Per p. 38, if a row's compressed form
 would exceed 70 bytes the firmware accepts a 71-byte literal-only
@@ -127,11 +127,10 @@ receiving state, which is why every job begins with a fixed-size run
 of zero bytes before the first real opcode.
 
 The 560-pin manual specifies a 200-byte invalidate run before
-`ESC @`. The encoder emits 200 bytes for both head families because
-the 128-pin manual edition (covering PT-E550W / PT-P750W) is not on
-hand to confirm a different count; third-party drivers report 100
-bytes for the 128-pin chassis, which the encoder treats as a safe
-over-count rather than a hard divergence.
+`ESC @`. The 128-pin manual edition (covering PT-E550W / PT-P750W)
+is not in hand to confirm a different count; third-party drivers
+report 100 bytes for the 128-pin chassis. Sending 200 on either
+head family is safe as an over-count.
 
 *Raster Command Reference — PT-P900/P900W/P950NW/P910BT*, pp. 5, 22.
 
@@ -391,7 +390,7 @@ length and the decoded line is still `headDots / 8` bytes wide.
 Note: PDF p. 40 reads "Hexadecimal: 47" in the per-command panel —
 that's a typo for the ASCII `'G'` codepoint. The print-command list
 on p. 22 and every observed wire capture put the opcode at `0x67`
-(ASCII `'g'`); the encoder emits `0x67` accordingly.
+(ASCII `'g'`) — `0x67` is the on-the-wire value.
 
 Each raster row covers the full head width; content is placed at the
 cassette's left-margin pin count, with unused dots zeroed. Cassette
@@ -401,8 +400,7 @@ left/right margins per width are in
 When high-resolution mode is on (see
 [`ESC i K`](#esc-i-k-—-advanced-mode-settings) bit 6), each `G`
 payload must be transmitted twice in succession. The 560-pin manual
-doesn't spell this out; the rule is from nbuchwitz/ptouch and matches
-the encoder's `duplicateRasterLines` branch.
+doesn't spell this out; the rule is documented in nbuchwitz/ptouch.
 
 *Raster Command Reference — PT-P900/P900W/P950NW/P910BT*, p. 40.
 

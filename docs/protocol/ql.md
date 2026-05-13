@@ -209,9 +209,9 @@ geometry — typical jobs use 35 dots (about 3 mm at 300 dpi).
 |   3 | `0x08` | Cut at end (1 = cut after last page; 0 = leave uncut).            |
 |   4 | `0x10` | High-resolution mode (600 dpi in the feed direction; QL-only).    |
 
-Bits 1, 2, 5, 6, 7 are reserved per the encoder's reading (see the
-high-resolution divergence note below — the manual instead reserves
-bits 1, 2, 4, 5, 7 and places high-resolution on bit 6).
+Bits 1, 2, 5, 6, 7 are reserved per the field-observed reading (see
+the high-resolution divergence note below — the manual instead
+reserves bits 1, 2, 4, 5, 7 and places high-resolution on bit 6).
 
 Bit 0 is enforced by the firmware on two-colour-capable chassis: if
 DK-22251 (62 mm black-and-red on white) is loaded and bit 0 is
@@ -226,10 +226,9 @@ that support it. The QL-800 manual (p. 35, parameter table for
 bit numbering — the manual labels it "7bit" in 1-indexed style).
 The bit position that actually toggles 600 dpi on QL hardware in
 the field — and the position long-standing community drivers such
-as `pklaus/brother_ql` set — is **bit 4** (`0x10`). The encoder
-follows the field-observed bit 4; the sibling PT chassis use the
-manual's bit 6. The divergence is unresolved against Brother;
-the bit-4 reading is what ships.
+as `pklaus/brother_ql` set — is **bit 4** (`0x10`). The sibling PT
+chassis follow the manual's bit 6; the divergence is unresolved
+against Brother.
 
 *Brother QL-800/810W/820NWB Raster Command Reference*, p. 35.
 
@@ -328,13 +327,9 @@ endpoint. Layout:
 | `0x08`–`0x20` | (Manual marks "not used".)       |
 | `0x21`–`0xFF` | Reserved.                        |
 
-The encoder treats only `0x02` (error occurred) as a non-ready
-signal; the other defined values, including `0x04` "turned off",
-are not surfaced to callers as distinct conditions.
-
 Bytes 24–31 are documented as reserved (fixed `0x00`) in the
-manual. The driver code parses **bit 7 of offset 25** as a
-"two-colour roll loaded" flag on chassis that report it (i.e.
+manual. **Bit 7 of offset 25** carries a "two-colour roll loaded"
+flag on chassis that report it (i.e.
 DK-22251 on QL-800 / 810W / 820NWB); this bit is not described
 in the manual and the convention is inherited from on-the-wire
 analysis. All other bits of offsets 24–31 remain reserved.
@@ -450,8 +445,8 @@ encoded run is a signed header byte followed by data:
 | `-128`               | No-op (unused by typical encoders).                 |
 
 If the compressed output exceeds the uncompressed length (90 / 162
-bytes per row depending on chassis), the encoder falls back to
-sending the row verbatim.
+bytes per row depending on chassis), implementations switch back to
+uncompressed mode for that row.
 
 The QL-800 firmware does not implement compression mode; QL-810W,
 QL-820NWB, and the QL-1100 series do.
