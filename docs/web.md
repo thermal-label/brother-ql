@@ -211,5 +211,10 @@ if (device) {
 | `WebBrotherQLPrinter`      | Adapter class                         |
 | `DEFAULT_FILTERS`          | Brother QL VID/PID filter set         |
 
-See the live demo at [/demo](/demo/brother-ql) — connect a real printer to print
-directly from the browser.
+For a guided pair-and-print flow with a diagnostic print and a
+verification-report submission, see the hardware harness. The
+brother-ql harness app lives at
+[github.com/thermal-label/harness](https://github.com/thermal-label/harness)
+under `apps/harness-brother-ql/` — bench-only for now; the hosted
+bundle will land at
+`https://thermal-label.github.io/harness/brother-ql/` once it ships.

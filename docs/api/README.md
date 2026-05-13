@@ -99,7 +99,7 @@ Full docs at **<https://thermal-label.github.io/brother-ql/>**.
 - [Protocol reference](https://thermal-label.github.io/brother-ql/protocol/) — [QL raster](https://thermal-label.github.io/brother-ql/protocol/ql) · [PT raster](https://thermal-label.github.io/brother-ql/protocol/pt)
 - [Troubleshooting](https://thermal-label.github.io/brother-ql/troubleshooting)
 - [API reference](https://thermal-label.github.io/brother-ql/api/)
-- [Live demo](https://thermal-label.github.io/demo/brother-ql)
+- [Hardware harness](https://github.com/thermal-label/harness) — bench-only for brother-ql; LM + LW harnesses are hosted at `/harness/<driver>/`.
 
 ## Packages
 

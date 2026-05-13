@@ -9,9 +9,6 @@ hero:
     - theme: brand
       text: Get started
       link: /getting-started
-    - theme: brand
-      text: Try it now →
-      link: /demo
     - theme: alt
       text: GitHub
       link: https://github.com/thermal-label/brother-ql
@@ -38,10 +35,10 @@ features:
     link: /protocol/
     linkText: Protocol guide
   - icon: 🖨️
-    title: Live demo
-    details: Type a label, see a live 1bpp bitmap preview. Connect a Brother QL via WebUSB to print it instantly.
-    link: /demo
-    linkText: Open demo
+    title: Hardware harness
+    details: Bench-only for now — apps/harness-brother-ql/ on github.com/thermal-label/harness drives identity probe, a single diagnostic print, and a verification-report flow. Hosted bundle lands at /harness/brother-ql/ once it ships.
+    link: https://github.com/thermal-label/harness
+    linkText: Source on GitHub
 ---
 
 <div class="home-extra">
