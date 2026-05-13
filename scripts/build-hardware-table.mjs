@@ -35,6 +35,11 @@ const REPO_ROOT = resolve(SCRIPT_DIR, '..');
 const DEVICES_JSON = resolve(REPO_ROOT, 'packages/core/data/devices.json');
 const README_PATH = resolve(REPO_ROOT, 'README.md');
 const HW_DOC_PATH = resolve(REPO_ROOT, 'docs/hardware.md');
+const PKG_README_PATHS = [
+  resolve(REPO_ROOT, 'packages/core/README.md'),
+  resolve(REPO_ROOT, 'packages/node/README.md'),
+  resolve(REPO_ROOT, 'packages/web/README.md'),
+];
 
 // Per-driver constants. Change the DRIVER value to retarget this
 // script at a different driver repo without touching anything else.
@@ -136,32 +141,56 @@ function renderSection(devices) {
 
 function escapeRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 
-function patchFile(path, section, { required }) {
+function patchFile(path, section, { required, autoInject }) {
   if (!existsSync(path)) {
     if (required) die(`${path}: not found`);
     log(`${path}: not found, skipping`);
-    return;
+    return { written: false, injected: false };
   }
-  const original = readFileSync(path, 'utf8');
+  let original = readFileSync(path, 'utf8');
+  let injected = false;
   if (!original.includes(MARKER_START) || !original.includes(MARKER_END)) {
-    die(`${path} is missing ${MARKER_START} / ${MARKER_END} markers — add them where the table should appear`);
+    if (!autoInject) {
+      die(`${path} is missing ${MARKER_START} / ${MARKER_END} markers — add them where the table should appear`);
+    }
+    // Inject a default ## Supported hardware section. Place it before any
+    // trailing ## License / ## References heading; otherwise append.
+    const block = `\n## Supported hardware\n\n${MARKER_START}\n${MARKER_END}\n`;
+    const trailingRe = /\n(## (?:License|References)\b[\s\S]*)$/;
+    if (trailingRe.test(original)) {
+      original = original.replace(trailingRe, `${block}\n$1`);
+    } else {
+      original = original.replace(/\s*$/, '') + '\n' + block;
+    }
+    injected = true;
   }
   const re = new RegExp(`${escapeRe(MARKER_START)}[\\s\\S]*?${escapeRe(MARKER_END)}`);
   const replaced = original.replace(re, `${MARKER_START}\n${section}\n${MARKER_END}`);
-  if (replaced === original) {
+  if (replaced === readFileSync(path, 'utf8')) {
     log(`${path}: no change`);
-    return;
+    return { written: false, injected: false };
   }
   writeFileSync(path, replaced);
-  log(`${path}: updated`);
+  log(`${path}: ${injected ? 'injected + ' : ''}updated`);
+  return { written: true, injected };
 }
 
 function main() {
   const devices = loadDevices();
   log(`${DRIVER}: loaded ${devices.length} devices`);
   const section = renderSection(devices);
-  patchFile(README_PATH, section, { required: true });
-  patchFile(HW_DOC_PATH, section, { required: false });
+  let written = 0;
+  let injected = 0;
+  for (const [path, opts] of [
+    [README_PATH, { required: true, autoInject: false }],
+    [HW_DOC_PATH, { required: false, autoInject: false }],
+    ...PKG_README_PATHS.map(p => [p, { required: false, autoInject: true }]),
+  ]) {
+    const r = patchFile(path, section, opts);
+    if (r.written) written++;
+    if (r.injected) injected++;
+  }
+  log(`${DRIVER}: wrote ${written} hardware tables (${injected} marker blocks injected)`);
 }
 
 main();
