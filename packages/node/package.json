@@ -14,7 +14,7 @@
   "type": "module",
   "author": "Mannes Brak",
   "license": "MIT",
-  "homepage": "https://thermal-label.github.io/brother-ql/",
+  "homepage": "https://thermal-label.github.io/brother-ql/node",
   "repository": {
     "type": "git",
     "url": "https://github.com/thermal-label/brother-ql.git",
