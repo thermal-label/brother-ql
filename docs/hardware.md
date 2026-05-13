@@ -104,10 +104,10 @@ highest-priority verification — if it speaks BLE GATT instead of
 classic SPP, it'll need `bluetooth-gatt` declared and dropped from
 the supported list until the niimbot BLE work lands.
 
-> Going further than the two-step CTA below? Follow the full
-> [verification checklist](./verification-checklist) — it covers TCP,
-> WebUSB, and the family-specific capability tests (two-colour,
-> auto-cut, mass-storage mode).
+> Going further than the two-step CTA below? Run the
+> [verification harness](./verification-checklist) — the browser app
+> handles detection, diagnostic-print, and report submission; the
+> page also points at the CLI harness for TCP-9100 models.
 
 <div class="hw-cta">
   <div class="hw-cta-header">
