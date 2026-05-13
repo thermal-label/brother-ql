@@ -24,7 +24,8 @@
   },
   "pnpm": {
     "overrides": {
-      "@thermal-label/contracts": "link:../contracts"
+      "@thermal-label/contracts": "link:../contracts",
+      "@thermal-label/transport": "link:../transport"
     }
   },
   "devDependencies": {

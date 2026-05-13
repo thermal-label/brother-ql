@@ -333,10 +333,14 @@ export const DEFAULT_FILTERS: USBDeviceFilter[] = Object.values(DEVICES)
  * consumers (CLIs, ad-hoc scripts). For the symmetric driver-web shape
  * (1-key map keyed by engine role) call `requestPrinters()` instead;
  * the harness shell uses that path.
+ *
+ * @deprecated Use `requestPrinters({ transport: 'usb' })` from
+ *   `./request-printers.ts`. Removed once consumers migrate (plan 11).
  */
 export async function requestPrinter(options: RequestOptions = {}): Promise<WebBrotherQLPrinter> {
   const filters = options.filters ?? DEFAULT_FILTERS;
   const usbDevice = await navigator.usb.requestDevice({ filters });
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- legacy alias chain; the deprecation guidance is aimed at external callers, not internal usage
   return fromUSBDevice(usbDevice);
 }
 
@@ -346,14 +350,18 @@ export async function requestPrinter(options: RequestOptions = {}): Promise<WebB
  *
  * Brother QL devices are always single-engine — this returns a 1-key
  * record keyed by the device's `engines[0].role` (typically `'primary'`).
- * Mirrors the labelwriter driver's `requestPrinters()` factory so harness
- * adapters can stay symmetric across driver families.
+ *
+ * @deprecated Use the generic `requestPrinters({ transport: 'usb' })`
+ *   from `./request-printers.ts` — the legacy USB-only name is preserved
+ *   as `requestPrintersUsbLegacy` for back-compat. Removed once
+ *   consumers migrate (plan 11).
  */
-export async function requestPrinters(
+export async function requestPrintersUsbLegacy(
   options: RequestOptions = {},
 ): Promise<Record<string, WebBrotherQLPrinter>> {
   const filters = options.filters ?? DEFAULT_FILTERS;
   const usbDevice = await navigator.usb.requestDevice({ filters });
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- legacy alias chain
   return fromUSBDeviceAll(usbDevice);
 }
 
@@ -361,6 +369,9 @@ export async function requestPrinters(
  * Wrap an already-selected `USBDevice`.
  *
  * @throws when the VID/PID is not in the Brother QL registry.
+ *
+ * @deprecated Use `requestPrinters({ transport: 'usb' })` from
+ *   `./request-printers.ts`. Removed once consumers migrate (plan 11).
  */
 export async function fromUSBDevice(usbDevice: USBDevice): Promise<WebBrotherQLPrinter> {
   const descriptor = findDevice(usbDevice.vendorId, usbDevice.productId);
@@ -381,6 +392,9 @@ export async function fromUSBDevice(usbDevice: USBDevice): Promise<WebBrotherQLP
  * returning visit) can skip the picker.
  *
  * Brother QL is single-engine and single-interface (IF 0).
+ *
+ * @deprecated Use `requestPrinters({ transport: 'usb' })` from
+ *   `./request-printers.ts`. Removed once consumers migrate (plan 11).
  */
 export async function fromUSBDeviceAll(
   usbDevice: USBDevice,

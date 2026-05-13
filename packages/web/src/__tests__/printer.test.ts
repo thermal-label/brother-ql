@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-deprecated -- intentionally exercises the deprecated per-transport factories during plan-10 transition */
 import { describe, expect, it, vi } from 'vitest';
 import { MediaNotSpecifiedError } from '@thermal-label/contracts';
 import { DEVICES, MEDIA } from '@thermal-label/brother-ql-core';

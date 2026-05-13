@@ -6,6 +6,7 @@ settings:
 
 overrides:
   '@thermal-label/contracts': link:../contracts
+  '@thermal-label/transport': link:../transport
 
 importers:
 
@@ -91,8 +92,8 @@ importers:
         specifier: link:../../../contracts
         version: link:../../../contracts
       '@thermal-label/transport':
-        specifier: ^0.5.0
-        version: 0.5.0(usb@2.17.0)
+        specifier: link:../../../transport
+        version: link:../../../transport
       usb:
         specifier: ^2.0.0
         version: 2.17.0
@@ -126,8 +127,8 @@ importers:
         specifier: link:../../../contracts
         version: link:../../../contracts
       '@thermal-label/transport':
-        specifier: ^0.5.0
-        version: 0.5.0(usb@2.17.0)
+        specifier: link:../../../transport
+        version: link:../../../transport
     devDependencies:
       '@mbtech-nl/tsconfig':
         specifier: ^1.1.0
@@ -764,18 +765,6 @@ packages:
 
   '@shikijs/vscode-textmate@10.0.2':
     resolution: {integrity: sha512-83yeghZ2xxin3Nj8z1NMd/NCuca+gsYXswywDy5bHvwlWL8tpTQmzGeUuHd9FC3E/SBEMvzJRwWEOz5gGes9Qg==}
-
-  '@thermal-label/transport@0.5.0':
-    resolution: {integrity: sha512-kHdVlNbMfxv4hLGZPCHKNTrKsjj6R0u29V0DQn0hFgwIZl0Xm4eWn01JeGhRr7Gv6dLHgc0TRINkp/3BM3bq6Q==}
-    engines: {node: '>=20.9.0'}
-    peerDependencies:
-      serialport: '>=12.0.0'
-      usb: '>=2.14.0'
-    peerDependenciesMeta:
-      serialport:
-        optional: true
-      usb:
-        optional: true
 
   '@tybys/wasm-util@0.10.1':
     resolution: {integrity: sha512-9tTaPJLSiejZKx+Bmog4uSubteqTvFrVrURwkmHixBo0G4seD0zUxp98E1DzUBJxLQ3NPwXrGKDiVjwx/DpPsg==}
@@ -2825,12 +2814,6 @@ snapshots:
       '@types/hast': 3.0.4
 
   '@shikijs/vscode-textmate@10.0.2': {}
-
-  '@thermal-label/transport@0.5.0(usb@2.17.0)':
-    dependencies:
-      '@thermal-label/contracts': link:../contracts
-    optionalDependencies:
-      usb: 2.17.0
 
   '@tybys/wasm-util@0.10.1':
     dependencies:
