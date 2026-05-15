@@ -16,10 +16,6 @@ function solidRgba(
   return { width, height, data: new Uint8Array(width * height * 4).fill(0) };
 }
 
-function noop(): void {
-  // intentionally empty — used to silence console.warn in tests
-}
-
 function redRgba(
   width: number,
   height: number,
@@ -213,7 +209,7 @@ describe('WebBrotherQLPrinter', () => {
     expect(status.detectedMedia?.id).toBe(259);
   });
 
-  it('onStatus delivers spontaneous frames that arrive without a getStatus request', async () => {
+  it('onStatus delivers status frames via the contracts polling shim', async () => {
     const bytes = new Uint8Array(32);
     bytes[10] = 62;
     bytes[11] = 0x0a;
@@ -223,17 +219,15 @@ describe('WebBrotherQLPrinter', () => {
     const unsubscribe = printer.onStatus(s => {
       if (s.detectedMedia) received.push(s.detectedMedia.id as number);
     });
-    // Simulate a spontaneous frame the printer would push on lid close /
-    // media insert — feed it directly into the mock pipe without an
-    // ESC iS request.
-    device.__pushUnsolicited(bytes);
-    // Drain microtasks so the read loop can pick the frame up.
-    await new Promise<void>(r => setTimeout(r, 0));
+    // The shim kicks an immediate getStatus(); give the read loop a tick
+    // to deliver the ESC iS response frame.
+    await new Promise<void>(r => setTimeout(r, 30));
     unsubscribe();
+    await printer.close();
     expect(received).toContain(259);
   });
 
-  it('onStatus stops firing after unsubscribe', async () => {
+  it('onStatus stops delivering after unsubscribe', async () => {
     const bytes = new Uint8Array(32);
     bytes[10] = 62;
     bytes[11] = 0x0a;
@@ -243,60 +237,20 @@ describe('WebBrotherQLPrinter', () => {
     const unsubscribe = printer.onStatus(() => {
       count += 1;
     });
-    device.__pushUnsolicited(bytes);
-    await new Promise<void>(r => setTimeout(r, 0));
+    await new Promise<void>(r => setTimeout(r, 30));
+    const afterFirst = count;
     unsubscribe();
-    device.__pushUnsolicited(bytes);
-    await new Promise<void>(r => setTimeout(r, 0));
-    expect(count).toBe(1);
-  });
-
-  it('getStatus also fires onStatus subscribers (the response flows through the same stream)', async () => {
-    const bytes = new Uint8Array(32);
-    bytes[10] = 62;
-    bytes[11] = 0x0a;
-    const device = createMockUSBDevice({ productId: 0x209d, statusBytes: bytes });
-    const printer = await fromUSBDevice(device);
-    let count = 0;
-    const unsubscribe = printer.onStatus(() => {
-      count += 1;
-    });
-    await printer.getStatus();
-    unsubscribe();
-    expect(count).toBe(1);
+    await new Promise<void>(r => setTimeout(r, 30));
+    // The 4 s poll interval never elapses inside the test window, so any
+    // further call after unsubscribe would be a leaked timer.
+    expect(afterFirst).toBeGreaterThanOrEqual(1);
+    expect(count).toBe(afterFirst);
+    await printer.close();
   });
 
   it('throws for unknown USB devices', async () => {
     const device = createMockUSBDevice({ vendorId: 0x1234, productId: 0x5678 });
     await expect(fromUSBDevice(device)).rejects.toThrow('Unsupported USB device');
-  });
-
-  it('keeps dispatching to remaining listeners when one throws', async () => {
-    const bytes = new Uint8Array(32);
-    bytes[10] = 62;
-    bytes[11] = 0x0a;
-    const device = createMockUSBDevice({ productId: 0x209d, statusBytes: bytes });
-    const printer = await fromUSBDevice(device);
-
-    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(noop);
-    const otherListener = vi.fn();
-    const throwingUnsub = printer.onStatus(() => {
-      throw new Error('listener boom');
-    });
-    const otherUnsub = printer.onStatus(otherListener);
-
-    device.__pushUnsolicited(bytes);
-    await new Promise<void>(r => setTimeout(r, 0));
-
-    throwingUnsub();
-    otherUnsub();
-
-    expect(otherListener).toHaveBeenCalled();
-    expect(warnSpy).toHaveBeenCalledWith(
-      '[brother-ql-web] status listener threw:',
-      expect.any(Error),
-    );
-    warnSpy.mockRestore();
   });
 });
 

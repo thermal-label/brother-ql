@@ -28,7 +28,7 @@ import type {
   RawImageData,
   Transport,
 } from '@thermal-label/brother-ql-core';
-import { MediaNotSpecifiedError } from '@thermal-label/contracts';
+import { MediaNotSpecifiedError, pollingOnStatus, type PrinterStatus } from '@thermal-label/contracts';
 import { WebUsbTransport } from '@thermal-label/transport/web';
 
 // Detect transport errors across module boundaries — under pnpm link /
@@ -40,11 +40,12 @@ function isTransportClosedError(err: unknown): boolean {
 }
 
 const STATUS_BYTE_COUNT = 32;
-// Brother QL printers push unsolicited 32-byte status frames on lid
-// open/close, media insert, end of job, errors, etc. We run a
-// persistent read loop that picks up every frame, parses it, and
-// notifies subscribers — instant updates with no polling. `getStatus()`
-// writes ESC iS and awaits the next frame from the same stream.
+// A persistent read loop is the sole reader of the bulk-IN pipe: it
+// parses every 32-byte status frame the printer emits and dispatches it
+// to `statusListeners`. `getStatus()` writes ESC iS and awaits the next
+// frame from that stream; spontaneous frames (lid open/close, media
+// insert, end of job, errors) flow through the same loop. `onStatus()`
+// is a polling shim over `getStatus()` — see that method.
 const STATUS_RESPONSE_TIMEOUT_MS = 1500;
 const READ_LOOP_BACKOFF_MS = 100;
 
@@ -238,16 +239,24 @@ export class WebBrotherQLPrinter implements PrinterAdapter {
   }
 
   /**
-   * Subscribe to push-based status updates. Brother QL printers emit
-   * unsolicited frames on lid open/close, media insert, errors, and
-   * end-of-job — each one fires `cb` synchronously after parsing.
-   * Returns an unsubscribe function.
+   * Subscribe to status updates. A polling shim built on
+   * `pollingOnStatus` from contracts — it calls `getStatus()` on first
+   * subscribe and then every `DEFAULT_POLLING_INTERVAL_MS`, matching the
+   * labelwriter and labelmanager web drivers (plan 11 §`onStatus`
+   * parity).
+   *
+   * An earlier revision skipped polling and relied solely on the
+   * printer's unsolicited frames. That was a workaround for the Chromium
+   * WebUSB sub-packet stall — `getStatus()`'s `read()` would hang, so
+   * polling looked unreliable and was dropped. `WebUsbTransport.read()`
+   * now rounds reads up to the endpoint packet size, so `getStatus()` is
+   * dependable and polling is restored.
    */
   onStatus(cb: (status: BrotherQLStatus) => void): () => void {
-    this.statusListeners.add(cb);
-    return () => {
-      this.statusListeners.delete(cb);
-    };
+    // `pollingOnStatus` is typed against the base `PrinterStatus`. The
+    // cast is sound: it only ever invokes `cb` with the value returned
+    // by `this.getStatus()`, which is always a full `BrotherQLStatus`.
+    return pollingOnStatus(this, cb as (status: PrinterStatus) => void);
   }
 
   private nextStatusFrame(timeoutMs: number): Promise<BrotherQLStatus> {
