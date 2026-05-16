@@ -9,6 +9,8 @@ function makeStatusBytes(
     mediaLengthMm: number;
     mediaTypeByte: number;
     statusType: number;
+    phaseType: number;
+    notification: number;
     byte25: number;
   }>,
 ): Uint8Array {
@@ -23,6 +25,8 @@ function makeStatusBytes(
   bytes[11] = overrides?.mediaTypeByte ?? 0x0a;
   bytes[17] = overrides?.mediaLengthMm ?? 0;
   bytes[18] = overrides?.statusType ?? 0x00;
+  bytes[19] = overrides?.phaseType ?? 0x00;
+  bytes[22] = overrides?.notification ?? 0x00;
   bytes[25] = overrides?.byte25 ?? 0;
   return bytes;
 }
@@ -147,6 +151,60 @@ describe('parseStatus', () => {
   it('detectedMedia is omitted when no media is loaded', () => {
     const status = parseStatus(makeStatusBytes({ mediaWidthMm: 0, mediaTypeByte: 0 }));
     expect(status.detectedMedia).toBeUndefined();
+  });
+});
+
+describe('parseStatus — details[]', () => {
+  it('always emits a Print phase row', () => {
+    const status = parseStatus(makeStatusBytes());
+    expect(status.details).toBeDefined();
+    const phase = status.details?.find(d => d.label === 'Print phase');
+    expect(phase).toEqual({ label: 'Print phase', value: 'receiving' });
+  });
+
+  it('Print phase is "receiving" when byte 19 is 0x00', () => {
+    const status = parseStatus(makeStatusBytes({ phaseType: 0x00 }));
+    expect(status.details?.find(d => d.label === 'Print phase')?.value).toBe('receiving');
+  });
+
+  it('Print phase is "printing" when byte 19 is 0x01', () => {
+    const status = parseStatus(makeStatusBytes({ phaseType: 0x01 }));
+    expect(status.details?.find(d => d.label === 'Print phase')?.value).toBe('printing');
+  });
+
+  it('no Head cooling row when byte 22 is 0x00 (none)', () => {
+    const status = parseStatus(makeStatusBytes({ notification: 0x00 }));
+    expect(status.details?.some(d => d.label === 'Head cooling')).toBe(false);
+  });
+
+  it('emits a warn-severity Head cooling row when cooling started (0x03)', () => {
+    const status = parseStatus(makeStatusBytes({ notification: 0x03 }));
+    expect(status.details?.find(d => d.label === 'Head cooling')).toEqual({
+      label: 'Head cooling',
+      value: 'cooling started',
+      severity: 'warn',
+    });
+  });
+
+  it('emits an info Head cooling row when cooling finished (0x04)', () => {
+    const status = parseStatus(makeStatusBytes({ notification: 0x04 }));
+    const cooling = status.details?.find(d => d.label === 'Head cooling');
+    expect(cooling).toEqual({ label: 'Head cooling', value: 'cooling finished' });
+    expect(cooling?.severity).toBeUndefined();
+  });
+
+  it('no Editor Lite row when editorLiteMode is false', () => {
+    const status = parseStatus(makeStatusBytes());
+    expect(status.editorLiteMode).toBe(false);
+    expect(status.details?.some(d => d.label === 'Editor Lite mode')).toBe(false);
+  });
+
+  it('details carries both phase and cooling rows while printing + cooling', () => {
+    const status = parseStatus(makeStatusBytes({ phaseType: 0x01, notification: 0x03 }));
+    expect(status.details).toEqual([
+      { label: 'Print phase', value: 'printing' },
+      { label: 'Head cooling', value: 'cooling started', severity: 'warn' },
+    ]);
   });
 });
 
