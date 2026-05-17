@@ -4,7 +4,7 @@
 
 [Documentation](../../../packages.md) / [@thermal-label/brother-ql-web](../README.md) / requestPrinter
 
-# Function: requestPrinter()
+# ~~Function: requestPrinter()~~
 
 > **requestPrinter**(`options?`): `Promise`\<[`WebBrotherQLPrinter`](../classes/WebBrotherQLPrinter.md)\>
 
@@ -27,3 +27,8 @@ the harness shell uses that path.
 ## Returns
 
 `Promise`\<[`WebBrotherQLPrinter`](../classes/WebBrotherQLPrinter.md)\>
+
+## Deprecated
+
+Use `requestPrinters({ transport: 'usb' })` from
+  `./request-printers.ts`. Removed once consumers migrate (plan 11).

@@ -227,7 +227,6 @@ describe('WebBrotherQLPrinter', () => {
 
   it('serialises getStatus() behind an in-flight print() via WriteSerializer (plan 15 A4)', async () => {
     const transport = new RecordingTransport();
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- QL-820NWBc is in the registry
     const device = findDevice(0x04f9, 0x209d)!;
     const printer = new WebBrotherQLPrinter(device, transport);
 

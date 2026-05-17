@@ -6,22 +6,36 @@
 
 # Function: requestPrinters()
 
-> **requestPrinters**(`options?`): `Promise`\<`Record`\<`string`, [`WebBrotherQLPrinter`](../classes/WebBrotherQLPrinter.md)\>\>
+> **requestPrinters**(`opts`): `Promise`\<`Readonly`\<`Record`\<`string`, [`PrinterAdapter`](../../brother-ql-core/interfaces/PrinterAdapter.md)\>\>\>
 
-Show the browser's USB picker and return one `PrinterAdapter` per
-drivable engine on the selected device, keyed by engine role.
+Unified browser-picker factory for the brother-ql driver family.
 
-Brother QL devices are always single-engine — this returns a 1-key
-record keyed by the device's `engines[0].role` (typically `'primary'`).
-Mirrors the labelwriter driver's `requestPrinters()` factory so harness
-adapters can stay symmetric across driver families.
+Dispatches on `opts.transport`:
+
+- `'usb'` — opens `navigator.usb` picker. Auto-identifies via
+  `usbDevice.vendorId/productId` against the registry. Throws
+  `DeviceIdentificationRequiredError` only if the picked device's
+  VID/PID is not in the brother-ql registry.
+- `'bluetooth-spp'` — always-ask (Web Serial has no BT name
+  surface). `opts.deviceKey` required; if omitted, throws
+  `DeviceIdentificationRequiredError` with the BT-SPP-capable
+  subset of `DEVICES` (e.g. QL_820NWBc, PT_P910BT).
+  `continueWith(deviceKey)` opens the Web Serial picker for the
+  chosen device.
+- `'serial'` — not declared in the brother-ql registry today;
+  throws unconditionally.
+- `'bluetooth-gatt'` — not declared in the brother-ql registry today;
+  throws unconditionally.
+
+Returns a 1-key `PrinterAdapterMap` keyed by the device's primary
+engine role.
 
 ## Parameters
 
-### options?
+### opts
 
-[`RequestOptions`](../interfaces/RequestOptions.md) = `{}`
+[`ConnectOptions`](../type-aliases/ConnectOptions.md)
 
 ## Returns
 
-`Promise`\<`Record`\<`string`, [`WebBrotherQLPrinter`](../classes/WebBrotherQLPrinter.md)\>\>
+`Promise`\<`Readonly`\<`Record`\<`string`, [`PrinterAdapter`](../../brother-ql-core/interfaces/PrinterAdapter.md)\>\>\>

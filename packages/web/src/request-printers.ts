@@ -88,9 +88,8 @@ function requestPrintersBluetoothSpp(
 ): Promise<PrinterAdapterMap> {
   if (opts.deviceKey === undefined) {
     return Promise.reject(
-      new DeviceIdentificationRequiredError(
-        devicesForTransport('bluetooth-spp'),
-        deviceKey => openBluetoothSpp(deviceKey, opts.baudRate),
+      new DeviceIdentificationRequiredError(devicesForTransport('bluetooth-spp'), deviceKey =>
+        openBluetoothSpp(deviceKey, opts.baudRate),
       ),
     );
   }

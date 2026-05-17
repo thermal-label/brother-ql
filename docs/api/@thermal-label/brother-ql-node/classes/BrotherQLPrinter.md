@@ -188,7 +188,7 @@ For offline preview without a live connection, use the static
 
 ### getStatus()
 
-> **getStatus**(): `Promise`\<[`BrotherQLStatus`](../../brother-ql-core/interfaces/BrotherQLStatus.md)\>
+> **getStatus**(): `Promise`\<[`PrinterStatus`](../../brother-ql-core/interfaces/PrinterStatus.md)\>
 
 Poll the status endpoint until 32 bytes are available.
 
@@ -198,7 +198,7 @@ delay up to `STATUS_POLL_ATTEMPTS` times.
 
 #### Returns
 
-`Promise`\<[`BrotherQLStatus`](../../brother-ql-core/interfaces/BrotherQLStatus.md)\>
+`Promise`\<[`PrinterStatus`](../../brother-ql-core/interfaces/PrinterStatus.md)\>
 
 #### Implementation of
 

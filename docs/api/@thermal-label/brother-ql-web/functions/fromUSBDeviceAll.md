@@ -4,7 +4,7 @@
 
 [Documentation](../../../packages.md) / [@thermal-label/brother-ql-web](../README.md) / fromUSBDeviceAll
 
-# Function: fromUSBDeviceAll()
+# ~~Function: fromUSBDeviceAll()~~
 
 > **fromUSBDeviceAll**(`usbDevice`): `Promise`\<`Record`\<`string`, [`WebBrotherQLPrinter`](../classes/WebBrotherQLPrinter.md)\>\>
 
@@ -25,3 +25,8 @@ Brother QL is single-engine and single-interface (IF 0).
 ## Returns
 
 `Promise`\<`Record`\<`string`, [`WebBrotherQLPrinter`](../classes/WebBrotherQLPrinter.md)\>\>
+
+## Deprecated
+
+Use `requestPrinters({ transport: 'usb' })` from
+  `./request-printers.ts`. Removed once consumers migrate (plan 11).

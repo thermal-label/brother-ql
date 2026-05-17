@@ -13,6 +13,20 @@ Consumers (CLIs, label-maker apps, ad-hoc scripts) program against
 Driver-specific features are available by extending this interface
 in each `*-node` / `*-web` package.
 
+**Transport serialization contract.** An implementation's
+transport-touching methods — `print`, `getStatus`, and any
+driver-specific method that issues `transport.write` / `transport.read`
+— MUST be mutually serialised: concurrent invocation must never
+interleave on the wire. A `print()` is many `transport.write()`
+calls, and a `getStatus()` write landing between two of them
+corrupts the device's command stream. Consumers may legitimately
+call `getStatus()` (e.g. via a status poll) while a `print()` is
+in flight, so the driver — the only layer that knows job
+boundaries — owns this guarantee. The supported way to satisfy it
+is the `WriteSerializer` primitive (`./serializer.ts`): hold one
+instance per printer and route every transport-touching method
+through `WriteSerializer.run()`.
+
 ## Properties
 
 ### connected

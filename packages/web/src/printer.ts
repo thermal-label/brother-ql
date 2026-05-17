@@ -28,12 +28,7 @@ import type {
   RawImageData,
   Transport,
 } from '@thermal-label/brother-ql-core';
-import {
-  MediaNotSpecifiedError,
-  pollingOnStatus,
-  WriteSerializer,
-  type PrinterStatus,
-} from '@thermal-label/contracts';
+import { MediaNotSpecifiedError, pollingOnStatus, WriteSerializer } from '@thermal-label/contracts';
 import { WebUsbTransport } from '@thermal-label/transport/web';
 
 // Detect transport errors across module boundaries — under pnpm link /
@@ -240,10 +235,7 @@ export class WebBrotherQLPrinter implements PrinterAdapter {
    * dependable and polling is restored.
    */
   onStatus(cb: (status: BrotherQLStatus) => void): () => void {
-    // `pollingOnStatus` is typed against the base `PrinterStatus`. The
-    // cast is sound: it only ever invokes `cb` with the value returned
-    // by `this.getStatus()`, which is always a full `BrotherQLStatus`.
-    return pollingOnStatus(this, cb as (status: PrinterStatus) => void);
+    return pollingOnStatus(this, cb);
   }
 
   private nextStatusFrame(timeoutMs: number): Promise<BrotherQLStatus> {

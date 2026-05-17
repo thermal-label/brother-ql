@@ -42,24 +42,24 @@ holding the Editor Lite button on the chassis.
 The byte values below are what the firmware accepts. Multi-byte
 opcodes are listed in alphabetical order of the ASCII spelling.
 
-| Opcode                                                                | Bytes                       | Description                                                       |
-| --------------------------------------------------------------------- | --------------------------- | ----------------------------------------------------------------- |
-| [`NULL`](#null-—-invalidate)                                          | `00`                        | Invalidate — one byte of parser-reset padding.                    |
-| [`ESC @`](#esc-—-initialize)                                          | `1B 40`                     | Initialize — reset mode settings; cancel any in-progress job.     |
-| [`ESC i !`](#esc-i--—-switch-automatic-status-notification-mode)      | `1B 69 21 n`                | Switch automatic status notification mode.                        |
-| [`ESC i A`](#esc-i-a-—-specify-cut-each-n-labels)                     | `1B 69 41 n`                | Specify the page number in "cut each N labels".                   |
-| [`ESC i a`](#esc-i-a-—-switch-dynamic-command-mode)                   | `1B 69 61 n`                | Switch dynamic command mode (`01` = raster).                      |
-| [`ESC i d`](#esc-i-d-—-specify-margin-amount)                         | `1B 69 64 n1 n2`            | Specify margin (feed) amount, little-endian dot count.            |
-| [`ESC i K`](#esc-i-k-—-expanded-mode)                                 | `1B 69 4B n`                | Expanded mode — two-colour, cut-at-end, high-resolution flags.    |
-| [`ESC i M`](#esc-i-m-—-various-mode)                                  | `1B 69 4D n`                | Various mode — autocut flag.                                      |
-| [`ESC i S`](#esc-i-s-—-status-information-request)                    | `1B 69 53`                  | Status information request (32-byte reply).                       |
-| [`ESC i z`](#esc-i-z-—-print-information)                             | `1B 69 7A n1..n10`          | Print information — declare media type, width, length, rasters.   |
-| [`FF`](#ff-—-print-command)                                           | `0C`                        | Print command — end of a non-final page.                          |
-| [`Control-Z`](#control-z-—-print-command-with-feeding)                | `1A`                        | Print command with feeding — end of the final page.               |
-| [`g`](#g-—-raster-graphics-transfer)                                  | `67 00 n d1..dn`            | Raster graphics transfer (monochromatic).                         |
-| [`M`](#m-—-select-compression-mode)                                   | `4D n`                      | Select compression mode (`00` = none, `02` = TIFF/PackBits).      |
-| [`w`](#w-—-two-color-raster-graphics-transfer)                        | `77 c n d1..dn`             | Two-colour raster graphics transfer (`c` = plane: 01 black / 02 red). |
-| [`Z`](#z-—-zero-raster-graphics)                                      | `5A`                        | Zero raster graphics — one fully-blank raster line.               |
+| Opcode                                                           | Bytes              | Description                                                           |
+| ---------------------------------------------------------------- | ------------------ | --------------------------------------------------------------------- |
+| [`NULL`](#null-—-invalidate)                                     | `00`               | Invalidate — one byte of parser-reset padding.                        |
+| [`ESC @`](#esc-—-initialize)                                     | `1B 40`            | Initialize — reset mode settings; cancel any in-progress job.         |
+| [`ESC i !`](#esc-i--—-switch-automatic-status-notification-mode) | `1B 69 21 n`       | Switch automatic status notification mode.                            |
+| [`ESC i A`](#esc-i-a-—-specify-cut-each-n-labels)                | `1B 69 41 n`       | Specify the page number in "cut each N labels".                       |
+| [`ESC i a`](#esc-i-a-—-switch-dynamic-command-mode)              | `1B 69 61 n`       | Switch dynamic command mode (`01` = raster).                          |
+| [`ESC i d`](#esc-i-d-—-specify-margin-amount)                    | `1B 69 64 n1 n2`   | Specify margin (feed) amount, little-endian dot count.                |
+| [`ESC i K`](#esc-i-k-—-expanded-mode)                            | `1B 69 4B n`       | Expanded mode — two-colour, cut-at-end, high-resolution flags.        |
+| [`ESC i M`](#esc-i-m-—-various-mode)                             | `1B 69 4D n`       | Various mode — autocut flag.                                          |
+| [`ESC i S`](#esc-i-s-—-status-information-request)               | `1B 69 53`         | Status information request (32-byte reply).                           |
+| [`ESC i z`](#esc-i-z-—-print-information)                        | `1B 69 7A n1..n10` | Print information — declare media type, width, length, rasters.       |
+| [`FF`](#ff-—-print-command)                                      | `0C`               | Print command — end of a non-final page.                              |
+| [`Control-Z`](#control-z-—-print-command-with-feeding)           | `1A`               | Print command with feeding — end of the final page.                   |
+| [`g`](#g-—-raster-graphics-transfer)                             | `67 00 n d1..dn`   | Raster graphics transfer (monochromatic).                             |
+| [`M`](#m-—-select-compression-mode)                              | `4D n`             | Select compression mode (`00` = none, `02` = TIFF/PackBits).          |
+| [`w`](#w-—-two-color-raster-graphics-transfer)                   | `77 c n d1..dn`    | Two-colour raster graphics transfer (`c` = plane: 01 black / 02 red). |
+| [`Z`](#z-—-zero-raster-graphics)                                 | `5A`               | Zero raster graphics — one fully-blank raster line.                   |
 
 ## Print job structure
 
@@ -119,7 +119,7 @@ command state from a previous interrupted job — useful precisely
 because the run can be longer than the longest possible mid-command
 expectation.
 
-*Brother QL-800/810W/820NWB Raster Command Reference*, p. 22.
+_Brother QL-800/810W/820NWB Raster Command Reference_, p. 22.
 
 ## `ESC @` — initialize
 
@@ -131,7 +131,7 @@ Resets mode settings to their power-on defaults. Also cancels an
 in-progress job. Emitted immediately after the invalidate run, before
 the first per-page block.
 
-*Brother QL-800/810W/820NWB Raster Command Reference*, p. 28.
+_Brother QL-800/810W/820NWB Raster Command Reference_, p. 28.
 
 ## `ESC i !` — switch automatic status notification mode
 
@@ -148,7 +148,7 @@ Persists until the printer is power-cycled. Useful when the host
 polls explicitly with `ESC i S` rather than reading async status
 frames mid-job.
 
-*Brother QL-800/810W/820NWB Raster Command Reference*, p. 30.
+_Brother QL-800/810W/820NWB Raster Command Reference_, p. 30.
 
 ## `ESC i A` — specify cut each N labels
 
@@ -160,7 +160,7 @@ When autocut is enabled (via [`ESC i M`](#esc-i-m-—-various-mode)),
 `n` is the number of labels per cut, in the range `1..255`. Default
 `1` (cut after every label).
 
-*Brother QL-800/810W/820NWB Raster Command Reference*, p. 34.
+_Brother QL-800/810W/820NWB Raster Command Reference_, p. 34.
 
 ## `ESC i a` — switch dynamic command mode
 
@@ -177,7 +177,7 @@ When autocut is enabled (via [`ESC i M`](#esc-i-m-—-various-mode)),
 The QL family ships in ESC/P mode by default; raster jobs must
 switch to mode `01` before any raster command will be honoured.
 
-*Brother QL-800/810W/820NWB Raster Command Reference*, p. 29.
+_Brother QL-800/810W/820NWB Raster Command Reference_, p. 29.
 
 ## `ESC i d` — specify margin amount
 
@@ -193,7 +193,7 @@ labels the margin is fixed at zero regardless of the value sent.
 The QL family enforces a minimum feed margin imposed by cutter
 geometry — typical jobs use 35 dots (about 3 mm at 300 dpi).
 
-*Brother QL-800/810W/820NWB Raster Command Reference*, p. 28.
+_Brother QL-800/810W/820NWB Raster Command Reference_, p. 28.
 
 ## `ESC i K` — expanded mode
 
@@ -203,11 +203,11 @@ geometry — typical jobs use 35 dots (about 3 mm at 300 dpi).
 
 `n` is a bit mask:
 
-| Bit | Mask   | Function                                                          |
-| --: | -----: | ----------------------------------------------------------------- |
-|   0 | `0x01` | Two-colour printing.                                              |
-|   3 | `0x08` | Cut at end (1 = cut after last page; 0 = leave uncut).            |
-|   4 | `0x10` | High-resolution mode (600 dpi in the feed direction; QL-only).    |
+| Bit |   Mask | Function                                                       |
+| --: | -----: | -------------------------------------------------------------- |
+|   0 | `0x01` | Two-colour printing.                                           |
+|   3 | `0x08` | Cut at end (1 = cut after last page; 0 = leave uncut).         |
+|   4 | `0x10` | High-resolution mode (600 dpi in the feed direction; QL-only). |
 
 Bits 1, 2, 5, 6, 7 are reserved per the field-observed reading (see
 the high-resolution divergence note below — the manual instead
@@ -230,7 +230,7 @@ as `pklaus/brother_ql` set — is **bit 4** (`0x10`). The sibling PT
 chassis follow the manual's bit 6; the divergence is unresolved
 against Brother.
 
-*Brother QL-800/810W/820NWB Raster Command Reference*, p. 35.
+_Brother QL-800/810W/820NWB Raster Command Reference_, p. 35.
 
 ## `ESC i M` — various mode
 
@@ -240,16 +240,16 @@ against Brother.
 
 `n` is a bit mask:
 
-| Bit | Mask   | Function                                |
-| --: | -----: | --------------------------------------- |
-|   6 | `0x40` | Autocut (1 = enabled, 0 = disabled).    |
+| Bit |   Mask | Function                             |
+| --: | -----: | ------------------------------------ |
+|   6 | `0x40` | Autocut (1 = enabled, 0 = disabled). |
 
 All other bits are reserved.
 
 When autocut is enabled, the number of labels per cut is set by
 [`ESC i A`](#esc-i-a-—-specify-cut-each-n-labels).
 
-*Brother QL-800/810W/820NWB Raster Command Reference*, p. 35.
+_Brother QL-800/810W/820NWB Raster Command Reference_, p. 35.
 
 ## `ESC i S` — status information request
 
@@ -260,72 +260,72 @@ When autocut is enabled, the number of labels per cut is set by
 The printer replies with a fixed-size **32-byte** frame on the IN
 endpoint. Layout:
 
-| Offset | Size | Field            | Notes                                                              |
-| -----: | ---: | ---------------- | ------------------------------------------------------------------ |
-|      0 |    1 | Print head mark  | Fixed `0x80`. First-byte sanity check for the reply.               |
-|      1 |    1 | Size             | Fixed `0x20` (decimal 32).                                         |
-|      2 |    1 | Reserved         | Fixed `0x42` (`'B'`).                                              |
-|      3 |    1 | Series code      | Fixed `0x34` (`'4'`).                                              |
-|      4 |    1 | Model code       | `0x38` `'8'` = QL-800; `0x39` `'9'` = QL-810W; `0x41` `'A'` = QL-820NWB; other models follow the same one-byte convention. |
-|      5 |    1 | Reserved         | Fixed `0x30` (`'0'`).                                              |
-|      6 |    1 | Reserved         | Fixed `0x30` (`'0'`).                                              |
-|      7 |    1 | Reserved         | `0x00`.                                                            |
-|      8 |    1 | Error info 1     | Bit mask, see below.                                               |
-|      9 |    1 | Error info 2     | Bit mask, see below.                                               |
-|     10 |    1 | Media width (mm) | e.g. `0x3E` = 62 mm.                                               |
-|     11 |    1 | Media type       | `0x4A` continuous, `0x4B` die-cut, `0x00` no media.                |
-|     12 |    1 | Reserved         | `0x00`.                                                            |
-|     13 |    1 | Reserved         | `0x00`.                                                            |
-|     14 |    1 | Reserved         | `0x3F`.                                                            |
-|     15 |    1 | Mode             | Value last set via `ESC i M`, or `0x00`.                           |
-|     16 |    1 | Reserved         | `0x00`.                                                            |
-|     17 |    1 | Media length (mm)| `0x00` for continuous; label length for die-cut.                   |
-|     18 |    1 | Status type      | See below.                                                         |
-|     19 |    1 | Phase type       | `0x00` receiving, `0x01` printing.                                 |
-|     20 |    1 | Phase number high| Big-endian, currently `0x00`.                                      |
-|     21 |    1 | Phase number low | Big-endian, currently `0x00`.                                      |
-|     22 |    1 | Notification     | `0x00` none, `0x03` cooling started, `0x04` cooling finished.      |
-|     23 |    1 | Reserved         | `0x00`.                                                            |
-|  24–31 |    8 | Reserved         | `0x00`.                                                            |
+| Offset | Size | Field             | Notes                                                                                                                      |
+| -----: | ---: | ----------------- | -------------------------------------------------------------------------------------------------------------------------- |
+|      0 |    1 | Print head mark   | Fixed `0x80`. First-byte sanity check for the reply.                                                                       |
+|      1 |    1 | Size              | Fixed `0x20` (decimal 32).                                                                                                 |
+|      2 |    1 | Reserved          | Fixed `0x42` (`'B'`).                                                                                                      |
+|      3 |    1 | Series code       | Fixed `0x34` (`'4'`).                                                                                                      |
+|      4 |    1 | Model code        | `0x38` `'8'` = QL-800; `0x39` `'9'` = QL-810W; `0x41` `'A'` = QL-820NWB; other models follow the same one-byte convention. |
+|      5 |    1 | Reserved          | Fixed `0x30` (`'0'`).                                                                                                      |
+|      6 |    1 | Reserved          | Fixed `0x30` (`'0'`).                                                                                                      |
+|      7 |    1 | Reserved          | `0x00`.                                                                                                                    |
+|      8 |    1 | Error info 1      | Bit mask, see below.                                                                                                       |
+|      9 |    1 | Error info 2      | Bit mask, see below.                                                                                                       |
+|     10 |    1 | Media width (mm)  | e.g. `0x3E` = 62 mm.                                                                                                       |
+|     11 |    1 | Media type        | `0x4A` continuous, `0x4B` die-cut, `0x00` no media.                                                                        |
+|     12 |    1 | Reserved          | `0x00`.                                                                                                                    |
+|     13 |    1 | Reserved          | `0x00`.                                                                                                                    |
+|     14 |    1 | Reserved          | `0x3F`.                                                                                                                    |
+|     15 |    1 | Mode              | Value last set via `ESC i M`, or `0x00`.                                                                                   |
+|     16 |    1 | Reserved          | `0x00`.                                                                                                                    |
+|     17 |    1 | Media length (mm) | `0x00` for continuous; label length for die-cut.                                                                           |
+|     18 |    1 | Status type       | See below.                                                                                                                 |
+|     19 |    1 | Phase type        | `0x00` receiving, `0x01` printing.                                                                                         |
+|     20 |    1 | Phase number high | Big-endian, currently `0x00`.                                                                                              |
+|     21 |    1 | Phase number low  | Big-endian, currently `0x00`.                                                                                              |
+|     22 |    1 | Notification      | `0x00` none, `0x03` cooling started, `0x04` cooling finished.                                                              |
+|     23 |    1 | Reserved          | `0x00`.                                                                                                                    |
+|  24–31 |    8 | Reserved          | `0x00`.                                                                                                                    |
 
 ### Error info 1 (offset 8)
 
-| Bit | Mask   | Meaning                                                            |
-| --: | -----: | ------------------------------------------------------------------ |
-|   0 | `0x01` | No media.                                                          |
-|   1 | `0x02` | End of media (die-cut only).                                       |
-|   2 | `0x04` | Cutter jam.                                                        |
-|   3 | `0x08` | Not used (manual lists no name).                                   |
-|   4 | `0x10` | Printer in use.                                                    |
-|   5 | `0x20` | Printer turned off.                                                |
-|   6 | `0x40` | High-voltage adapter (manual notes "not used").                    |
-|   7 | `0x80` | Fan motor error (manual notes "not used").                         |
+| Bit |   Mask | Meaning                                         |
+| --: | -----: | ----------------------------------------------- |
+|   0 | `0x01` | No media.                                       |
+|   1 | `0x02` | End of media (die-cut only).                    |
+|   2 | `0x04` | Cutter jam.                                     |
+|   3 | `0x08` | Not used (manual lists no name).                |
+|   4 | `0x10` | Printer in use.                                 |
+|   5 | `0x20` | Printer turned off.                             |
+|   6 | `0x40` | High-voltage adapter (manual notes "not used"). |
+|   7 | `0x80` | Fan motor error (manual notes "not used").      |
 
 ### Error info 2 (offset 9)
 
-| Bit | Mask   | Meaning                                                            |
-| --: | -----: | ------------------------------------------------------------------ |
-|   0 | `0x01` | Replace media (wrong media for current job).                       |
-|   1 | `0x02` | Expansion buffer full.                                             |
-|   2 | `0x04` | Communication error.                                               |
-|   3 | `0x08` | Communication buffer full (manual notes "not used").               |
-|   4 | `0x10` | Cover open.                                                        |
-|   5 | `0x20` | Cancel key (manual notes "not used").                              |
-|   6 | `0x40` | Media cannot be fed (also: media end).                             |
-|   7 | `0x80` | System error.                                                      |
+| Bit |   Mask | Meaning                                              |
+| --: | -----: | ---------------------------------------------------- |
+|   0 | `0x01` | Replace media (wrong media for current job).         |
+|   1 | `0x02` | Expansion buffer full.                               |
+|   2 | `0x04` | Communication error.                                 |
+|   3 | `0x08` | Communication buffer full (manual notes "not used"). |
+|   4 | `0x10` | Cover open.                                          |
+|   5 | `0x20` | Cancel key (manual notes "not used").                |
+|   6 | `0x40` | Media cannot be fed (also: media end).               |
+|   7 | `0x80` | System error.                                        |
 
 ### Status type (offset 18)
 
-| Value         | Meaning                          |
-| ------------- | -------------------------------- |
-| `0x00`        | Reply to status request.         |
-| `0x01`        | Printing completed.              |
-| `0x02`        | Error occurred.                  |
-| `0x04`        | Turned off.                      |
-| `0x05`        | Notification.                    |
-| `0x06`        | Phase change.                    |
-| `0x08`–`0x20` | (Manual marks "not used".)       |
-| `0x21`–`0xFF` | Reserved.                        |
+| Value         | Meaning                    |
+| ------------- | -------------------------- |
+| `0x00`        | Reply to status request.   |
+| `0x01`        | Printing completed.        |
+| `0x02`        | Error occurred.            |
+| `0x04`        | Turned off.                |
+| `0x05`        | Notification.              |
+| `0x06`        | Phase change.              |
+| `0x08`–`0x20` | (Manual marks "not used".) |
+| `0x21`–`0xFF` | Reserved.                  |
 
 Bytes 24–31 are documented as reserved (fixed `0x00`) in the
 manual. **Bit 7 of offset 25** carries a "two-colour roll loaded"
@@ -338,7 +338,7 @@ The status request should be issued **once** before sending print
 data; during printing the printer emits status frames autonomously
 unless silenced via [`ESC i !`](#esc-i--—-switch-automatic-status-notification-mode).
 
-*Brother QL-800/810W/820NWB Raster Command Reference*, pp. 22–27.
+_Brother QL-800/810W/820NWB Raster Command Reference_, pp. 22–27.
 
 ## `ESC i z` — print information
 
@@ -349,15 +349,15 @@ unless silenced via [`ESC i !`](#esc-i--—-switch-automatic-status-notification
 Declares the media and raster geometry of the page that follows. The
 ten parameter bytes:
 
-| Byte    | Field            | Notes                                                              |
-| ------- | ---------------- | ------------------------------------------------------------------ |
-| `n1`    | Valid flags      | Bit 1 (`0x02`) media type valid; bit 2 (`0x04`) media width valid; bit 3 (`0x08`) media length valid; bit 6 (`0x40`) priority on print quality (manual marks this invalid for two-colour printing); bit 7 (`0x80`) printer recovery always on. |
-| `n2`    | Media type       | `0x0A` continuous tape, `0x0B` die-cut label, `0x00` unspecified.  |
-| `n3`    | Media width (mm) | e.g. `0x3E` = 62.                                                  |
-| `n4`    | Media length (mm)| `0x00` for continuous; label length for die-cut.                   |
-| `n5–n8` | Raster count     | Little-endian 32-bit total raster line count for this page.        |
-| `n9`    | Page position    | `0x00` first page of job, `0x01` subsequent pages.                 |
-| `n10`   | Reserved         | `0x00`.                                                            |
+| Byte    | Field             | Notes                                                                                                                                                                                                                                          |
+| ------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `n1`    | Valid flags       | Bit 1 (`0x02`) media type valid; bit 2 (`0x04`) media width valid; bit 3 (`0x08`) media length valid; bit 6 (`0x40`) priority on print quality (manual marks this invalid for two-colour printing); bit 7 (`0x80`) printer recovery always on. |
+| `n2`    | Media type        | `0x0A` continuous tape, `0x0B` die-cut label, `0x00` unspecified.                                                                                                                                                                              |
+| `n3`    | Media width (mm)  | e.g. `0x3E` = 62.                                                                                                                                                                                                                              |
+| `n4`    | Media length (mm) | `0x00` for continuous; label length for die-cut.                                                                                                                                                                                               |
+| `n5–n8` | Raster count      | Little-endian 32-bit total raster line count for this page.                                                                                                                                                                                    |
+| `n9`    | Page position     | `0x00` first page of job, `0x01` subsequent pages.                                                                                                                                                                                             |
+| `n10`   | Reserved          | `0x00`.                                                                                                                                                                                                                                        |
 
 For two-colour pages the raster count is the number of complete
 black-plus-red line pairs, i.e. one less than the total wire-level
@@ -367,7 +367,7 @@ If the loaded media does not match `n2`/`n3`/`n4` and the
 corresponding valid-flag bits are set, the printer raises bit 0 of
 Error info 2 (`replace media`) and aborts the page.
 
-*Brother QL-800/810W/820NWB Raster Command Reference*, p. 32.
+_Brother QL-800/810W/820NWB Raster Command Reference_, p. 32.
 
 ## `FF` — print command
 
@@ -378,7 +378,7 @@ Error info 2 (`replace media`) and aborts the page.
 Ends a non-final page. The printed page advances to the cutter and
 (if autocut is enabled) is cut. The next page begins immediately.
 
-*Brother QL-800/810W/820NWB Raster Command Reference*, p. 31.
+_Brother QL-800/810W/820NWB Raster Command Reference_, p. 31.
 
 ## `Control-Z` — print command with feeding
 
@@ -391,7 +391,7 @@ then feeds the trailing margin so the cut lands cleanly. Every job
 must end with exactly one `Control-Z`; ending with `FF` leaves the
 final page in the buffer until the next job arrives.
 
-*Brother QL-800/810W/820NWB Raster Command Reference*, p. 31.
+_Brother QL-800/810W/820NWB Raster Command Reference_, p. 31.
 
 ## `g` — raster graphics transfer
 
@@ -416,7 +416,7 @@ the unused margin pins.
 The feed direction is **against** the print head: each raster row
 emitted advances the tape one dot row past the head.
 
-*Brother QL-800/810W/820NWB Raster Command Reference*, p. 30.
+_Brother QL-800/810W/820NWB Raster Command Reference_, p. 30.
 
 ## `M` — select compression mode
 
@@ -424,11 +424,11 @@ emitted advances the tape one dot row past the head.
 4D n
 ```
 
-| `n`  | Compression                              |
-| ---- | ---------------------------------------- |
-| `00` | None (default).                          |
-| `01` | Reserved (manual marks disabled).        |
-| `02` | TIFF / PackBits.                         |
+| `n`  | Compression                       |
+| ---- | --------------------------------- |
+| `00` | None (default).                   |
+| `01` | Reserved (manual marks disabled). |
+| `02` | TIFF / PackBits.                  |
 
 Affects the encoding of `g` and `w` raster rows until the printer is
 re-initialized. In compressed mode a fully-blank raster row may also
@@ -451,7 +451,7 @@ uncompressed mode for that row.
 The QL-800 firmware does not implement compression mode; QL-810W,
 QL-820NWB, and the QL-1100 series do.
 
-*Brother QL-800/810W/820NWB Raster Command Reference*, p. 33.
+_Brother QL-800/810W/820NWB Raster Command Reference_, p. 33.
 
 ## `w` — two-colour raster graphics transfer
 
@@ -463,10 +463,10 @@ QL-820NWB, and the QL-1100 series do.
 QL-810W, and QL-820NWB. The first parameter byte selects the
 plane:
 
-| `c`  | Plane                          |
-| ---- | ------------------------------ |
-| `01` | First colour (high energy).    |
-| `02` | Second colour (low energy).    |
+| `c`  | Plane                       |
+| ---- | --------------------------- |
+| `01` | First colour (high energy). |
+| `02` | Second colour (low energy). |
 
 `n` is the payload length, identical to the `g` opcode (`0x5A` for
 720-pin heads when uncompressed). Black-and-red DK tapes use plane
@@ -477,7 +477,7 @@ Both planes must be emitted for every raster line, interleaved
 black-then-red. A pixel set in both planes is printed black; the
 firmware does not blend.
 
-*Brother QL-800/810W/820NWB Raster Command Reference*, p. 30.
+_Brother QL-800/810W/820NWB Raster Command Reference_, p. 30.
 
 ## `Z` — zero raster graphics
 
@@ -490,7 +490,7 @@ current head width. Valid only when compression is enabled via
 [`M 02`](#m-—-select-compression-mode); the QL-800 firmware does not
 support it.
 
-*Brother QL-800/810W/820NWB Raster Command Reference*, p. 31.
+_Brother QL-800/810W/820NWB Raster Command Reference_, p. 31.
 
 ## References
 

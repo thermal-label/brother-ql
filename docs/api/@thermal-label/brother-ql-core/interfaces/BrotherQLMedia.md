@@ -164,9 +164,9 @@ For DK-22251 (the only multi-ink media we ship today):
 
 ***
 
-### printAreaDots?
+### printableDots?
 
-> `optional` **printAreaDots?**: `number`
+> `optional` **printableDots?**: `number`
 
 DK-only flat geometry. PT-* entries populate `geometry` instead.
 

@@ -4,7 +4,7 @@
 
 [Documentation](../../../packages.md) / [@thermal-label/brother-ql-web](../README.md) / fromUSBDevice
 
-# Function: fromUSBDevice()
+# ~~Function: fromUSBDevice()~~
 
 > **fromUSBDevice**(`usbDevice`): `Promise`\<[`WebBrotherQLPrinter`](../classes/WebBrotherQLPrinter.md)\>
 
@@ -23,3 +23,8 @@ Wrap an already-selected `USBDevice`.
 ## Throws
 
 when the VID/PID is not in the Brother QL registry.
+
+## Deprecated
+
+Use `requestPrinters({ transport: 'usb' })` from
+  `./request-printers.ts`. Removed once consumers migrate (plan 11).

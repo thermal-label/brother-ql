@@ -169,7 +169,7 @@ For offline preview without a live connection, use the static
 
 ### getStatus()
 
-> **getStatus**(): `Promise`\<[`BrotherQLStatus`](../../brother-ql-core/interfaces/BrotherQLStatus.md)\>
+> **getStatus**(): `Promise`\<[`PrinterStatus`](../../brother-ql-core/interfaces/PrinterStatus.md)\>
 
 Send ESC iS and resolve with the next status frame the printer
 emits. The read loop is the sole reader of the bulk-IN pipe —
@@ -186,7 +186,7 @@ stale parser state from a prior session.
 
 #### Returns
 
-`Promise`\<[`BrotherQLStatus`](../../brother-ql-core/interfaces/BrotherQLStatus.md)\>
+`Promise`\<[`PrinterStatus`](../../brother-ql-core/interfaces/PrinterStatus.md)\>
 
 #### Implementation of
 
@@ -198,10 +198,18 @@ stale parser state from a prior session.
 
 > **onStatus**(`cb`): () => `void`
 
-Subscribe to push-based status updates. Brother QL printers emit
-unsolicited frames on lid open/close, media insert, errors, and
-end-of-job — each one fires `cb` synchronously after parsing.
-Returns an unsubscribe function.
+Subscribe to status updates. A polling shim built on
+`pollingOnStatus` from contracts — it calls `getStatus()` on first
+subscribe and then every `DEFAULT_POLLING_INTERVAL_MS`, matching the
+labelwriter and labelmanager web drivers (plan 11 §`onStatus`
+parity).
+
+An earlier revision skipped polling and relied solely on the
+printer's unsolicited frames. That was a workaround for the Chromium
+WebUSB sub-packet stall — `getStatus()`'s `read()` would hang, so
+polling looked unreliable and was dropped. `WebUsbTransport.read()`
+now rounds reads up to the endpoint packet size, so `getStatus()` is
+dependable and polling is restored.
 
 #### Parameters
 

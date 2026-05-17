@@ -6,7 +6,7 @@
 
 # Function: parseStatus()
 
-> **parseStatus**(`bytes`, `engine?`): [`BrotherQLStatus`](../interfaces/BrotherQLStatus.md)
+> **parseStatus**(`bytes`, `engine?`): [`PrinterStatus`](../interfaces/PrinterStatus.md)
 
 Parse a Brother QL 32-byte status response.
 
@@ -17,15 +17,18 @@ Fields:
   byte 11 — media type (0x0A continuous, 0x0B die-cut)
   byte 17 — media length (mm), 0 for continuous
   byte 18 — status type (0x02 = error response)
+  byte 19 — phase type (0x00 receiving, 0x01 printing)
+  byte 22 — notification (0x03 cooling started, 0x04 cooling finished)
   byte 25 — bit 7 set when the loaded roll is two-color (DK-22251);
             clear on single-color rolls. See scripts/STATUS-CAPTURE.md.
 
 `detectedMedia` is resolved against the media registry via
-`findMediaByDimensions`. `editorLiteMode` is a driver-specific
-extension on `BrotherQLStatus` — the status-type byte doesn't
-actually report it, but keeping the field here means callers can
-set it from other signals (e.g. mass-storage PID detected during
-discovery) without changing the return type.
+`findMediaByDimensions`.
+
+`details` carries the contracts-standard `StatusDetail[]` diagnostic
+rows the harness renders verbatim: the print phase (always present)
+and the head-cooling notification (only when the printer reports
+one).
 
 ## Parameters
 
@@ -39,4 +42,4 @@ discovery) without changing the return type.
 
 ## Returns
 
-[`BrotherQLStatus`](../interfaces/BrotherQLStatus.md)
+[`PrinterStatus`](../interfaces/PrinterStatus.md)

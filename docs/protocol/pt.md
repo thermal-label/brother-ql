@@ -32,23 +32,23 @@ TCP on port 9100. The wire format is identical across transports.
 
 ## Opcode vocabulary
 
-| Opcode                                                       | Bytes              | Description                                                  |
-| ------------------------------------------------------------ | ------------------ | ------------------------------------------------------------ |
-| [`NULL`](#null-—-invalidate)                                 | `00`               | Invalidate byte — flushes any in-progress command.           |
-| [`ESC @`](#esc-—-initialize)                                 | `1B 40`            | Reset mode settings; cancel any in-flight print.             |
-| [`ESC i !`](#esc-i-—-set-automatic-status-notification-mode) | `1B 69 21 n`       | Enable or disable automatic status notifications.            |
-| [`ESC i A`](#esc-i-a-—-set-cut-each-n-labels)                | `1B 69 41 n`       | Cut every `n`-th label in a multi-page job.                  |
-| [`ESC i a`](#esc-i-a-—-switch-dynamic-command-mode)          | `1B 69 61 n`       | Switch command mode (raster, ESC/P, P-touch Template).       |
-| [`ESC i d`](#esc-i-d-—-specify-margin-amount)                | `1B 69 64 n1 n2`   | Specify feed margin in dots (little-endian 16-bit).          |
-| [`ESC i K`](#esc-i-k-—-advanced-mode-settings)               | `1B 69 4B flags`   | Advanced mode flags (half-cut, chain print, high-res).       |
-| [`ESC i M`](#esc-i-m-—-various-mode-settings)                | `1B 69 4D flags`   | Various mode flags (auto-cut, mirror print).                 |
-| [`ESC i S`](#esc-i-s-—-status-information-request)           | `1B 69 53`         | Request 32-byte status reply on the IN endpoint.             |
-| [`ESC i z`](#esc-i-z-—-print-information)                    | `1B 69 7A` + 10    | Declare media type, width, length, row count, page index.    |
-| [`FF`](#ff-—-print-command)                                  | `0C`               | Print page; more pages follow.                               |
-| [`G`](#g-—-raster-graphics-transfer)                         | `67 n1 n2 d…`      | Transfer one raster line; `n1+n2*256` payload bytes follow.  |
-| [`M`](#m-—-select-compression-mode)                          | `4D n`             | Select uncompressed (`0`) or TIFF PackBits (`2`) raster mode.|
-| [`SUB`](#sub-—-print-command-with-feeding)                   | `1A`               | Print page; last page of the job (feeds the tape out).       |
-| [`Z`](#z-—-zero-raster-graphics)                             | `5A`               | One blank raster line (PackBits-compressed jobs only).       |
+| Opcode                                                       | Bytes            | Description                                                   |
+| ------------------------------------------------------------ | ---------------- | ------------------------------------------------------------- |
+| [`NULL`](#null-—-invalidate)                                 | `00`             | Invalidate byte — flushes any in-progress command.            |
+| [`ESC @`](#esc-—-initialize)                                 | `1B 40`          | Reset mode settings; cancel any in-flight print.              |
+| [`ESC i !`](#esc-i-—-set-automatic-status-notification-mode) | `1B 69 21 n`     | Enable or disable automatic status notifications.             |
+| [`ESC i A`](#esc-i-a-—-set-cut-each-n-labels)                | `1B 69 41 n`     | Cut every `n`-th label in a multi-page job.                   |
+| [`ESC i a`](#esc-i-a-—-switch-dynamic-command-mode)          | `1B 69 61 n`     | Switch command mode (raster, ESC/P, P-touch Template).        |
+| [`ESC i d`](#esc-i-d-—-specify-margin-amount)                | `1B 69 64 n1 n2` | Specify feed margin in dots (little-endian 16-bit).           |
+| [`ESC i K`](#esc-i-k-—-advanced-mode-settings)               | `1B 69 4B flags` | Advanced mode flags (half-cut, chain print, high-res).        |
+| [`ESC i M`](#esc-i-m-—-various-mode-settings)                | `1B 69 4D flags` | Various mode flags (auto-cut, mirror print).                  |
+| [`ESC i S`](#esc-i-s-—-status-information-request)           | `1B 69 53`       | Request 32-byte status reply on the IN endpoint.              |
+| [`ESC i z`](#esc-i-z-—-print-information)                    | `1B 69 7A` + 10  | Declare media type, width, length, row count, page index.     |
+| [`FF`](#ff-—-print-command)                                  | `0C`             | Print page; more pages follow.                                |
+| [`G`](#g-—-raster-graphics-transfer)                         | `67 n1 n2 d…`    | Transfer one raster line; `n1+n2*256` payload bytes follow.   |
+| [`M`](#m-—-select-compression-mode)                          | `4D n`           | Select uncompressed (`0`) or TIFF PackBits (`2`) raster mode. |
+| [`SUB`](#sub-—-print-command-with-feeding)                   | `1A`             | Print page; last page of the job (feeds the tape out).        |
+| [`Z`](#z-—-zero-raster-graphics)                             | `5A`             | One blank raster line (PackBits-compressed jobs only).        |
 
 ## Print job structure
 
@@ -132,7 +132,7 @@ is not in hand to confirm a different count; third-party drivers
 report 100 bytes for the 128-pin chassis. Sending 200 on either
 head family is safe as an over-count.
 
-*Raster Command Reference — PT-P900/P900W/P950NW/P910BT*, pp. 5, 22.
+_Raster Command Reference — PT-P900/P900W/P950NW/P910BT_, pp. 5, 22.
 
 ## `ESC @` — initialize
 
@@ -144,7 +144,7 @@ Resets all mode settings and discards anything still in the print
 buffer. Also used to cancel an in-flight print. Emitted once at the
 top of every job, immediately after the invalidate run.
 
-*Raster Command Reference — PT-P900/P900W/P950NW/P910BT*, p. 23.
+_Raster Command Reference — PT-P900/P900W/P950NW/P910BT_, p. 23.
 
 ## `ESC i !` — set automatic status notification mode
 
@@ -159,7 +159,7 @@ PT-P910BT, automatic notification is the only way to receive
 status during a print — the chassis does not enable bidirectional
 communication automatically when `PI_RECOVER` is set.
 
-*Raster Command Reference — PT-P900/P900W/P950NW/P910BT*, p. 41.
+_Raster Command Reference — PT-P900/P900W/P950NW/P910BT_, p. 41.
 
 ## `ESC i A` — set "cut each N labels"
 
@@ -172,7 +172,7 @@ bit 6), the cutter fires every `n`-th label in the page sequence.
 Range `1..255`; default `1` (cut every label). `n = 0` disables
 cutting entirely for the remainder of the job.
 
-*Raster Command Reference — PT-P900/P900W/P950NW/P910BT*, p. 37.
+_Raster Command Reference — PT-P900/P900W/P950NW/P910BT_, p. 37.
 
 ## `ESC i a` — switch dynamic command mode
 
@@ -183,16 +183,16 @@ cutting entirely for the remainder of the job.
 Selects the printer's command-language mode. The printer holds the
 selected mode until power-off.
 
-| `n` | Mode                                          |
-| --: | --------------------------------------------- |
-|   0 | ESC/P (default on PT-P900 / P900W / P950NW)   |
-|   1 | Raster                                        |
-|   3 | P-touch Template                              |
+| `n` | Mode                                        |
+| --: | ------------------------------------------- |
+|   0 | ESC/P (default on PT-P900 / P900W / P950NW) |
+|   1 | Raster                                      |
+|   3 | P-touch Template                            |
 
 Always send `01` (raster) before raster data. On PT-P910BT the
 default is already raster; sending it again is harmless.
 
-*Raster Command Reference — PT-P900/P900W/P950NW/P910BT*, p. 32.
+_Raster Command Reference — PT-P900/P900W/P950NW/P910BT_, p. 32.
 
 ## `ESC i d` — specify margin amount
 
@@ -212,7 +212,7 @@ In high-resolution mode the requested margin must be doubled to keep
 the resulting tape margin at the same physical length, because the
 feed-axis step is halved.
 
-*Raster Command Reference — PT-P900/P900W/P950NW/P910BT*, p. 37.
+_Raster Command Reference — PT-P900/P900W/P950NW/P910BT_, p. 37.
 
 ## `ESC i K` — advanced mode settings
 
@@ -222,14 +222,14 @@ feed-axis step is halved.
 
 One flag byte:
 
-| Bit | Mask   | Function                                                 |
-| --: | -----: | -------------------------------------------------------- |
+| Bit |   Mask | Function                                                           |
+| --: | -----: | ------------------------------------------------------------------ |
 |   0 | `0x01` | Draft printing (PT-P900 / P900W / P950NW; must be 0 on PT-P910BT). |
-|   2 | `0x04` | Half-cut on.                                             |
-|   3 | `0x08` | No chain printing — feed and cut after the last label.   |
-|   4 | `0x10` | Special tape (no cutting).                               |
-|   6 | `0x40` | High-resolution printing.                                |
-|   7 | `0x80` | No buffer clearing between labels.                       |
+|   2 | `0x04` | Half-cut on.                                                       |
+|   3 | `0x08` | No chain printing — feed and cut after the last label.             |
+|   4 | `0x10` | Special tape (no cutting).                                         |
+|   6 | `0x40` | High-resolution printing.                                          |
+|   7 | `0x80` | No buffer clearing between labels.                                 |
 
 Bit 6 toggles the high-resolution mode described in
 [Print job structure](#print-job-structure): each raster line is sent
@@ -240,7 +240,7 @@ used" on PT-P910BT per the manual. Bits 1 and 5 are reserved.
 Note that the QL raster dialect uses bit 4 for high resolution; PT
 uses bit 6 for the same feature.
 
-*Raster Command Reference — PT-P900/P900W/P950NW/P910BT*, p. 36.
+_Raster Command Reference — PT-P900/P900W/P950NW/P910BT_, p. 36.
 
 ## `ESC i M` — various mode settings
 
@@ -250,14 +250,14 @@ uses bit 6 for the same feature.
 
 One flag byte:
 
-| Bit | Mask   | Function          |
-| --: | -----: | ----------------- |
-|   6 | `0x40` | Auto-cut.         |
-|   7 | `0x80` | Mirror printing.  |
+| Bit |   Mask | Function         |
+| --: | -----: | ---------------- |
+|   6 | `0x40` | Auto-cut.        |
+|   7 | `0x80` | Mirror printing. |
 
 Bits 0–5 are reserved or unused.
 
-*Raster Command Reference — PT-P900/P900W/P950NW/P910BT*, p. 35.
+_Raster Command Reference — PT-P900/P900W/P950NW/P910BT_, p. 35.
 
 ## `ESC i S` — status information request
 
@@ -269,52 +269,52 @@ The printer replies with a fixed **32-byte** frame on the IN
 endpoint. Bytes 0–3 are constant (`80 20 'B' '0'`), useful as a sync
 marker against any trailing USB noise:
 
-| Offset | Field                       | Notes                                                |
-| -----: | --------------------------- | ---------------------------------------------------- |
-|      0 | Print-head mark             | `0x80`.                                              |
-|      1 | Size                        | `0x20` (32).                                         |
-|      2 | Brother code                | `'B'` (`0x42`).                                      |
-|      3 | Series code                 | `'0'` (`0x30`).                                      |
-|      4 | Model code                  | `'q'` P900, `'o'` P900W, `'p'` P950NW, `'x'` P910BT. |
-|      5 | Country code                | `'0'` (`0x30`).                                      |
-|      6 | Battery level               | 560-pin AC models: `0x00` full / `0x01` half / `0x02` low / `0x03` charge needed / `0x04` AC adapter / `0xFF` unknown. PT-P910BT uses a separate table with bit 4 set when the AC adapter is connected (`0x20`–`0x24` on battery, `0x30`–`0x37` on AC). |
-|      7 | Extended error              | `0x10` Fle tape end, `0x1D` high-res/draft printing error, `0x1E` adapter pull/insert error, `0x21` incompatible media error. |
-|      8 | Error information 1         | Bitmask — see table below.                           |
-|      9 | Error information 2         | Bitmask — see table below.                           |
-|     10 | Media width (mm)            | `0x04` 3.5 mm … `0x24` 36 mm. `0x00` if no tape.     |
-|     11 | Media type                  | `0x01` laminated, `0x03` non-laminated, `0x04` fabric, `0x11` HSe 2:1, `0x13` Fle, `0x14` flexible ID, `0x15` satin, `0x17` HSe 3:1, `0xFF` incompatible. |
-|     12 | Number of colours           | Fixed `0x00`.                                        |
-|     15 | Mode                        | Last `ESC i M` value (or `0x00` if never set).       |
-|     17 | Media length (mm)           | Always `0x00` for TZe/HSe.                           |
-|     18 | Status type                 | `0x00` reply, `0x01` print done, `0x02` error, `0x05` notification, `0x06` phase change. |
-|     19 | Phase type                  | `0x00` editing / `0x01` printing.                    |
-|  20–21 | Phase number                | Big-endian.                                          |
-|     22 | Notification number         | Cover open / closed, cooling start / finish.         |
-|     24 | Tape colour ID              | Cassette tape colour (see manual table 8).           |
-|     25 | Text colour ID              | Cassette ink colour (see manual table 9).            |
+| Offset | Field               | Notes                                                                                                                                                                                                                                                   |
+| -----: | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|      0 | Print-head mark     | `0x80`.                                                                                                                                                                                                                                                 |
+|      1 | Size                | `0x20` (32).                                                                                                                                                                                                                                            |
+|      2 | Brother code        | `'B'` (`0x42`).                                                                                                                                                                                                                                         |
+|      3 | Series code         | `'0'` (`0x30`).                                                                                                                                                                                                                                         |
+|      4 | Model code          | `'q'` P900, `'o'` P900W, `'p'` P950NW, `'x'` P910BT.                                                                                                                                                                                                    |
+|      5 | Country code        | `'0'` (`0x30`).                                                                                                                                                                                                                                         |
+|      6 | Battery level       | 560-pin AC models: `0x00` full / `0x01` half / `0x02` low / `0x03` charge needed / `0x04` AC adapter / `0xFF` unknown. PT-P910BT uses a separate table with bit 4 set when the AC adapter is connected (`0x20`–`0x24` on battery, `0x30`–`0x37` on AC). |
+|      7 | Extended error      | `0x10` Fle tape end, `0x1D` high-res/draft printing error, `0x1E` adapter pull/insert error, `0x21` incompatible media error.                                                                                                                           |
+|      8 | Error information 1 | Bitmask — see table below.                                                                                                                                                                                                                              |
+|      9 | Error information 2 | Bitmask — see table below.                                                                                                                                                                                                                              |
+|     10 | Media width (mm)    | `0x04` 3.5 mm … `0x24` 36 mm. `0x00` if no tape.                                                                                                                                                                                                        |
+|     11 | Media type          | `0x01` laminated, `0x03` non-laminated, `0x04` fabric, `0x11` HSe 2:1, `0x13` Fle, `0x14` flexible ID, `0x15` satin, `0x17` HSe 3:1, `0xFF` incompatible.                                                                                               |
+|     12 | Number of colours   | Fixed `0x00`.                                                                                                                                                                                                                                           |
+|     15 | Mode                | Last `ESC i M` value (or `0x00` if never set).                                                                                                                                                                                                          |
+|     17 | Media length (mm)   | Always `0x00` for TZe/HSe.                                                                                                                                                                                                                              |
+|     18 | Status type         | `0x00` reply, `0x01` print done, `0x02` error, `0x05` notification, `0x06` phase change.                                                                                                                                                                |
+|     19 | Phase type          | `0x00` editing / `0x01` printing.                                                                                                                                                                                                                       |
+|  20–21 | Phase number        | Big-endian.                                                                                                                                                                                                                                             |
+|     22 | Notification number | Cover open / closed, cooling start / finish.                                                                                                                                                                                                            |
+|     24 | Tape colour ID      | Cassette tape colour (see manual table 8).                                                                                                                                                                                                              |
+|     25 | Text colour ID      | Cassette ink colour (see manual table 9).                                                                                                                                                                                                               |
 
 Error information 1 (byte 8):
 
-| Bit | Mask   | Meaning                                                  |
-| --: | -----: | -------------------------------------------------------- |
-|   0 | `0x01` | No media.                                                |
-|   1 | `0x02` | End of media (not reported on PT-P910BT).                |
-|   2 | `0x04` | Cutter jam.                                              |
-|   3 | `0x08` | Weak batteries.                                          |
-|   6 | `0x40` | High-voltage adapter (not on PT-P910BT).                 |
+| Bit |   Mask | Meaning                                   |
+| --: | -----: | ----------------------------------------- |
+|   0 | `0x01` | No media.                                 |
+|   1 | `0x02` | End of media (not reported on PT-P910BT). |
+|   2 | `0x04` | Cutter jam.                               |
+|   3 | `0x08` | Weak batteries.                           |
+|   6 | `0x40` | High-voltage adapter (not on PT-P910BT).  |
 
 Error information 2 (byte 9):
 
-| Bit | Mask   | Meaning                                                  |
-| --: | -----: | -------------------------------------------------------- |
-|   0 | `0x01` | Replace media / wrong media.                             |
-|   1 | `0x02` | Expansion buffer full (not on PT-P910BT).                |
-|   2 | `0x04` | Communication error.                                     |
-|   3 | `0x08` | Communication buffer full.                               |
-|   4 | `0x10` | Cover open (not on PT-P910BT).                           |
-|   5 | `0x20` | Overheating error.                                       |
-|   6 | `0x40` | Black-marking not detected (not on PT-P910BT).           |
-|   7 | `0x80` | System error.                                            |
+| Bit |   Mask | Meaning                                        |
+| --: | -----: | ---------------------------------------------- |
+|   0 | `0x01` | Replace media / wrong media.                   |
+|   1 | `0x02` | Expansion buffer full (not on PT-P910BT).      |
+|   2 | `0x04` | Communication error.                           |
+|   3 | `0x08` | Communication buffer full.                     |
+|   4 | `0x10` | Cover open (not on PT-P910BT).                 |
+|   5 | `0x20` | Overheating error.                             |
+|   6 | `0x40` | Black-marking not detected (not on PT-P910BT). |
+|   7 | `0x80` | System error.                                  |
 
 A status request is conventionally emitted once per page, before the
 print-information command. The 32-byte reply must be drained from the
@@ -324,7 +324,7 @@ page is actively printing — error and phase-change frames are pushed
 automatically and an extra request mid-print interferes with that
 stream.
 
-*Raster Command Reference — PT-P900/P900W/P950NW/P910BT*, pp. 23–31.
+_Raster Command Reference — PT-P900/P900W/P950NW/P910BT_, pp. 23–31.
 
 ## `ESC i z` — print information
 
@@ -334,15 +334,15 @@ stream.
 
 Declares the print job's media and dimensions. 13 bytes total.
 
-| Param  | Field                                                                          |
-| -----: | ------------------------------------------------------------------------------ |
-|   `n1` | Valid-flag bitmask. `0x02` media type, `0x04` media width, `0x08` media length, `0x40` priority quality (unused), `0x80` recovery / bidirectional. |
-|   `n2` | Media type: `0x00` lam/non-lam, `0x11` HSe 2:1, `0x17` HSe 3:1, `0x13` Fle, `0xFF` incompatible. `0x09` is required when printing high-res on laminated tape. |
-|   `n3` | Media width (mm).                                                              |
-|   `n4` | Media length (mm). `0x00` for TZe and HSe regardless of length; `0x2D` (45 mm) for FLe 21 × 45 mm. |
-| `n5..n8` | Raster row count, little-endian 32-bit: `n5 + n6*256 + n7*65536 + n8*16777216`. |
-|   `n9` | Page index. `0` first page, `1` middle page, `2` last page. Single-page jobs use `2`. |
-|  `n10` | Fixed `0x00`.                                                                  |
+|    Param | Field                                                                                                                                                         |
+| -------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|     `n1` | Valid-flag bitmask. `0x02` media type, `0x04` media width, `0x08` media length, `0x40` priority quality (unused), `0x80` recovery / bidirectional.            |
+|     `n2` | Media type: `0x00` lam/non-lam, `0x11` HSe 2:1, `0x17` HSe 3:1, `0x13` Fle, `0xFF` incompatible. `0x09` is required when printing high-res on laminated tape. |
+|     `n3` | Media width (mm).                                                                                                                                             |
+|     `n4` | Media length (mm). `0x00` for TZe and HSe regardless of length; `0x2D` (45 mm) for FLe 21 × 45 mm.                                                            |
+| `n5..n8` | Raster row count, little-endian 32-bit: `n5 + n6*256 + n7*65536 + n8*16777216`.                                                                               |
+|     `n9` | Page index. `0` first page, `1` middle page, `2` last page. Single-page jobs use `2`.                                                                         |
+|    `n10` | Fixed `0x00`.                                                                                                                                                 |
 
 The valid-flag byte must claim every field the printer is supposed to
 validate. When all three of `PI_KIND`, `PI_WIDTH`, and `PI_LENGTH`
@@ -356,7 +356,7 @@ bidirectional communication from this bit; use
 [`ESC i !`](#esc-i-—-set-automatic-status-notification-mode) `00`
 instead.
 
-*Raster Command Reference — PT-P900/P900W/P950NW/P910BT*, pp. 33–34.
+_Raster Command Reference — PT-P900/P900W/P950NW/P910BT_, pp. 33–34.
 
 ## `FF` — print command
 
@@ -367,7 +367,7 @@ instead.
 Marks the end of one page in a multi-page job. The next page's
 control block follows immediately.
 
-*Raster Command Reference — PT-P900/P900W/P950NW/P910BT*, p. 40.
+_Raster Command Reference — PT-P900/P900W/P950NW/P910BT_, p. 40.
 
 ## `G` — raster graphics transfer
 
@@ -402,7 +402,7 @@ When high-resolution mode is on (see
 payload must be transmitted twice in succession. The 560-pin manual
 doesn't spell this out; the rule is documented in nbuchwitz/ptouch.
 
-*Raster Command Reference — PT-P900/P900W/P950NW/P910BT*, p. 40.
+_Raster Command Reference — PT-P900/P900W/P950NW/P910BT_, p. 40.
 
 ## `M` — select compression mode
 
@@ -432,7 +432,7 @@ Each encoded line still decodes to `headDots / 8` bytes (70 on the
 560-pin head); trailing zero bytes in the margin are not optional in
 the decoded form.
 
-*Raster Command Reference — PT-P900/P900W/P950NW/P910BT*, pp. 38–39.
+_Raster Command Reference — PT-P900/P900W/P950NW/P910BT_, pp. 38–39.
 
 ## `SUB` — print command with feeding
 
@@ -445,7 +445,7 @@ forward past the cutter and (when auto-cut is enabled) fires the
 blade. Every job must end with `SUB`; ending with `FF` leaves the
 last page sitting in the print buffer until the next job arrives.
 
-*Raster Command Reference — PT-P900/P900W/P950NW/P910BT*, p. 40.
+_Raster Command Reference — PT-P900/P900W/P950NW/P910BT_, p. 40.
 
 ## `Z` — zero raster graphics
 
@@ -458,11 +458,11 @@ substitutes for a fully zeroed `G` payload at one byte instead of the
 `3 + headDots/8` bytes a literal `G` row would cost. Uncompressed
 jobs must use a full `G` row with a zero payload instead.
 
-*Raster Command Reference — PT-P900/P900W/P950NW/P910BT*, p. 40.
+_Raster Command Reference — PT-P900/P900W/P950NW/P910BT_, p. 40.
 
 ## References
 
-- *Raster Command Reference — PT-P900/P900W/P950NW/P910BT*, Version
+- _Raster Command Reference — PT-P900/P900W/P950NW/P910BT_, Version
   1.02, Brother Industries, Ltd. (2020). Authoritative byte-level
   reference for the 560-pin family; cited inline by page. Not
   redistributed. The same opcode set is used by the 128-pin

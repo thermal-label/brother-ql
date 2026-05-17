@@ -143,6 +143,7 @@ describe('PT-* device entries', () => {
   it('every PT entry ships untested', () => {
     for (const key of PT_KEYS) {
       const dev = DEVICES[key as keyof typeof DEVICES];
+      // eslint-disable-next-line @typescript-eslint/no-deprecated -- checks legacy support field synthesised by codegen during alias transition
       expect(dev.support.status).toBe('untested');
     }
   });
