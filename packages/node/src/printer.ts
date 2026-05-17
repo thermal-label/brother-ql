@@ -25,7 +25,7 @@ import type {
   Transport,
   TransportType,
 } from '@thermal-label/brother-ql-core';
-import { MediaNotSpecifiedError } from '@thermal-label/contracts';
+import { MediaNotSpecifiedError, WriteSerializer } from '@thermal-label/contracts';
 
 const STATUS_BYTE_COUNT = 32;
 const STATUS_POLL_INTERVAL_MS = 150;
@@ -68,6 +68,17 @@ export class BrotherQLPrinter implements PrinterAdapter {
 
   private readonly transport: Transport;
   private lastStatus: BrotherQLStatus | undefined;
+  /**
+   * Serialises every bulk-OUT operation (print + getStatus) so a
+   * `getStatus()` write can't interleave into an in-flight print()'s
+   * raster stream. The node driver ships no `onStatus` poll today
+   * (plan 14 F1), so there's no concurrent poll to collide with — but
+   * any consumer calling `getStatus()` during `print()` hits the same
+   * hazard the web driver guards against. Adopting the shared
+   * `WriteSerializer` (plan 15 A4) closes that latent drift and keeps
+   * all four drivers identical. See `@thermal-label/contracts`.
+   */
+  private readonly serializer = new WriteSerializer();
 
   constructor(device: BrotherQLDevice, transport: Transport, transportType: TransportType) {
     this.device = device;
@@ -125,7 +136,7 @@ export class BrotherQLPrinter implements PrinterAdapter {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- every brother-ql device has at least one engine (data invariant)
     const engine = this.device.engines[0]!;
     const bytes = encodeJobForEngine([page], {}, engine, this.device.name);
-    await this.writeChunked(bytes);
+    await this.serializer.run(() => this.writeChunked(bytes));
   }
 
   private async writeChunked(bytes: Uint8Array): Promise<void> {
@@ -156,18 +167,22 @@ export class BrotherQLPrinter implements PrinterAdapter {
    * the printer hasn't queued a response yet, so retry with a short
    * delay up to `STATUS_POLL_ATTEMPTS` times.
    */
-  async getStatus(): Promise<BrotherQLStatus> {
-    await this.transport.write(STATUS_REQUEST);
-    for (let attempt = 0; attempt < STATUS_POLL_ATTEMPTS; attempt++) {
-      await new Promise<void>(r => setTimeout(r, STATUS_POLL_INTERVAL_MS));
-      const bytes = await this.transport.read(STATUS_BYTE_COUNT);
-      if (bytes.length >= STATUS_BYTE_COUNT) {
-        const status = parseStatus(bytes, this.device.engines[0]);
-        this.lastStatus = status;
-        return status;
+  getStatus(): Promise<BrotherQLStatus> {
+    // Serialised against `print()` so the status request + poll-read
+    // round-trip can't interleave into an in-flight raster stream.
+    return this.serializer.run(async () => {
+      await this.transport.write(STATUS_REQUEST);
+      for (let attempt = 0; attempt < STATUS_POLL_ATTEMPTS; attempt++) {
+        await new Promise<void>(r => setTimeout(r, STATUS_POLL_INTERVAL_MS));
+        const bytes = await this.transport.read(STATUS_BYTE_COUNT);
+        if (bytes.length >= STATUS_BYTE_COUNT) {
+          const status = parseStatus(bytes, this.device.engines[0]);
+          this.lastStatus = status;
+          return status;
+        }
       }
-    }
-    throw new Error('Printer did not respond to status request within 1.5s');
+      throw new Error('Printer did not respond to status request within 1.5s');
+    });
   }
 
   async close(): Promise<void> {

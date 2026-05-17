@@ -28,7 +28,12 @@ import type {
   RawImageData,
   Transport,
 } from '@thermal-label/brother-ql-core';
-import { MediaNotSpecifiedError, pollingOnStatus, type PrinterStatus } from '@thermal-label/contracts';
+import {
+  MediaNotSpecifiedError,
+  pollingOnStatus,
+  WriteSerializer,
+  type PrinterStatus,
+} from '@thermal-label/contracts';
 import { WebUsbTransport } from '@thermal-label/transport/web';
 
 // Detect transport errors across module boundaries — under pnpm link /
@@ -81,11 +86,14 @@ export class WebBrotherQLPrinter implements PrinterAdapter {
    * because `getStatus()` may write the QL preamble (`buildInvalidate` —
    * 200×0x00 + `ESC @`) to put the parser in a known state, and the
    * preamble's "invalidate" cancels any in-flight print job. Polling
-   * concurrently with a print would shred the raster stream. Any new
-   * caller chains a `.then()` onto this promise so writes happen
-   * strictly in order.
+   * concurrently with a print would shred the raster stream.
+   *
+   * Plan 15 A4: this was a hand-rolled `writeLock`/`runLocked` pair;
+   * it is now the shared `WriteSerializer` from `@thermal-label/contracts`
+   * so all four drivers serialise identically. Behaviour is unchanged —
+   * `WriteSerializer.run()` is exactly the old `runLocked` semantics.
    */
-  private writeLock: Promise<void> = Promise.resolve();
+  private readonly serializer = new WriteSerializer();
   /**
    * Whether the printer's command parser is in a known-clean state.
    * Set to `true` after a successful `getStatus()`; flipped back to
@@ -158,28 +166,7 @@ export class WebBrotherQLPrinter implements PrinterAdapter {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- every brother-ql device has at least one engine (data invariant)
     const engine = this.device.engines[0]!;
     const bytes = encodeJobForEngine([page], {}, engine, this.device.name);
-    await this.runLocked(() => this.writeChunked(bytes));
-  }
-
-  /**
-   * Chain a write operation onto the printer's serial write lock.
-   * Concurrent callers wait their turn; errors propagate to the
-   * caller but don't poison the lock for subsequent writes.
-   */
-  private async runLocked<T>(fn: () => Promise<T>): Promise<T> {
-    const prior = this.writeLock;
-    let release: () => void = () => {
-      // Will be replaced.
-    };
-    this.writeLock = new Promise<void>(resolve => {
-      release = resolve;
-    });
-    try {
-      await prior;
-      return await fn();
-    } finally {
-      release();
-    }
+    await this.serializer.run(() => this.writeChunked(bytes));
   }
 
   private async writeChunked(bytes: Uint8Array): Promise<void> {
@@ -218,7 +205,7 @@ export class WebBrotherQLPrinter implements PrinterAdapter {
    * stale parser state from a prior session.
    */
   async getStatus(): Promise<BrotherQLStatus> {
-    return this.runLocked(async () => {
+    return this.serializer.run(async () => {
       const next = this.nextStatusFrame(STATUS_RESPONSE_TIMEOUT_MS);
       if (!this.parserReady) {
         await this.transport.write(buildInvalidate());

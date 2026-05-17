@@ -1,9 +1,55 @@
 /* eslint-disable @typescript-eslint/no-deprecated -- intentionally exercises the deprecated per-transport factories during plan-10 transition */
 import { describe, expect, it, vi } from 'vitest';
 import { MediaNotSpecifiedError } from '@thermal-label/contracts';
-import { DEVICES, MEDIA } from '@thermal-label/brother-ql-core';
-import { fromUSBDevice, requestPrinter } from '../printer.js';
+import type { Transport } from '@thermal-label/contracts';
+import { DEVICES, MEDIA, findDevice } from '@thermal-label/brother-ql-core';
+import { fromUSBDevice, requestPrinter, WebBrotherQLPrinter } from '../printer.js';
 import { createMockUSBDevice } from './webusb-mock.js';
+
+/**
+ * Fake `Transport` recording write order. Each ESC iS write (1B 69 53)
+ * queues a 32-byte status frame the persistent read loop drains.
+ * `write()` does an async hop so an unserialised concurrent caller
+ * could interleave.
+ */
+class RecordingTransport implements Transport {
+  readonly writes: { firstByte: number | undefined; isStatusReq: boolean }[] = [];
+  connected = true;
+  private readonly frames: Uint8Array[] = [];
+  private waiter: ((frame: Uint8Array) => void) | undefined;
+
+  async write(data: Uint8Array): Promise<void> {
+    const isStatusReq = data[0] === 0x1b && data[1] === 0x69 && data[2] === 0x53;
+    this.writes.push({ firstByte: data[0], isStatusReq });
+    await Promise.resolve();
+    await Promise.resolve();
+    if (isStatusReq) this.enqueue(new Uint8Array(32));
+  }
+
+  private enqueue(frame: Uint8Array): void {
+    if (this.waiter) {
+      const w = this.waiter;
+      this.waiter = undefined;
+      w(frame);
+    } else {
+      this.frames.push(frame);
+    }
+  }
+
+  read(): Promise<Uint8Array> {
+    const next = this.frames.shift();
+    if (next) return Promise.resolve(next);
+    return new Promise<Uint8Array>(resolve => {
+      this.waiter = resolve;
+    });
+  }
+
+  close(): Promise<void> {
+    this.connected = false;
+    this.waiter?.(new Uint8Array(0));
+    return Promise.resolve();
+  }
+}
 
 function solidRgba(
   width: number,
@@ -143,6 +189,29 @@ describe('WebBrotherQLPrinter', () => {
     const row = firstRasterRow(device.__transfers[0]!.data, 0x67, 0x00);
     expect(row[3]).toBe(0x10);
     expect(row[1]).toBe(0x00);
+  });
+
+  it('serialises getStatus() behind an in-flight print() via WriteSerializer (plan 15 A4)', async () => {
+    const transport = new RecordingTransport();
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- QL-820NWBc is in the registry
+    const device = findDevice(0x04f9, 0x209d)!;
+    const printer = new WebBrotherQLPrinter(device, transport);
+
+    // Kick a print and fire a status poll before it resolves.
+    const printDone = printer.print(solidRgba(696, 120), MEDIA[251]);
+    const statusDone = printer.getStatus();
+    await Promise.all([printDone, statusDone]);
+
+    // getStatus() issues the only ESC iS write. With the shared
+    // WriteSerializer it must land strictly after every print chunk
+    // write — no status request spliced into the raster stream.
+    const statusReqIdx = transport.writes.findIndex(w => w.isStatusReq);
+    expect(statusReqIdx).toBeGreaterThan(0);
+    expect(statusReqIdx).toBe(transport.writes.length - 1);
+    // Every preceding write is a print chunk (not a status request).
+    expect(transport.writes.slice(0, statusReqIdx).some(w => w.isStatusReq)).toBe(false);
+
+    await printer.close();
   });
 
   it('print() splits the job into ≤1 KB OUT-pipe chunks (firmware flow-control)', async () => {
