@@ -7,14 +7,11 @@ no scattered captures.
 
 ## Browser harness
 
-> **Coming soon.** The `brother-ql` browser harness is scaffolded but
-> not yet bench-validated. Track progress in the
-> [harness monorepo](https://github.com/thermal-label/harness) —
-> specifically `apps/harness-brother-ql/`. Once shipped it will live
-> at <https://thermal-label.github.io/harness/brother-ql/>.
-
-Until it ships, use the CLI harness (below) or the hand-rolled
-fallback.
+Open <https://thermal-label.github.io/harness/brother-ql/> in a
+Chromium-class browser, click **Pair**, select your QL or PT
+printer, and follow the prompts. The harness runs the identity
+probe, prints the diagnostic, and prefills a GitHub issue when
+you're done.
 
 ## CLI harness
 

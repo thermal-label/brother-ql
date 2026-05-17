@@ -36,9 +36,9 @@ features:
     linkText: Protocol guide
   - icon: 🖨️
     title: Hardware harness
-    details: Bench-only for now — apps/harness-brother-ql/ on github.com/thermal-label/harness drives identity probe, a single diagnostic print, and a verification-report flow. Hosted bundle lands at /harness/brother-ql/ once it ships.
-    link: https://github.com/thermal-label/harness
-    linkText: Source on GitHub
+    details: Pair a printer in the browser, run an identity probe, fire a single diagnostic print, and submit a verification report — straight from the harness app. No CLI transcription.
+    link: https://thermal-label.github.io/harness/brother-ql/
+    linkText: Open the harness
 ---
 
 <div class="home-extra">

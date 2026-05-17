@@ -212,9 +212,8 @@ if (device) {
 | `DEFAULT_FILTERS`          | Brother QL VID/PID filter set         |
 
 For a guided pair-and-print flow with a diagnostic print and a
-verification-report submission, see the hardware harness. The
-brother-ql harness app lives at
-[github.com/thermal-label/harness](https://github.com/thermal-label/harness)
-under `apps/harness-brother-ql/` — bench-only for now; the hosted
-bundle will land at
-`https://thermal-label.github.io/harness/brother-ql/` once it ships.
+verification-report submission, use the hardware harness, live at
+<https://thermal-label.github.io/harness/brother-ql/>. Its source
+lives in the
+[harness monorepo](https://github.com/thermal-label/harness) under
+`apps/harness-brother-ql/`.
