@@ -256,6 +256,7 @@ export class WebBrotherQLPrinter implements PrinterAdapter {
   }
 
   private startReadLoop(): void {
+    /* v8 ignore next -- defensive: startReadLoop is only ever called once, from the constructor, where readLoopStarted is still false; the re-entry guard can never be true */
     if (this.readLoopStarted) return;
     this.readLoopStarted = true;
     void this.readLoop();
@@ -291,6 +292,7 @@ export class WebBrotherQLPrinter implements PrinterAdapter {
       for (const cb of snapshot) {
         try {
           cb(status);
+          /* v8 ignore next 4 -- defensive: the only registrant of statusListeners is nextStatusFrame's internal handler (clearTimeout + delete + resolve), which cannot throw; kept for future persistent-listener callers */
         } catch (err) {
           // eslint-disable-next-line no-console -- driver-level diagnostic
           console.warn('[brother-ql-web] status listener threw:', err);
@@ -394,6 +396,7 @@ export async function fromUSBDeviceAll(
     );
   }
   const engine = descriptor.engines[0];
+  /* v8 ignore next 3 -- defensive: every brother-ql registry entry declares at least one engine (data invariant); guard kept against a malformed future registry edit */
   if (!engine) {
     throw new Error(`Device ${descriptor.key} has no engines.`);
   }

@@ -114,6 +114,7 @@ async function openBluetoothSpp(deviceKey: string, baudRate?: number): Promise<P
 
 function adapterMap(entry: DeviceEntry, transport: Transport): PrinterAdapterMap {
   const engine = entry.engines[0];
+  /* v8 ignore next -- defensive: every brother-ql registry entry declares at least one engine (data invariant); guard kept against a malformed future registry edit */
   if (!engine) throw new Error(`Device ${entry.key} has no engines.`);
   // WebBrotherQLPrinter accepts a generic Transport — the encoder is
   // transport-agnostic, so the BT-SPP path is just the same printer

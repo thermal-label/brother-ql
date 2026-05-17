@@ -3,7 +3,13 @@ import { describe, expect, it, vi } from 'vitest';
 import { MediaNotSpecifiedError } from '@thermal-label/contracts';
 import type { Transport } from '@thermal-label/contracts';
 import { DEVICES, MEDIA, findDevice } from '@thermal-label/brother-ql-core';
-import { fromUSBDevice, requestPrinter, WebBrotherQLPrinter } from '../printer.js';
+import {
+  fromUSBDevice,
+  fromUSBDeviceAll,
+  requestPrinter,
+  requestPrintersUsbLegacy,
+  WebBrotherQLPrinter,
+} from '../printer.js';
 import { createMockUSBDevice } from './webusb-mock.js';
 
 /**
@@ -372,5 +378,77 @@ describe('requestPrinter', () => {
     for (const d of Object.values(DEVICES)) {
       expect(pids).toContain(parseInt(d.transports.usb!.pid, 16));
     }
+  });
+
+  it('forwards a caller-supplied filter list to navigator.usb.requestDevice', async () => {
+    const device = createMockUSBDevice({ vendorId: 0x04f9, productId: 0x209d });
+    const requestDevice = vi.fn(() => Promise.resolve(device));
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { usb: { requestDevice } },
+      configurable: true,
+    });
+    const filters: USBDeviceFilter[] = [{ vendorId: 0x04f9 }];
+
+    const printer = await requestPrinter({ filters });
+
+    expect(printer.family).toBe('brother-ql');
+    const call = (requestDevice.mock.calls as unknown as [{ filters: USBDeviceFilter[] }][])[0]![0];
+    expect(call.filters).toBe(filters);
+  });
+});
+
+describe('requestPrintersUsbLegacy (deprecated USB-only factory)', () => {
+  it('returns a 1-key adapter map keyed by the device primary engine role', async () => {
+    const device = createMockUSBDevice({ productId: 0x209d });
+    const requestDevice = vi.fn(() => Promise.resolve(device));
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { usb: { requestDevice } },
+      configurable: true,
+    });
+
+    const printers = await requestPrintersUsbLegacy();
+
+    const roles = Object.keys(printers);
+    expect(roles).toHaveLength(1);
+    const expectedRole = findDevice(0x04f9, 0x209d)!.engines[0]!.role;
+    expect(roles[0]).toBe(expectedRole);
+    expect(printers[roles[0]!]!.family).toBe('brother-ql');
+    // Default filters cover every registered VID/PID.
+    const call = (requestDevice.mock.calls as unknown as [{ filters: USBDeviceFilter[] }][])[0]![0];
+    expect(call.filters.length).toBeGreaterThan(0);
+    await printers[roles[0]!]!.close();
+  });
+
+  it('forwards a caller-supplied filter list', async () => {
+    const device = createMockUSBDevice({ productId: 0x209d });
+    const requestDevice = vi.fn(() => Promise.resolve(device));
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { usb: { requestDevice } },
+      configurable: true,
+    });
+    const filters: USBDeviceFilter[] = [{ vendorId: 0x04f9 }];
+
+    await requestPrintersUsbLegacy({ filters });
+
+    const call = (requestDevice.mock.calls as unknown as [{ filters: USBDeviceFilter[] }][])[0]![0];
+    expect(call.filters).toBe(filters);
+  });
+});
+
+describe('fromUSBDeviceAll (deprecated USBDevice wrapper)', () => {
+  it('wraps an already-selected USBDevice into a 1-key adapter map', async () => {
+    const device = createMockUSBDevice({ productId: 0x209d });
+    const printers = await fromUSBDeviceAll(device);
+    const roles = Object.keys(printers);
+    expect(roles).toHaveLength(1);
+    const expectedRole = findDevice(0x04f9, 0x209d)!.engines[0]!.role;
+    expect(roles[0]).toBe(expectedRole);
+    expect(printers[roles[0]!]!.model).toBe('QL-820NWBc');
+    await printers[roles[0]!]!.close();
+  });
+
+  it('throws for an unknown USB device VID/PID', async () => {
+    const device = createMockUSBDevice({ vendorId: 0x1234, productId: 0x5678 });
+    await expect(fromUSBDeviceAll(device)).rejects.toThrow('Unsupported USB device');
   });
 });
