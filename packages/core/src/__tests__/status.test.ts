@@ -127,11 +127,6 @@ describe('parseStatus', () => {
     expect(status.rawBytes).toEqual(bytes);
   });
 
-  it('editorLiteMode is on the BrotherQLStatus extension', () => {
-    const status = parseStatus(makeStatusBytes());
-    expect(status.editorLiteMode).toBe(false);
-  });
-
   it('byte 25 bit 7 set → resolves to DK-22251 (two-color, palette set)', () => {
     const status = parseStatus(
       makeStatusBytes({ mediaWidthMm: 62, mediaTypeByte: 0x0a, byte25: 0x81 }),
@@ -193,9 +188,8 @@ describe('parseStatus — details[]', () => {
     expect(cooling?.severity).toBeUndefined();
   });
 
-  it('no Editor Lite row when editorLiteMode is false', () => {
+  it('never emits an Editor Lite row (status bytes cannot report it)', () => {
     const status = parseStatus(makeStatusBytes());
-    expect(status.editorLiteMode).toBe(false);
     expect(status.details?.some(d => d.label === 'Editor Lite mode')).toBe(false);
   });
 

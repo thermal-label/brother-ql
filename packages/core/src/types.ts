@@ -112,13 +112,11 @@ export interface BrotherQLMedia extends MediaDescriptor {
 }
 
 /**
- * Brother QL status — contracts `PrinterStatus` plus the
- * `editorLiteMode` flag (pre-paired QL-820NWB silently drops raster
- * jobs when in Editor Lite mode; callers need to know).
+ * Brother QL status — the plain contract `PrinterStatus`. Brother QL
+ * adds no structural extension: driver-specific diagnostic facts (print
+ * phase, head cooling) ride in the contract-standard `details[]` rows.
  */
-export interface BrotherQLStatus extends PrinterStatus {
-  editorLiteMode: boolean;
-}
+export type BrotherQLStatus = PrinterStatus;
 
 export interface PageData {
   bitmap: LabelBitmap;

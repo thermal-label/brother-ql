@@ -232,7 +232,6 @@ describe('BrotherQLPrinter', () => {
 
     const status = await printer.getStatus();
     expect(status.rawBytes.length).toBe(32);
-    expect(status.editorLiteMode).toBe(false);
     expect(status.detectedMedia?.id).toBe(259);
   });
 

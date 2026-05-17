@@ -43,16 +43,12 @@ const ERROR_INFO_2: { bit: number; code: string; message: string }[] = [
  *             clear on single-color rolls. See scripts/STATUS-CAPTURE.md.
  *
  * `detectedMedia` is resolved against the media registry via
- * `findMediaByDimensions`. `editorLiteMode` is a driver-specific
- * extension on `BrotherQLStatus` — the status-type byte doesn't
- * actually report it, but keeping the field here means callers can
- * set it from other signals (e.g. mass-storage PID detected during
- * discovery) without changing the return type.
+ * `findMediaByDimensions`.
  *
  * `details` carries the contracts-standard `StatusDetail[]` diagnostic
- * rows the harness renders verbatim: the print phase (always present),
- * the head-cooling notification (only when the printer reports one),
- * and an Editor Lite warning row (only when `editorLiteMode` is set).
+ * rows the harness renders verbatim: the print phase (always present)
+ * and the head-cooling notification (only when the printer reports
+ * one).
  */
 export function parseStatus(
   bytes: Uint8Array,
@@ -86,20 +82,12 @@ export function parseStatus(
     ? findMediaByDimensions(mediaWidthMm, mediaLengthMm, twoColorFlag, engine)
     : undefined;
 
-  // `parseStatus` cannot observe Editor Lite mode from the status bytes
-  // (the chassis doesn't report it) — it always reports `false` here.
-  // The detail-row logic still keys off this value so a caller that
-  // sets `editorLiteMode` from another signal (mass-storage PID seen
-  // during discovery) gets the warning row when it re-derives details.
-  const editorLiteMode = false;
-
   return {
     ready: errors.length === 0 && statusType !== 0x02,
     mediaLoaded,
     ...(detected === undefined ? {} : { detectedMedia: detected }),
     errors,
-    editorLiteMode,
-    details: buildStatusDetails(phaseType, notification, editorLiteMode),
+    details: buildStatusDetails(phaseType, notification),
     rawBytes: bytes,
   };
 }
@@ -114,15 +102,8 @@ export function parseStatus(
  *   reports a cooling notification; `0x00` (none) produces no row so a
  *   normal idle status stays uncluttered. "Cooling started" is a
  *   `warn` (printing is paused), "cooling finished" is plain `info`.
- * - The Editor Lite row is emitted only when `editorLiteMode` is set —
- *   a `warn`, since a QL-820NWB in Editor Lite silently drops raster
- *   jobs.
  */
-function buildStatusDetails(
-  phaseType: number,
-  notification: number,
-  editorLiteMode: boolean,
-): StatusDetail[] {
+function buildStatusDetails(phaseType: number, notification: number): StatusDetail[] {
   const details: StatusDetail[] = [];
 
   details.push({
@@ -140,14 +121,6 @@ function buildStatusDetails(
     details.push({
       label: 'Head cooling',
       value: 'cooling finished',
-    });
-  }
-
-  if (editorLiteMode) {
-    details.push({
-      label: 'Editor Lite mode',
-      value: 'raster jobs dropped',
-      severity: 'warn',
     });
   }
 
