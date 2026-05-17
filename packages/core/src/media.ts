@@ -8,7 +8,7 @@ export { MEDIA };
  * Resolve per-head-family geometry for a media entry against the
  * engine that's about to print it.
  *
- * DK entries fall back to the flat `printAreaDots` / `leftMarginPins` /
+ * DK entries fall back to the flat `printableDots` / `leftMarginPins` /
  * `rightMarginPins` fields on the entry — the same values every QL
  * code path read before the head-family split landed. TZe and HSe
  * entries dispatch on `engine.headDots`: 128 picks `geometry.narrow`,
@@ -23,14 +23,14 @@ export function resolveTapeGeometry(
 ): TapeGeometry {
   if (media.tapeSystem === 'dk') {
     if (
-      typeof media.printAreaDots !== 'number' ||
+      typeof media.printableDots !== 'number' ||
       typeof media.leftMarginPins !== 'number' ||
       typeof media.rightMarginPins !== 'number'
     ) {
       throw new Error(`DK media ${media.id.toString()} missing flat geometry fields`);
     }
     return {
-      printAreaDots: media.printAreaDots,
+      printableDots: media.printableDots,
       leftMarginPins: media.leftMarginPins,
       rightMarginPins: media.rightMarginPins,
     };

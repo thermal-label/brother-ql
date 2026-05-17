@@ -30,7 +30,7 @@
     targetModels: ['dk'],
     skus: ['DK-22214'],
     category: 'continuous',
-    printAreaDots: 106,
+    printableDots: 106,
     leftMarginPins: 585,
     rightMarginPins: 29,
   },
@@ -43,7 +43,7 @@
     targetModels: ['dk'],
     skus: ['DK-22210'],
     category: 'continuous',
-    printAreaDots: 306,
+    printableDots: 306,
     leftMarginPins: 408,
     rightMarginPins: 6,
   },
@@ -56,7 +56,7 @@
     targetModels: ['dk'],
     skus: ['DK-22225'],
     category: 'continuous',
-    printAreaDots: 413,
+    printableDots: 413,
     leftMarginPins: 295,
     rightMarginPins: 12,
   },
@@ -69,7 +69,7 @@
     targetModels: ['dk'],
     skus: ['DK-22246'],
     category: 'continuous',
-    printAreaDots: 554,
+    printableDots: 554,
     leftMarginPins: 154,
     rightMarginPins: 12,
   },
@@ -82,7 +82,7 @@
     targetModels: ['dk'],
     skus: ['DK-N55224'],
     category: 'continuous',
-    printAreaDots: 590,
+    printableDots: 590,
     leftMarginPins: 130,
     rightMarginPins: 0,
   },
@@ -95,7 +95,7 @@
     targetModels: ['dk'],
     skus: ['DK-22205'],
     category: 'continuous',
-    printAreaDots: 696,
+    printableDots: 696,
     leftMarginPins: 12,
     rightMarginPins: 12,
   },
@@ -112,7 +112,7 @@
       { name: 'black', rgb: [0, 0, 0] },
       { name: 'red', rgb: [255, 0, 0] },
     ],
-    printAreaDots: 696,
+    printableDots: 696,
     leftMarginPins: 12,
     rightMarginPins: 12,
   },
@@ -125,7 +125,7 @@
     targetModels: ['dk-wide'],
     skus: ['DK-22243'],
     category: 'continuous',
-    printAreaDots: 1164,
+    printableDots: 1164,
     leftMarginPins: 76,
     rightMarginPins: 56,
   },
@@ -143,7 +143,7 @@
     targetModels: ['dk'],
     skus: ['DK-11204'],
     category: 'die-cut',
-    printAreaDots: 165,
+    printableDots: 165,
     leftMarginPins: 0,
     rightMarginPins: 0,
     dieCutMaskedAreaDots: 566,
@@ -160,7 +160,7 @@
     targetModels: ['dk'],
     skus: ['DK-11203'],
     category: 'die-cut',
-    printAreaDots: 165,
+    printableDots: 165,
     leftMarginPins: 0,
     rightMarginPins: 0,
     dieCutMaskedAreaDots: 956,
@@ -176,7 +176,7 @@
     cornerRadiusMm: 3,
     targetModels: ['dk'],
     category: 'die-cut',
-    printAreaDots: 236,
+    printableDots: 236,
     leftMarginPins: 0,
     rightMarginPins: 0,
     dieCutMaskedAreaDots: 202,
@@ -193,9 +193,9 @@
     targetModels: ['dk'],
     skus: ['DK-11201'],
     category: 'die-cut',
-    printAreaDots: 306,
+    printableDots: 306,
     // Left/right margins from Python brother_ql canonical for QL-class
-    // (720-pin) heads: leftMarginPins + printAreaDots + rightMarginPins
+    // (720-pin) heads: leftMarginPins + printableDots + rightMarginPins
     // = 720. Other DK entries in this file still have 0/0 placeholders
     // and will need the same backfill — TODO(brother-ql): backfill
     // remaining DK margin pairs from prior art.
@@ -215,7 +215,7 @@
     targetModels: ['dk'],
     skus: ['DK-11218'],
     category: 'die-cut',
-    printAreaDots: 413,
+    printableDots: 413,
     leftMarginPins: 0,
     rightMarginPins: 0,
     dieCutMaskedAreaDots: 991,
@@ -232,7 +232,7 @@
     targetModels: ['dk'],
     skus: ['DK-11219'],
     category: 'die-cut',
-    printAreaDots: 425,
+    printableDots: 425,
     leftMarginPins: 0,
     rightMarginPins: 0,
     dieCutMaskedAreaDots: 495,
@@ -248,7 +248,7 @@
     cornerRadiusMm: 3,
     targetModels: ['dk'],
     category: 'die-cut',
-    printAreaDots: 578,
+    printableDots: 578,
     leftMarginPins: 0,
     rightMarginPins: 0,
     dieCutMaskedAreaDots: 271,
@@ -265,7 +265,7 @@
     targetModels: ['dk'],
     skus: ['DK-11209'],
     category: 'die-cut',
-    printAreaDots: 696,
+    printableDots: 696,
     leftMarginPins: 0,
     rightMarginPins: 0,
     dieCutMaskedAreaDots: 271,
@@ -282,7 +282,7 @@
     targetModels: ['dk'],
     skus: ['DK-11202'],
     category: 'die-cut',
-    printAreaDots: 696,
+    printableDots: 696,
     leftMarginPins: 0,
     rightMarginPins: 0,
     dieCutMaskedAreaDots: 1109,
@@ -299,7 +299,7 @@
     targetModels: ['dk-wide'],
     skus: ['DK-11240'],
     category: 'die-cut',
-    printAreaDots: 1164,
+    printableDots: 1164,
     leftMarginPins: 0,
     rightMarginPins: 0,
     dieCutMaskedAreaDots: 526,
@@ -316,7 +316,7 @@
     targetModels: ['dk-wide'],
     skus: ['DK-11241'],
     category: 'die-cut',
-    printAreaDots: 1164,
+    printableDots: 1164,
     leftMarginPins: 0,
     rightMarginPins: 0,
     dieCutMaskedAreaDots: 1660,
@@ -331,7 +331,7 @@
     cornerRadiusMm: 6,
     targetModels: ['dk'],
     category: 'die-cut',
-    printAreaDots: 94,
+    printableDots: 94,
     leftMarginPins: 0,
     rightMarginPins: 0,
     dieCutMaskedAreaDots: 94,
@@ -347,7 +347,7 @@
     targetModels: ['dk'],
     skus: ['DK-11221'],
     category: 'die-cut',
-    printAreaDots: 236,
+    printableDots: 236,
     leftMarginPins: 0,
     rightMarginPins: 0,
     dieCutMaskedAreaDots: 236,
@@ -363,7 +363,7 @@
     targetModels: ['dk'],
     skus: ['DK-11207'],
     category: 'die-cut',
-    printAreaDots: 618,
+    printableDots: 618,
     leftMarginPins: 0,
     rightMarginPins: 0,
     dieCutMaskedAreaDots: 618,
@@ -402,8 +402,8 @@
     targetModels: ['tze'],
     category: 'tape',
     geometry: {
-      narrow: { printAreaDots: 24, leftMarginPins: 52, rightMarginPins: 52 },
-      wide: { printAreaDots: 48, leftMarginPins: 248, rightMarginPins: 264 },
+      narrow: { printableDots: 24, leftMarginPins: 52, rightMarginPins: 52 },
+      wide: { printableDots: 48, leftMarginPins: 248, rightMarginPins: 264 },
     },
   },
   {
@@ -415,8 +415,8 @@
     targetModels: ['tze'],
     category: 'tape',
     geometry: {
-      narrow: { printAreaDots: 32, leftMarginPins: 48, rightMarginPins: 48 },
-      wide: { printAreaDots: 64, leftMarginPins: 240, rightMarginPins: 256 },
+      narrow: { printableDots: 32, leftMarginPins: 48, rightMarginPins: 48 },
+      wide: { printableDots: 64, leftMarginPins: 240, rightMarginPins: 256 },
     },
   },
   {
@@ -428,8 +428,8 @@
     targetModels: ['tze'],
     category: 'tape',
     geometry: {
-      narrow: { printAreaDots: 50, leftMarginPins: 39, rightMarginPins: 39 },
-      wide: { printAreaDots: 106, leftMarginPins: 219, rightMarginPins: 235 },
+      narrow: { printableDots: 50, leftMarginPins: 39, rightMarginPins: 39 },
+      wide: { printableDots: 106, leftMarginPins: 219, rightMarginPins: 235 },
     },
   },
   {
@@ -441,8 +441,8 @@
     targetModels: ['tze'],
     category: 'tape',
     geometry: {
-      narrow: { printAreaDots: 70, leftMarginPins: 29, rightMarginPins: 29 },
-      wide: { printAreaDots: 150, leftMarginPins: 197, rightMarginPins: 213 },
+      narrow: { printableDots: 70, leftMarginPins: 29, rightMarginPins: 29 },
+      wide: { printableDots: 150, leftMarginPins: 197, rightMarginPins: 213 },
     },
   },
   {
@@ -454,8 +454,8 @@
     targetModels: ['tze'],
     category: 'tape',
     geometry: {
-      narrow: { printAreaDots: 112, leftMarginPins: 8, rightMarginPins: 8 },
-      wide: { printAreaDots: 234, leftMarginPins: 155, rightMarginPins: 171 },
+      narrow: { printableDots: 112, leftMarginPins: 8, rightMarginPins: 8 },
+      wide: { printableDots: 234, leftMarginPins: 155, rightMarginPins: 171 },
     },
   },
   {
@@ -467,8 +467,8 @@
     targetModels: ['tze'],
     category: 'tape',
     geometry: {
-      narrow: { printAreaDots: 128, leftMarginPins: 0, rightMarginPins: 0 },
-      wide: { printAreaDots: 320, leftMarginPins: 112, rightMarginPins: 128 },
+      narrow: { printableDots: 128, leftMarginPins: 0, rightMarginPins: 0 },
+      wide: { printableDots: 320, leftMarginPins: 112, rightMarginPins: 128 },
     },
   },
   {
@@ -483,7 +483,7 @@
     targetModels: ['tze'],
     category: 'tape',
     geometry: {
-      wide: { printAreaDots: 454, leftMarginPins: 45, rightMarginPins: 61 },
+      wide: { printableDots: 454, leftMarginPins: 45, rightMarginPins: 61 },
     },
   },
 
@@ -511,8 +511,8 @@
     targetModels: ['hse-2to1'],
     category: 'tape',
     geometry: {
-      narrow: { printAreaDots: 28, leftMarginPins: 52, rightMarginPins: 48 },
-      wide: { printAreaDots: 56, leftMarginPins: 261, rightMarginPins: 243 },
+      narrow: { printableDots: 28, leftMarginPins: 52, rightMarginPins: 48 },
+      wide: { printableDots: 56, leftMarginPins: 261, rightMarginPins: 243 },
     },
   },
   {
@@ -524,8 +524,8 @@
     targetModels: ['hse-2to1'],
     category: 'tape',
     geometry: {
-      narrow: { printAreaDots: 48, leftMarginPins: 42, rightMarginPins: 38 },
-      wide: { printAreaDots: 96, leftMarginPins: 241, rightMarginPins: 223 },
+      narrow: { printableDots: 48, leftMarginPins: 42, rightMarginPins: 38 },
+      wide: { printableDots: 96, leftMarginPins: 241, rightMarginPins: 223 },
     },
   },
   {
@@ -537,8 +537,8 @@
     targetModels: ['hse-2to1'],
     category: 'tape',
     geometry: {
-      narrow: { printAreaDots: 66, leftMarginPins: 33, rightMarginPins: 29 },
-      wide: { printAreaDots: 132, leftMarginPins: 223, rightMarginPins: 205 },
+      narrow: { printableDots: 66, leftMarginPins: 33, rightMarginPins: 29 },
+      wide: { printableDots: 132, leftMarginPins: 223, rightMarginPins: 205 },
     },
   },
   {
@@ -550,8 +550,8 @@
     targetModels: ['hse-2to1'],
     category: 'tape',
     geometry: {
-      narrow: { printAreaDots: 106, leftMarginPins: 13, rightMarginPins: 9 },
-      wide: { printAreaDots: 212, leftMarginPins: 183, rightMarginPins: 165 },
+      narrow: { printableDots: 106, leftMarginPins: 13, rightMarginPins: 9 },
+      wide: { printableDots: 212, leftMarginPins: 183, rightMarginPins: 165 },
     },
   },
   {
@@ -563,8 +563,8 @@
     targetModels: ['hse-2to1'],
     category: 'tape',
     geometry: {
-      narrow: { printAreaDots: 128, leftMarginPins: 0, rightMarginPins: 0 },
-      wide: { printAreaDots: 256, leftMarginPins: 161, rightMarginPins: 143 },
+      narrow: { printableDots: 128, leftMarginPins: 0, rightMarginPins: 0 },
+      wide: { printableDots: 256, leftMarginPins: 161, rightMarginPins: 143 },
     },
   },
 
@@ -584,8 +584,8 @@
     targetModels: ['hse-3to1'],
     category: 'tape',
     geometry: {
-      narrow: { printAreaDots: 20, leftMarginPins: 56, rightMarginPins: 52 },
-      wide: { printAreaDots: 40, leftMarginPins: 269, rightMarginPins: 251 },
+      narrow: { printableDots: 20, leftMarginPins: 56, rightMarginPins: 52 },
+      wide: { printableDots: 40, leftMarginPins: 269, rightMarginPins: 251 },
     },
   },
   {
@@ -597,8 +597,8 @@
     targetModels: ['hse-3to1'],
     category: 'tape',
     geometry: {
-      narrow: { printAreaDots: 44, leftMarginPins: 44, rightMarginPins: 40 },
-      wide: { printAreaDots: 88, leftMarginPins: 245, rightMarginPins: 227 },
+      narrow: { printableDots: 44, leftMarginPins: 44, rightMarginPins: 40 },
+      wide: { printableDots: 88, leftMarginPins: 245, rightMarginPins: 227 },
     },
   },
   {
@@ -610,8 +610,8 @@
     targetModels: ['hse-3to1'],
     category: 'tape',
     geometry: {
-      narrow: { printAreaDots: 50, leftMarginPins: 41, rightMarginPins: 37 },
-      wide: { printAreaDots: 100, leftMarginPins: 239, rightMarginPins: 221 },
+      narrow: { printableDots: 50, leftMarginPins: 41, rightMarginPins: 37 },
+      wide: { printableDots: 100, leftMarginPins: 239, rightMarginPins: 221 },
     },
   },
   {
@@ -623,8 +623,8 @@
     targetModels: ['hse-3to1'],
     category: 'tape',
     geometry: {
-      narrow: { printAreaDots: 120, leftMarginPins: 6, rightMarginPins: 2 },
-      wide: { printAreaDots: 240, leftMarginPins: 169, rightMarginPins: 151 },
+      narrow: { printableDots: 120, leftMarginPins: 6, rightMarginPins: 2 },
+      wide: { printableDots: 240, leftMarginPins: 169, rightMarginPins: 151 },
     },
   },
   {
@@ -637,7 +637,7 @@
     targetModels: ['hse-3to1'],
     category: 'tape',
     geometry: {
-      wide: { printAreaDots: 360, leftMarginPins: 109, rightMarginPins: 91 },
+      wide: { printableDots: 360, leftMarginPins: 109, rightMarginPins: 91 },
     },
   },
 ]

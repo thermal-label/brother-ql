@@ -268,8 +268,8 @@ function loadMedia() {
       );
     }
     if (m?.tapeSystem === 'dk') {
-      if (typeof m.printAreaDots !== 'number') {
-        fail(`media[${i}] (id ${m?.id}): DK entries require flat \`printAreaDots\``);
+      if (typeof m.printableDots !== 'number') {
+        fail(`media[${i}] (id ${m?.id}): DK entries require flat \`printableDots\``);
       }
     } else if (m?.tapeSystem) {
       // TZe / HSe entries must populate at least one head-family geometry.

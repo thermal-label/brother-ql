@@ -94,7 +94,7 @@ describe('buildPrintInfo', () => {
 });
 
 describe('encodeJob', () => {
-  const media62 = MEDIA[259]!; // 62mm, 696 printAreaDots
+  const media62 = MEDIA[259]!; // 62mm, 696 printableDots
 
   function makePage(widthPx: number, heightPx: number): PageData {
     const bitmap = createBitmap(widthPx, heightPx);

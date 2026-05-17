@@ -229,14 +229,14 @@ function resolveEncoderGeometry(
 ): TapeGeometry {
   if (media.tapeSystem === 'dk') {
     if (
-      typeof media.printAreaDots !== 'number' ||
+      typeof media.printableDots !== 'number' ||
       typeof media.leftMarginPins !== 'number' ||
       typeof media.rightMarginPins !== 'number'
     ) {
       throw new Error(`DK media ${media.id.toString()} missing flat geometry fields`);
     }
     return {
-      printAreaDots: media.printAreaDots,
+      printableDots: media.printableDots,
       leftMarginPins: media.leftMarginPins,
       rightMarginPins: media.rightMarginPins,
     };
@@ -329,10 +329,10 @@ function encodeRasterJob(pages: PageData[], options: JobOptions, ctx: EncodeCont
     if (compress) chunks.push(buildCompression(true));
 
     // Each raster row must cover the full print head width (derived from media geometry).
-    // leftMarginPins + printAreaDots + rightMarginPins = head pin count (720 / 1296 / 128 / 560).
+    // leftMarginPins + printableDots + rightMarginPins = head pin count (720 / 1296 / 128 / 560).
     const geometry = resolveEncoderGeometry(media, engine);
     const leftMarginPins = geometry.leftMarginPins;
-    const totalPins = leftMarginPins + geometry.printAreaDots + geometry.rightMarginPins;
+    const totalPins = leftMarginPins + geometry.printableDots + geometry.rightMarginPins;
     const rowByteLen = Math.ceil(totalPins / 8);
 
     // Rows interleaved per raster line (matches Python brother_ql behaviour).

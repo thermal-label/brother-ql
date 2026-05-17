@@ -158,14 +158,14 @@ describe('Media registry invariants', () => {
     for (const m of Object.values(MEDIA)) {
       if (m.tapeSystem === 'dk') continue;
       if (m.geometry?.narrow) {
-        const { leftMarginPins, printAreaDots, rightMarginPins } = m.geometry.narrow;
-        expect(leftMarginPins + printAreaDots + rightMarginPins, `${m.name} narrow head sum`).toBe(
+        const { leftMarginPins, printableDots, rightMarginPins } = m.geometry.narrow;
+        expect(leftMarginPins + printableDots + rightMarginPins, `${m.name} narrow head sum`).toBe(
           128,
         );
       }
       if (m.geometry?.wide) {
-        const { leftMarginPins, printAreaDots, rightMarginPins } = m.geometry.wide;
-        expect(leftMarginPins + printAreaDots + rightMarginPins, `${m.name} wide head sum`).toBe(
+        const { leftMarginPins, printableDots, rightMarginPins } = m.geometry.wide;
+        expect(leftMarginPins + printableDots + rightMarginPins, `${m.name} wide head sum`).toBe(
           560,
         );
       }
@@ -244,15 +244,15 @@ describe('resolveTapeGeometry', () => {
   it('returns flat fields for DK entries regardless of engine head dots', () => {
     const dk = MEDIA[259]!;
     const geom = resolveTapeGeometry(dk, { headDots: 720 });
-    expect(geom.printAreaDots).toBe(696);
+    expect(geom.printableDots).toBe(696);
   });
 
   it('routes TZe through narrow / wide based on engine.headDots', () => {
     const tze12 = MEDIA[404]!;
     const narrow = resolveTapeGeometry(tze12, { headDots: 128 });
-    expect(narrow.printAreaDots).toBe(70);
+    expect(narrow.printableDots).toBe(70);
     const wide = resolveTapeGeometry(tze12, { headDots: 560 });
-    expect(wide.printAreaDots).toBe(150);
+    expect(wide.printableDots).toBe(150);
   });
 
   it('throws when the requested head family has no geometry', () => {

@@ -25,13 +25,13 @@ export type TapeSystem = 'dk' | 'tze' | 'hse-2to1' | 'hse-3to1';
  *
  * Brother's PT-P / PT-E line ships two head families with different
  * per-tape pin layouts. The same TZe id maps to different
- * `printAreaDots` / `leftMarginPins` / `rightMarginPins` values on a
+ * `printableDots` / `leftMarginPins` / `rightMarginPins` values on a
  * 128-pin head (PT-E550W, PT-P750W) versus a 560-pin head (PT-P900,
  * P900W, P950NW, P910BT). DK media leaves these unset and resolves via
  * the flat fields on `BrotherQLMedia` directly.
  */
 export interface TapeGeometry {
-  printAreaDots: number;
+  printableDots: number;
   leftMarginPins: number;
   rightMarginPins: number;
 }
@@ -104,7 +104,7 @@ export interface BrotherQLMedia extends MediaDescriptor {
    */
   geometry?: { narrow?: TapeGeometry; wide?: TapeGeometry };
   /** DK-only flat geometry. PT-* entries populate `geometry` instead. */
-  printAreaDots?: number;
+  printableDots?: number;
   leftMarginPins?: number;
   rightMarginPins?: number;
   /** Die-cut masked area in dots (registration windows). */
