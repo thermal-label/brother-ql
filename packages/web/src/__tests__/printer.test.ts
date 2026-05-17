@@ -165,12 +165,46 @@ describe('WebBrotherQLPrinter', () => {
     expect(totalAuto).toBeGreaterThan(totalBypass);
   });
 
-  // See node printer.test.ts for the same helper — searches for a 3-byte
-  // raster-row header (opcode, colour, LEN=90).
+  /**
+   * TIFF-style PackBits row decoder — inverse of `pack-bits.ts`'s
+   * `packBits`. The web driver prints with `compress: true`, so encoded
+   * raster rows carry a PackBits-compressed payload; decoding restores
+   * the flat 90-byte head-aligned row the assertions inspect.
+   */
+  function unpackBits(input: Uint8Array): Uint8Array {
+    const out: number[] = [];
+    let i = 0;
+    while (i < input.length) {
+      const header = (input[i]! << 24) >> 24; // interpret as signed int8
+      i += 1;
+      if (header >= 0) {
+        // Literal run: the next `header + 1` bytes follow verbatim.
+        for (let n = 0; n <= header; n++) out.push(input[i + n]!);
+        i += header + 1;
+      } else if (header !== -128) {
+        // Repeat run: the next byte repeated `1 - header` times.
+        const value = input[i]!;
+        i += 1;
+        for (let n = 0; n < 1 - header; n++) out.push(value);
+      }
+    }
+    return new Uint8Array(out);
+  }
+
+  // Find the first raster row of a given (opcode, colour) in the encoded
+  // job and return its decoded payload. The web driver enables PackBits
+  // compression (WebBrotherQLPrinter.print sets `compress: true`), so the
+  // row's LEN byte is the *compressed* length — read it, slice that many
+  // bytes, then PackBits-decode back to the flat 90-byte (720-pin head)
+  // raster row. The node printer.test.ts helper scans for an
+  // uncompressed LEN=90 row because the node driver does not compress.
   function firstRasterRow(bytes: Uint8Array, opcode: number, colour: number): Uint8Array {
-    for (let i = 0; i < bytes.length - 3 - 90; i++) {
-      if (bytes[i] === opcode && bytes[i + 1] === colour && bytes[i + 2] === 90) {
-        return bytes.slice(i + 3, i + 3 + 90);
+    for (let i = 0; i < bytes.length - 3; i++) {
+      if (bytes[i] === opcode && bytes[i + 1] === colour) {
+        const len = bytes[i + 2]!;
+        if (i + 3 + len > bytes.length) continue;
+        const row = unpackBits(bytes.slice(i + 3, i + 3 + len));
+        if (row.length === 90) return row;
       }
     }
     throw new Error(
