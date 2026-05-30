@@ -36,8 +36,7 @@
         date: '2026-05-22',
         result: 'verified',
         os: 'Windows',
-        notes:
-          'QL-800 USB print confirmed (reporter produced output). The report revealed the DK continuous margins were stored right-registered, parking the printable area off the left-seated paper; the left-registration fix (leftMarginPins=6 for 29mm) merged in PR #3 and shipped in 0.6.1.',
+        notes: 'QL-800 USB print confirmed (reporter produced output). The report revealed the DK continuous margins were stored right-registered, parking the printable area off the left-seated paper; the left-registration fix (leftMarginPins=6 for 29mm) merged in PR #3 and shipped in 0.6.1.',
       },
     ],
   },
