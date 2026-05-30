@@ -31,8 +31,8 @@
     skus: ['DK-22214'],
     category: 'continuous',
     printableDots: 106,
-    leftMarginPins: 585,
-    rightMarginPins: 29,
+    leftMarginPins: 29,
+    rightMarginPins: 585,
   },
   {
     id: 258,
@@ -44,8 +44,8 @@
     skus: ['DK-22210'],
     category: 'continuous',
     printableDots: 306,
-    leftMarginPins: 408,
-    rightMarginPins: 6,
+    leftMarginPins: 6,
+    rightMarginPins: 408,
   },
   {
     id: 264,
@@ -57,8 +57,8 @@
     skus: ['DK-22225'],
     category: 'continuous',
     printableDots: 413,
-    leftMarginPins: 295,
-    rightMarginPins: 12,
+    leftMarginPins: 12,
+    rightMarginPins: 295,
   },
   {
     id: 262,
@@ -70,8 +70,8 @@
     skus: ['DK-22246'],
     category: 'continuous',
     printableDots: 554,
-    leftMarginPins: 154,
-    rightMarginPins: 12,
+    leftMarginPins: 12,
+    rightMarginPins: 154,
   },
   {
     id: 261,
@@ -83,8 +83,8 @@
     skus: ['DK-N55224'],
     category: 'continuous',
     printableDots: 590,
-    leftMarginPins: 130,
-    rightMarginPins: 0,
+    leftMarginPins: 0,
+    rightMarginPins: 130,
   },
   {
     id: 259,
@@ -126,8 +126,8 @@
     skus: ['DK-22243'],
     category: 'continuous',
     printableDots: 1164,
-    leftMarginPins: 76,
-    rightMarginPins: 56,
+    leftMarginPins: 56,
+    rightMarginPins: 76,
   },
 
   // Die-cut labels
@@ -194,11 +194,6 @@
     skus: ['DK-11201'],
     category: 'die-cut',
     printableDots: 306,
-    // Left/right margins from Python brother_ql canonical for QL-class
-    // (720-pin) heads: leftMarginPins + printableDots + rightMarginPins
-    // = 720. Other DK entries in this file still have 0/0 placeholders
-    // and will need the same backfill — TODO(brother-ql): backfill
-    // remaining DK margin pairs from prior art.
     leftMarginPins: 6,
     rightMarginPins: 408,
     dieCutMaskedAreaDots: 991,
