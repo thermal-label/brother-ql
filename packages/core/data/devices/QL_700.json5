@@ -22,5 +22,22 @@
     editorLite: true,
   },
   hardwareQuirks: 'Cassette-based media detection. Printer hard-rejects with an error code if the host job dimensions do not match the loaded DK cassette. Apps that compare detected vs selected media should switch to the matching cassette before sending.',
-  support: { status: 'untested' },
+  support: {
+    status: 'verified',
+    transports: {
+      usb: 'verified',
+    },
+    lastVerified: '2026-05-21',
+    packageVersion: '0.6.0',
+    reports: [
+      {
+        issue: 1,
+        reporter: '@Leeft',
+        date: '2026-05-21',
+        result: 'verified',
+        os: 'Windows',
+        notes: 'WebUSB on Edge 148 / Windows 11, 62mm continuous (DK-22205). Pre- and post-print status clean: no errors, phase advanced to printing.',
+      },
+    ],
+  },
 }

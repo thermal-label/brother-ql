@@ -79,7 +79,7 @@ Wraps an already-obtained `USBDevice`. The caller is responsible for opening and
 
 <!-- HARDWARE_TABLE:START -->
 
-**24 devices** — 1 verified · 0 partial · 17 expected · 0 unsupported · 6 unverified
+**24 devices** — 2 verified · 0 partial · 16 expected · 0 unsupported · 6 unverified
 
 | Model                                                                        | Key          | USB PID | Transports       | Status        |
 | ---------------------------------------------------------------------------- | ------------ | ------- | ---------------- | ------------- |
@@ -96,7 +96,7 @@ Wraps an already-obtained `USBDevice`. The caller is responsible for opening and
 | [QL-580N](https://thermal-label.github.io/hardware/brother-ql/ql-580n)       | `QL_580N`    | 0x201b  | USB, TCP         | 🔄 expected   |
 | [QL-600](https://thermal-label.github.io/hardware/brother-ql/ql-600)         | `QL_600`     | 0x2100  | USB              | 🔄 expected   |
 | [QL-650TD](https://thermal-label.github.io/hardware/brother-ql/ql-650td)     | `QL_650TD`   | 0x201c  | USB              | 🔄 expected   |
-| [QL-700](https://thermal-label.github.io/hardware/brother-ql/ql-700)         | `QL_700`     | 0x2042  | USB              | 🔄 expected   |
+| [QL-700](https://thermal-label.github.io/hardware/brother-ql/ql-700)         | `QL_700`     | 0x2042  | USB              | ✅ verified   |
 | [QL-710W](https://thermal-label.github.io/hardware/brother-ql/ql-710w)       | `QL_710W`    | 0x2044  | USB, TCP         | 🔄 expected   |
 | [QL-720NW](https://thermal-label.github.io/hardware/brother-ql/ql-720nw)     | `QL_720NW`   | 0x2045  | USB, TCP         | 🔄 expected   |
 | [QL-800](https://thermal-label.github.io/hardware/brother-ql/ql-800)         | `QL_800`     | 0x209b  | USB              | 🔄 expected   |
