@@ -33,7 +33,7 @@ export {
   UnsupportedOperationError,
 } from '@thermal-label/contracts';
 
-export { DEVICE_REGISTRY, DEVICES, findDevice, getUsbIds, isMassStorageMode } from './devices.js';
+export { DEVICE_REGISTRY, DEVICES, findDevice, getUsbIds } from './devices.js';
 
 /**
  * Protocols this core's encoder produces correct wire bytes for.

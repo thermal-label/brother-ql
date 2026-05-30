@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { DEVICES, findDevice, getUsbIds, isMassStorageMode } from '../devices.js';
+import { DEVICES, findDevice } from '../devices.js';
 
 describe('findDevice', () => {
   it('returns correct entry for QL-820NWBc (PID shared with QL-820NWB)', () => {
@@ -30,27 +30,6 @@ describe('findDevice', () => {
 
   it('returns undefined for unknown VID', () => {
     expect(findDevice(0x1234, 0x209d)).toBeUndefined();
-  });
-});
-
-describe('isMassStorageMode', () => {
-  it('returns true for 0x20a9 (QL-1100 mass storage)', () => {
-    expect(isMassStorageMode(0x20a9)).toBe(true);
-  });
-
-  it('returns true for 0x20aa (QL-1110NWB mass storage)', () => {
-    expect(isMassStorageMode(0x20aa)).toBe(true);
-  });
-
-  it('returns true for 0x20ac (QL-1115NWB mass storage)', () => {
-    expect(isMassStorageMode(0x20ac)).toBe(true);
-  });
-
-  it('returns false for all printer-class PIDs', () => {
-    for (const dev of Object.values(DEVICES)) {
-      const ids = getUsbIds(dev);
-      if (ids) expect(isMassStorageMode(ids.pid)).toBe(false);
-    }
   });
 });
 
@@ -164,7 +143,6 @@ describe('PT-* device entries', () => {
     const dev = DEVICES.PT_P750W;
     expect(dev.transports.usb?.pid).toBe('0x2062');
     expect(dev.capabilities?.massStoragePid).toBe('0x2065');
-    expect(isMassStorageMode(0x2065)).toBe(true);
   });
 
   it('PT-P910BT declares bluetooth-spp transport', () => {
