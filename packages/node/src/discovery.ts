@@ -1,8 +1,12 @@
-import { DEVICES, findDevice, getUsbIds, isMassStorageMode } from '@thermal-label/brother-ql-core';
-import type { BrotherQLDevice } from '@thermal-label/brother-ql-core';
+import { DEVICES, getUsbIds } from '@thermal-label/brother-ql-core';
 import type { DiscoveredPrinter, OpenOptions, PrinterDiscovery } from '@thermal-label/contracts';
-import { SerialTransport, TcpTransport, UsbTransport } from '@thermal-label/transport/node';
-import * as usb from 'usb';
+import { DeviceNotFoundError } from '@thermal-label/contracts';
+import {
+  enumerateUsbDevices,
+  SerialTransport,
+  TcpTransport,
+  UsbTransport,
+} from '@thermal-label/transport/node';
 import { BrotherQLPrinter } from './printer.js';
 
 /**
@@ -24,76 +28,25 @@ export interface BrotherQLOpenOptions extends OpenOptions {
   baudRate?: number;
 }
 
-const BROTHER_VID = 0x04f9;
-
-async function readSerialNumber(device: usb.Device, idx: number): Promise<string | undefined> {
-  return new Promise(resolve => {
-    device.getStringDescriptor(idx, (err, value) => {
-      resolve(err ? undefined : value);
-    });
-  });
-}
-
-async function enumerateUsbDevices(): Promise<
-  { device: usb.Device; descriptor: BrotherQLDevice; serialNumber: string | undefined }[]
-> {
-  const results: {
-    device: usb.Device;
-    descriptor: BrotherQLDevice;
-    serialNumber: string | undefined;
-  }[] = [];
-
-  for (const device of usb.getDeviceList()) {
-    const desc = device.deviceDescriptor;
-    if (desc.idVendor !== BROTHER_VID) continue;
-
-    if (isMassStorageMode(desc.idProduct)) {
-      // eslint-disable-next-line no-console
-      console.warn(
-        `[brother-ql] Detected printer in Editor Lite (mass storage) mode (PID 0x${desc.idProduct.toString(16).toUpperCase()}). ` +
-          'Hold the Editor Lite button until the LED turns off to switch to printer mode.',
-      );
-      continue;
-    }
-
-    const descriptor = findDevice(desc.idVendor, desc.idProduct);
-    if (!descriptor) continue;
-
-    let serialNumber: string | undefined;
-    if (desc.iSerialNumber) {
-      device.open();
-      try {
-        serialNumber = await readSerialNumber(device, desc.iSerialNumber);
-      } finally {
-        device.close();
-      }
-    }
-
-    results.push({ device, descriptor, serialNumber });
-  }
-
-  return results;
-}
-
 /**
  * `PrinterDiscovery` implementation for Brother QL printers.
  *
- * `listPrinters()` enumerates USB and skips printers in Editor Lite
- * mass-storage mode (a warning is logged — the user has to switch
- * them out of Editor Lite manually). Network printers open via
- * `openPrinter({ host, port })`; there is no mDNS implementation so
+ * `listPrinters()` enumerates USB via the shared transport helper. A
+ * printer in Editor Lite (mass-storage) mode exposes a PID outside the
+ * registry, so it is simply absent from the list. Network printers open
+ * via `openPrinter({ host, port })`; there is no mDNS implementation so
  * `listPrinters()` never surfaces them.
  */
 export class BrotherQLDiscovery implements PrinterDiscovery {
   readonly family = 'brother-ql';
 
   async listPrinters(): Promise<DiscoveredPrinter[]> {
-    const found = await enumerateUsbDevices();
-    return found.map(({ device, descriptor, serialNumber }) => ({
+    const found = await enumerateUsbDevices(Object.values(DEVICES));
+    return found.map(({ descriptor, serialNumber, connectionId }) => ({
       device: descriptor,
       ...(serialNumber === undefined ? {} : { serialNumber }),
       transport: 'usb' as const,
-      connectionId: `${String(device.busNumber)}.${String(device.deviceAddress)}`,
+      connectionId,
     }));
   }
 
@@ -121,7 +74,7 @@ export class BrotherQLDiscovery implements PrinterDiscovery {
       return new BrotherQLPrinter(descriptor, transport, 'tcp');
     }
 
-    const found = await enumerateUsbDevices();
+    const found = await enumerateUsbDevices(Object.values(DEVICES));
     const match = found.find(entry => {
       const ids = getUsbIds(entry.descriptor);
       if (options.vid !== undefined && ids?.vid !== options.vid) return false;
@@ -131,7 +84,7 @@ export class BrotherQLDiscovery implements PrinterDiscovery {
       return true;
     });
 
-    if (!match) throw new Error('No compatible Brother QL printer found.');
+    if (!match) throw new DeviceNotFoundError();
 
     const ids = getUsbIds(match.descriptor);
     /* v8 ignore next -- USB-discovered devices always have USB transport */

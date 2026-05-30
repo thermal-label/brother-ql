@@ -1,21 +1,21 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { usbOpen, tcpConnect, serialOpen } = vi.hoisted(() => ({
+import { DEVICES, getUsbIds } from '@thermal-label/brother-ql-core';
+import type { DeviceEntry } from '@thermal-label/contracts';
+
+const { usbOpen, tcpConnect, serialOpen, enumerate } = vi.hoisted(() => ({
   usbOpen: vi.fn(),
   tcpConnect: vi.fn(),
   serialOpen: vi.fn(),
+  enumerate: vi.fn(),
 }));
 vi.mock('@thermal-label/transport/node', () => ({
   UsbTransport: { open: usbOpen },
   TcpTransport: { connect: tcpConnect },
   SerialTransport: { open: serialOpen },
+  enumerateUsbDevices: enumerate,
 }));
 
-vi.mock('usb', () => ({
-  getDeviceList: vi.fn(() => []),
-}));
-
-import * as usb from 'usb';
 import { discovery } from '../discovery.js';
 
 function fakeTransport(): {
@@ -32,44 +32,34 @@ function fakeTransport(): {
   };
 }
 
-function makeUsbDevice(
-  idVendor: number,
-  idProduct: number,
+/**
+ * Build an `EnumeratedUsbDevice` (the shape the transport helper returns)
+ * for the device whose USB ids are `vid`/`pid`. Returns `undefined` when the
+ * vid/pid is not in the registry — modelling the helper silently dropping
+ * unknown devices, including a same-VID Editor-Lite mass-storage PID.
+ */
+function enumerated(
+  vid: number,
+  pid: number,
   serialNumber?: string,
-): {
-  deviceDescriptor: { idVendor: number; idProduct: number; iSerialNumber: number };
-  busNumber: number;
-  deviceAddress: number;
-  open: ReturnType<typeof vi.fn>;
-  close: ReturnType<typeof vi.fn>;
-  getStringDescriptor: ReturnType<typeof vi.fn>;
-} {
+): { descriptor: DeviceEntry; serialNumber?: string; connectionId: string } | undefined {
+  const descriptor = Object.values(DEVICES).find(d => {
+    const ids = getUsbIds(d);
+    return ids?.vid === vid && ids.pid === pid;
+  });
+  if (!descriptor) return undefined;
   return {
-    deviceDescriptor: {
-      idVendor,
-      idProduct,
-      iSerialNumber: serialNumber ? 3 : 0,
-    },
-    busNumber: 1,
-    deviceAddress: 2,
-    open: vi.fn(),
-    close: vi.fn(),
-    getStringDescriptor: vi.fn((_idx: number, cb: (err: null, value?: string) => void) => {
-      cb(null, serialNumber);
-    }),
+    descriptor,
+    ...(serialNumber === undefined ? {} : { serialNumber }),
+    connectionId: '1:2',
   };
 }
-
-const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {
-  /* suppress */
-});
 
 beforeEach(() => {
   usbOpen.mockReset();
   tcpConnect.mockReset();
   serialOpen.mockReset();
-  warnSpy.mockClear();
-  vi.mocked(usb.getDeviceList).mockReset().mockReturnValue([]);
+  enumerate.mockReset().mockResolvedValue([]);
 });
 
 describe('BrotherQLDiscovery', () => {
@@ -79,46 +69,38 @@ describe('BrotherQLDiscovery', () => {
 
   describe('listPrinters', () => {
     it('returns known Brother QL devices from USB enumeration', async () => {
-      vi.mocked(usb.getDeviceList).mockReturnValueOnce([makeUsbDevice(0x04f9, 0x209d) as never]);
+      enumerate.mockResolvedValueOnce([enumerated(0x04f9, 0x209d)]);
       const printers = await discovery.listPrinters();
       expect(printers).toHaveLength(1);
       expect(printers[0]!.device.name).toBe('QL-820NWBc');
       expect(printers[0]!.transport).toBe('usb');
-      expect(printers[0]!.connectionId).toBe('1.2');
+      expect(printers[0]!.connectionId).toBe('1:2');
     });
 
-    it('excludes unknown (non-Brother) USB devices', async () => {
-      vi.mocked(usb.getDeviceList).mockReturnValueOnce([makeUsbDevice(0x1234, 0x5678) as never]);
+    it('returns nothing when no compatible device is enumerated', async () => {
+      // Unknown devices (non-Brother, unknown Brother PIDs, and same-VID
+      // Editor-Lite mass-storage PIDs alike) never reach the helper's
+      // output, so they simply do not appear.
+      enumerate.mockResolvedValueOnce([]);
       expect(await discovery.listPrinters()).toHaveLength(0);
     });
 
-    it('excludes Brother-VID devices with unknown PIDs', async () => {
-      // Brother VID but not in the DEVICES registry and not a mass-storage PID
-      vi.mocked(usb.getDeviceList).mockReturnValueOnce([makeUsbDevice(0x04f9, 0x9999) as never]);
+    it('omits a same-VID mass-storage device — it is never enumerated', async () => {
+      // The Editor-Lite mass-storage PID is outside the registry, so the
+      // shared helper drops it like any unknown device: no entry, no warning.
+      expect(enumerated(0x04f9, 0x20aa)).toBeUndefined();
+      enumerate.mockResolvedValueOnce([enumerated(0x04f9, 0x20aa)].filter(Boolean));
       expect(await discovery.listPrinters()).toHaveLength(0);
-      expect(warnSpy).not.toHaveBeenCalled();
     });
 
-    it('excludes mass-storage PIDs and warns', async () => {
-      vi.mocked(usb.getDeviceList).mockReturnValueOnce([makeUsbDevice(0x04f9, 0x20aa) as never]);
-      expect(await discovery.listPrinters()).toHaveLength(0);
-      expect(warnSpy).toHaveBeenCalledOnce();
-    });
-
-    it('reads the serial number when iSerialNumber is set', async () => {
-      vi.mocked(usb.getDeviceList).mockReturnValueOnce([
-        makeUsbDevice(0x04f9, 0x209d, 'SN123') as never,
-      ]);
+    it('surfaces the serial number reported by the helper', async () => {
+      enumerate.mockResolvedValueOnce([enumerated(0x04f9, 0x209d, 'SN123')]);
       const [printer] = await discovery.listPrinters();
       expect(printer?.serialNumber).toBe('SN123');
     });
 
-    it('swallows serial-read errors and leaves serialNumber undefined', async () => {
-      const device = makeUsbDevice(0x04f9, 0x209d, 'ignored');
-      device.getStringDescriptor.mockImplementation((_idx: number, cb: (err: Error) => void) => {
-        cb(new Error('descriptor read failed'));
-      });
-      vi.mocked(usb.getDeviceList).mockReturnValueOnce([device as never]);
+    it('leaves serialNumber undefined when the helper reports none', async () => {
+      enumerate.mockResolvedValueOnce([enumerated(0x04f9, 0x209d)]);
       const [printer] = await discovery.listPrinters();
       expect(printer?.serialNumber).toBeUndefined();
     });
@@ -126,7 +108,7 @@ describe('BrotherQLDiscovery', () => {
 
   describe('openPrinter', () => {
     it('opens a USB printer via UsbTransport', async () => {
-      vi.mocked(usb.getDeviceList).mockReturnValueOnce([makeUsbDevice(0x04f9, 0x209d) as never]);
+      enumerate.mockResolvedValueOnce([enumerated(0x04f9, 0x209d)]);
       usbOpen.mockResolvedValue(fakeTransport());
 
       const printer = await discovery.openPrinter();
@@ -135,10 +117,7 @@ describe('BrotherQLDiscovery', () => {
     });
 
     it('filters by VID/PID when multiple devices are attached', async () => {
-      vi.mocked(usb.getDeviceList).mockReturnValueOnce([
-        makeUsbDevice(0x04f9, 0x209d) as never,
-        makeUsbDevice(0x04f9, 0x209b) as never,
-      ]);
+      enumerate.mockResolvedValueOnce([enumerated(0x04f9, 0x209d), enumerated(0x04f9, 0x209b)]);
       usbOpen.mockResolvedValue(fakeTransport());
 
       const printer = await discovery.openPrinter({ vid: 0x04f9, pid: 0x209b });
@@ -147,9 +126,9 @@ describe('BrotherQLDiscovery', () => {
     });
 
     it('filters by serialNumber when multiple devices share a PID', async () => {
-      vi.mocked(usb.getDeviceList).mockReturnValueOnce([
-        makeUsbDevice(0x04f9, 0x209d, 'SN-A') as never,
-        makeUsbDevice(0x04f9, 0x209d, 'SN-TARGET') as never,
+      enumerate.mockResolvedValueOnce([
+        enumerated(0x04f9, 0x209d, 'SN-A'),
+        enumerated(0x04f9, 0x209d, 'SN-TARGET'),
       ]);
       usbOpen.mockResolvedValue(fakeTransport());
 
@@ -157,10 +136,8 @@ describe('BrotherQLDiscovery', () => {
       expect(printer.device.transports.usb?.pid).toBe('0x209d');
     });
 
-    it('throws when no matching device is attached', async () => {
-      await expect(discovery.openPrinter()).rejects.toThrow(
-        'No compatible Brother QL printer found.',
-      );
+    it('throws DeviceNotFoundError when no matching device is attached', async () => {
+      await expect(discovery.openPrinter()).rejects.toThrow('No compatible device found');
     });
 
     it('opens a TCP printer when host is provided', async () => {
