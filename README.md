@@ -53,7 +53,7 @@ try {
 ## Supported hardware
 
 <!-- HARDWARE_TABLE:START -->
-**24 devices** — 2 verified · 0 partial · 16 expected · 0 unsupported · 6 unverified
+**24 devices** — 3 verified · 0 partial · 15 expected · 0 unsupported · 6 unverified
 
 | Model | Key | USB PID | Transports | Status |
 | --- | --- | --- | --- | --- |
@@ -73,7 +73,7 @@ try {
 | [QL-700](https://thermal-label.github.io/hardware/brother-ql/ql-700) | `QL_700` | 0x2042 | USB | ✅ verified |
 | [QL-710W](https://thermal-label.github.io/hardware/brother-ql/ql-710w) | `QL_710W` | 0x2044 | USB, TCP | 🔄 expected |
 | [QL-720NW](https://thermal-label.github.io/hardware/brother-ql/ql-720nw) | `QL_720NW` | 0x2045 | USB, TCP | 🔄 expected |
-| [QL-800](https://thermal-label.github.io/hardware/brother-ql/ql-800) | `QL_800` | 0x209b | USB | 🔄 expected |
+| [QL-800](https://thermal-label.github.io/hardware/brother-ql/ql-800) | `QL_800` | 0x209b | USB | ✅ verified |
 | [QL-810W](https://thermal-label.github.io/hardware/brother-ql/ql-810w) | `QL_810W` | 0x209c | USB, TCP | 🔄 expected |
 | [QL-820NWBc](https://thermal-label.github.io/hardware/brother-ql/ql-820nwbc) | `QL_820NWBc` | 0x209d | USB, TCP, BT SPP | ✅ verified |
 | [QL-1050](https://thermal-label.github.io/hardware/brother-ql/ql-1050) | `QL_1050` | 0x2027 | USB | 🔄 expected |
