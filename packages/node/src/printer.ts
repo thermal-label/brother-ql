@@ -9,6 +9,7 @@ import {
   pickRotation,
   renderImage,
   renderMultiPlaneImage,
+  statusFromPrinterMib,
 } from '@thermal-label/brother-ql-core';
 import type {
   BrotherQLDevice,
@@ -30,10 +31,50 @@ import {
   TransportTimeoutError,
   WriteSerializer,
 } from '@thermal-label/contracts';
+import { PRINTER_MIB, snmpGet, type SnmpValue } from '@thermal-label/transport/node';
 
 const STATUS_BYTE_COUNT = 32;
 const STATUS_POLL_INTERVAL_MS = 150;
 const STATUS_POLL_ATTEMPTS = 10;
+
+const STATUS_OIDS = [
+  PRINTER_MIB.hrPrinterStatus,
+  PRINTER_MIB.hrPrinterDetectedErrorState,
+  PRINTER_MIB.prtInputMediaName,
+  PRINTER_MIB.prtInputDimUnit,
+  PRINTER_MIB.prtInputMediaDimFeedDir,
+  PRINTER_MIB.prtInputMediaDimXFeedDir,
+] as const;
+
+/**
+ * Where the SNMP side channel of a `'tcp'` printer lives. Status goes
+ * there; the 9100 socket only ever receives.
+ */
+export interface BrotherQLNetworkOptions {
+  host: string;
+  /** SNMP community. Default `'public'`. */
+  community?: string;
+}
+
+function integerValue(value: SnmpValue | undefined): number | undefined {
+  return value?.type === 'integer' ? value.value : undefined;
+}
+
+function stringValue(value: SnmpValue | undefined): string | undefined {
+  return value?.type === 'string' ? value.value : undefined;
+}
+
+function rawValue(value: SnmpValue | undefined): Uint8Array | undefined {
+  return value?.type === 'string' || value?.type === 'octets' ? value.raw : undefined;
+}
+
+function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise(r => setTimeout(r, ms));
+}
 
 // Empirical: a single libusb bulk transfer of an entire raster job (~50 kB
 // uncompressed two-colour at 280 rows) reliably hangs the QL-820NWBc
@@ -47,10 +88,6 @@ const STATUS_POLL_ATTEMPTS = 10;
 // provides flow control; libusb bypasses that.
 const USB_CHUNK_SIZE = 1024;
 const USB_CHUNK_DELAY_MS = 20;
-
-function sleep(ms: number): Promise<void> {
-  return new Promise(r => setTimeout(r, ms));
-}
 
 /**
  * Node.js driver for Brother QL label printers.
@@ -75,6 +112,7 @@ export class BrotherQLPrinter implements PrinterAdapter {
   readonly transportType: TransportType;
 
   private readonly transport: Transport;
+  private readonly network: BrotherQLNetworkOptions | undefined;
   private lastStatus: BrotherQLStatus | undefined;
   /**
    * Serialises every bulk-OUT operation (print + getStatus) so a
@@ -88,10 +126,16 @@ export class BrotherQLPrinter implements PrinterAdapter {
    */
   private readonly serializer = new WriteSerializer();
 
-  constructor(device: BrotherQLDevice, transport: Transport, transportType: TransportType) {
+  constructor(
+    device: BrotherQLDevice,
+    transport: Transport,
+    transportType: TransportType,
+    network?: BrotherQLNetworkOptions,
+  ) {
     this.device = device;
     this.transport = transport;
     this.transportType = transportType;
+    this.network = network;
   }
 
   get model(): string {
@@ -147,6 +191,11 @@ export class BrotherQLPrinter implements PrinterAdapter {
     await this.serializer.run(() => this.writeChunked(bytes));
   }
 
+  private requireNetwork(): BrotherQLNetworkOptions {
+    if (this.network) return this.network;
+    throw new Error('This TCP printer was constructed without its host; SNMP status needs it.');
+  }
+
   private async writeChunked(bytes: Uint8Array): Promise<void> {
     for (let off = 0; off < bytes.length; off += USB_CHUNK_SIZE) {
       const end = Math.min(off + USB_CHUNK_SIZE, bytes.length);
@@ -169,14 +218,17 @@ export class BrotherQLPrinter implements PrinterAdapter {
   }
 
   /**
-   * Poll the status endpoint until 32 bytes are available.
-   *
+   * USB / serial: poll the status endpoint until 32 bytes are available.
    * The USB `transferAsync()` call resolves immediately with 0 bytes if
    * the printer hasn't queued a response yet; a transport that blocks
    * instead is bounded by the read timeout. `STATUS_POLL_ATTEMPTS`
    * rounds of `STATUS_POLL_INTERVAL_MS` either way.
+   *
+   * TCP: port 9100 never answers, so the status comes from the
+   * printer's SNMP agent and the socket is not touched.
    */
   getStatus(): Promise<BrotherQLStatus> {
+    if (this.transportType === 'tcp') return this.getNetworkStatus();
     // Serialised against `print()` so the status request + poll-read
     // round-trip can't interleave into an in-flight raster stream.
     return this.serializer.run(async () => {
@@ -199,6 +251,35 @@ export class BrotherQLPrinter implements PrinterAdapter {
       }
       throw new Error('Printer did not respond to status request within 1.5s');
     });
+  }
+
+  private async getNetworkStatus(): Promise<BrotherQLStatus> {
+    const net = this.requireNetwork();
+    let answers: Record<string, SnmpValue>;
+    try {
+      answers = await snmpGet(net.host, STATUS_OIDS, { community: net.community ?? 'public' });
+    } catch (err) {
+      throw new Error(
+        `Could not read status from ${net.host} over SNMP (${errorMessage(err)}); port 9100 carries no status. Pass media explicitly.`,
+        { cause: err },
+      );
+    }
+    const feedDir = integerValue(answers[PRINTER_MIB.prtInputMediaDimFeedDir]);
+    const xFeedDir = integerValue(answers[PRINTER_MIB.prtInputMediaDimXFeedDir]);
+    const dimUnit = integerValue(answers[PRINTER_MIB.prtInputDimUnit]);
+    const status = statusFromPrinterMib(
+      {
+        printerStatus: integerValue(answers[PRINTER_MIB.hrPrinterStatus]) ?? 2,
+        errorState: rawValue(answers[PRINTER_MIB.hrPrinterDetectedErrorState]) ?? new Uint8Array(0),
+        mediaName: stringValue(answers[PRINTER_MIB.prtInputMediaName]) ?? '',
+        ...(feedDir === undefined ? {} : { feedDir }),
+        ...(xFeedDir === undefined ? {} : { xFeedDir }),
+        ...(dimUnit === undefined ? {} : { dimUnit }),
+      },
+      this.device.engines[0],
+    );
+    this.lastStatus = status;
+    return status;
   }
 
   async close(): Promise<void> {
