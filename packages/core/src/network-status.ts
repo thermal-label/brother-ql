@@ -107,7 +107,12 @@ function resolveDimensions(
   return parsed && { widthMm: parsed.widthMm, heightMm: parsed.heightMm ?? 0 };
 }
 
-function hasTwoColourSibling(media: BrotherQLMedia): boolean {
+/**
+ * Whether a roll of this width and type also exists as a two-colour
+ * variant (62 mm continuous: DK-22205 vs DK-22251). Those are
+ * indistinguishable over the network, so callers warn.
+ */
+export function hasTwoColourSibling(media: BrotherQLMedia): boolean {
   return Object.values(MEDIA).some(
     m => m.palette !== undefined && m.type === media.type && m.widthMm === media.widthMm,
   );
