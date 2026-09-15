@@ -57,6 +57,59 @@ class RecordingTransport implements Transport {
   }
 }
 
+/** Raster rows carrying ink, counted from the first `ESC i d` to the print command. */
+function inkedRows(job: Uint8Array): number {
+  let i = 0;
+  while (i < job.length - 4 && !(job[i] === 0x1b && job[i + 1] === 0x69 && job[i + 2] === 0x64))
+    i++;
+  i += 5;
+  const packed = job[i] === 0x4d && job[i + 1] === 0x02; // web prints PackBits rows
+  if (job[i] === 0x4d) i += 2;
+  let inked = 0;
+  while (i < job.length && (job[i] === 0x67 || job[i] === 0x77)) {
+    const len = job[i + 2] ?? 0;
+    const payload = job.subarray(i + 3, i + 3 + len);
+    if ((packed ? unpackBits(payload) : payload).some(b => b !== 0)) inked++;
+    i += 3 + len;
+  }
+  return inked;
+}
+
+/** PackBits decoder (TIFF flavour), enough for one raster row. */
+function unpackBits(src: Uint8Array): Uint8Array {
+  const out: number[] = [];
+  for (let i = 0; i < src.length; ) {
+    const n = ((src[i++] ?? 0) << 24) >> 24; // signed byte
+    if (n >= 0) {
+      for (let k = 0; k <= n; k++) out.push(src[i++] ?? 0);
+    } else if (n !== -128) {
+      const v = src[i++] ?? 0;
+      for (let k = 0; k < 1 - n; k++) out.push(v);
+    }
+  }
+  return Uint8Array.from(out);
+}
+
+function concatAll(chunks: readonly Uint8Array[]): Uint8Array {
+  const out = new Uint8Array(chunks.reduce((n, c) => n + c.length, 0));
+  let off = 0;
+  for (const c of chunks) {
+    out.set(c, off);
+    off += c.length;
+  }
+  return out;
+}
+
+/** Opaque black RGBA, so every row of the rendered bitmap carries ink. */
+function blackRgba(
+  width: number,
+  height: number,
+): { width: number; height: number; data: Uint8Array } {
+  const data = new Uint8Array(width * height * 4);
+  for (let i = 3; i < data.length; i += 4) data[i] = 255;
+  return { width, height, data };
+}
+
 function solidRgba(
   width: number,
   height: number,
@@ -155,20 +208,19 @@ describe('WebBrotherQLPrinter', () => {
 
   it("print() auto-rotates landscape input on 'horizontal' die-cut media", async () => {
     // MEDIA[271] = DK-11201 29×90, defaultOrientation: 'horizontal'.
-    // 800×200 landscape RGBA — auto-rotate kicks in. Bypass with
-    // `rotate: 0` for the comparison case; the auto path encodes more
-    // raster rows so the total transfer is larger.
+    // 800×200 landscape RGBA — auto-rotate kicks in. Die-cut pages are
+    // a fixed 991 rows, so count the inked rows: 800 rotated, 200 with
+    // the explicit `rotate: 0` bypass.
     const autoDevice = createMockUSBDevice({ productId: 0x209d });
     const autoPrinter = await fromUSBDevice(autoDevice);
-    await autoPrinter.print(solidRgba(800, 200), MEDIA[271]);
+    await autoPrinter.print(blackRgba(800, 200), MEDIA[271]);
 
     const bypassDevice = createMockUSBDevice({ productId: 0x209d });
     const bypassPrinter = await fromUSBDevice(bypassDevice);
-    await bypassPrinter.print(solidRgba(800, 200), MEDIA[271], { rotate: 0 });
+    await bypassPrinter.print(blackRgba(800, 200), MEDIA[271], { rotate: 0 });
 
-    const totalAuto = autoDevice.__transfers.reduce((acc, t) => acc + t.data.length, 0);
-    const totalBypass = bypassDevice.__transfers.reduce((acc, t) => acc + t.data.length, 0);
-    expect(totalAuto).toBeGreaterThan(totalBypass);
+    expect(inkedRows(concatAll(autoDevice.__transfers.map(t => t.data)))).toBe(800);
+    expect(inkedRows(concatAll(bypassDevice.__transfers.map(t => t.data)))).toBe(200);
   });
 
   /**

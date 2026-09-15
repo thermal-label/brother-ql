@@ -22,6 +22,42 @@ function makeTransport(statusBytes: Uint8Array = new Uint8Array(32)): {
   return { transport, written };
 }
 
+/** Raster rows carrying ink, counted from the first `ESC i d` to the print command. */
+function inkedRows(job: Uint8Array): number {
+  let i = 0;
+  while (i < job.length - 4 && !(job[i] === 0x1b && job[i + 1] === 0x69 && job[i + 2] === 0x64))
+    i++;
+  i += 5;
+  if (job[i] === 0x4d) i += 2; // optional compression-mode command
+  let inked = 0;
+  while (i < job.length && (job[i] === 0x67 || job[i] === 0x77)) {
+    const len = job[i + 2] ?? 0;
+    if (job.subarray(i + 3, i + 3 + len).some(b => b !== 0)) inked++;
+    i += 3 + len;
+  }
+  return inked;
+}
+
+function concatAll(chunks: readonly Uint8Array[]): Uint8Array {
+  const out = new Uint8Array(chunks.reduce((n, c) => n + c.length, 0));
+  let off = 0;
+  for (const c of chunks) {
+    out.set(c, off);
+    off += c.length;
+  }
+  return out;
+}
+
+/** Opaque black RGBA, so every row of the rendered bitmap carries ink. */
+function blackRgba(
+  width: number,
+  height: number,
+): { width: number; height: number; data: Uint8Array } {
+  const data = new Uint8Array(width * height * 4);
+  for (let i = 3; i < data.length; i += 4) data[i] = 255;
+  return { width, height, data };
+}
+
 function solidRgba(
   width: number,
   height: number,
@@ -170,21 +206,19 @@ describe('BrotherQLPrinter', () => {
   it("print() auto-rotates landscape input on 'horizontal' die-cut media", async () => {
     // MEDIA[271] = DK-11201 29×90, defaultOrientation: 'horizontal'.
     // 800×200 landscape RGBA — the heuristic should rotate the bitmap 90°
-    // CW so the visual reads along the tape feed direction. Without
-    // rotation the encoded job has 200 raster rows; with rotation it has
-    // 800. Assert the explicit `rotate: 0` bypass produces a smaller job
-    // than the default auto path.
+    // CW so the visual reads along the tape feed direction. Die-cut pages
+    // are a fixed 991 rows, so count the inked rows: 800 rotated, 200
+    // with the explicit `rotate: 0` bypass.
     const { transport: autoTransport, written: autoWritten } = makeTransport();
     const autoPrinter = new BrotherQLPrinter(DEVICES.QL_820NWBc, autoTransport, 'usb');
-    await autoPrinter.print(solidRgba(800, 200), MEDIA[271]);
+    await autoPrinter.print(blackRgba(800, 200), MEDIA[271]);
 
     const { transport: bypassTransport, written: bypassWritten } = makeTransport();
     const bypassPrinter = new BrotherQLPrinter(DEVICES.QL_820NWBc, bypassTransport, 'usb');
-    await bypassPrinter.print(solidRgba(800, 200), MEDIA[271], { rotate: 0 });
+    await bypassPrinter.print(blackRgba(800, 200), MEDIA[271], { rotate: 0 });
 
-    const totalAuto = autoWritten.reduce((acc, b) => acc + b.length, 0);
-    const totalBypass = bypassWritten.reduce((acc, b) => acc + b.length, 0);
-    expect(totalAuto).toBeGreaterThan(totalBypass);
+    expect(inkedRows(concatAll(autoWritten))).toBe(800);
+    expect(inkedRows(concatAll(bypassWritten))).toBe(200);
   });
 
   it('createPreview() returns two planes on multi-ink media', async () => {
