@@ -124,7 +124,7 @@ Net effect for users: input images are treated as the intended
 visual; landscape input on rectangular die-cut media auto-rotates
 to read along the tape feed direction. `print(image, media, { rotate
 })` lets callers force a specific angle. `flipHorizontal` (the
-pin-mirror compensation) still runs _after_ rotation since it
+pin-mirror compensation) still runs *after* rotation since it
 addresses head geometry, not image orientation.
 
 ## D9 — Bluetooth on the QL-820NWB goes through the serial transports
@@ -209,7 +209,7 @@ the dispatch (DK → flat fields, TZe/HSe → narrow/wide via
 ## D14 — nbuchwitz/ptouch is the source-of-truth for PT PIDs and pin configs
 
 `nbuchwitz/ptouch` (Python, LGPL-2.1, active 2024-2026) transcribes
-Brother's official _Raster Command Reference_ PDFs and ships per-model
+Brother's official *Raster Command Reference* PDFs and ships per-model
 USB PIDs and full pin configurations. We treat it as primary. Each PT
 device entry's `hardwareQuirks` field cites the source path
 (`nbuchwitz/ptouch/src/ptouch/printers.py:<class>`) and the Brother
@@ -222,7 +222,7 @@ Secondary sources kept for cross-reference:
 - **`brother-label` / `pklaus/brother_ql`** — useful for golden-byte
   stream generation only. Their `Model(...)` entries carry no USB
   PIDs (vendor-only enumeration, runtime-PID-from-URL pattern), so
-  they are _not_ useful for PID lookup.
+  they are *not* useful for PID lookup.
 
 The 128-pin HSe configs carry an inherited "shifted -2 pins (up) based
 on testing" correction from nbuchwitz; the 560-pin HSe configs carry

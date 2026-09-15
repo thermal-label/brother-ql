@@ -186,8 +186,11 @@ given and the status query failed), which sends the job blind:
 await printer.print(image, MEDIA[259], { confirm: false });
 ```
 
-Whether `prtMarkerLifeCount` ticks per label on every model is being
-bench-verified (plan 17, row B9a); the QL-820NWBc carries the object.
+Bench, QL-820NWBc, 2026-09-16: `prtMarkerLifeCount` answers (24 at the
+time of reading) and a TCP print with confirmation on succeeded, so the
+counter does move per job on that model. Other models are unverified;
+`{ confirm: false }` is the escape hatch if one turns out not to carry
+the object.
 
 ### Bluetooth (QL-820NWB / 820NWBc)
 

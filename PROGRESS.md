@@ -223,7 +223,7 @@
 - [x] Scripts: `print-color-label.mjs` + `print-orientation-test.mjs` use `MEDIA[251].palette` directly
 - [x] Docs: `core.md`, `node.md`, `web.md`, `protocol.md` updated; `DECISIONS.md` D8 rewritten + new D11 for orientation strategy
 - [x] Gates green (typecheck, lint, format, test, build)
-- [ ] Hardware verification print on DK-11201 with landscape RGBA (plan §6 step 1)
+- [x] Hardware verification print on DK-11201 with landscape RGBA (plan §6 step 1) — bench 2026-09-16 over USB, cuts on the gap with the text centred, which also verifies the D6/D20 die-cut length change on USB (plan 17 row B1). The same day a TCP print with page-counter confirmation (`prtMarkerLifeCount`) succeeded on the QL-820NWBc (rows B8/B9a), and row B9 (DK-22251 loaded, no media given) showed the printer rejecting the auto-sized 259 job with nothing printed, the CLI reporting the failed confirmation with the DK-22251 hint, and `--media 251` printing; recorded in `HARDWARE.md`.
 
 ---
 

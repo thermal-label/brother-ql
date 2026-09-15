@@ -27,6 +27,16 @@ same raster command family. The driver branches per `engine.protocol`
 | QL-1110NWB | `0x20A8` | 1296 | 300 | ❌ | WiFi + LAN | ✅ Classic SPP | 🟡 Expected | Wide head; mass-storage PID `0x20AA` |
 | QL-1115NWB | `0x20AB` | 1296 | 300 | ❌ | WiFi + LAN | ❌ | 🟡 Expected | Wide head; mass-storage PID `0x20AC` |
 
+QL-820NWBc over the network has a documented quirk: **two-colour rolls
+(DK-22251) are indistinguishable from plain 62 mm rolls** on every
+network surface (SNMP, IPP, mDNS, web UI), and the printer **silently
+rejects a single-colour job** on such a roll: port 9100 is write-only,
+so nothing comes back and nothing prints. The driver detects it through
+the SNMP page counter (`prtMarkerLifeCount` does not move) and fails the
+print with a DK-22251 hint; the CLI needs `--media 251`. Bench
+2026-09-16 (plan 17, row B9). Over USB the status byte carries the
+two-colour flag and the driver picks the roll itself.
+
 ## PT-P / PT-E Series — TZe + HSe tape
 
 PC-connectable P-touch models that share Brother's raster command set
