@@ -13,6 +13,8 @@
 
 ## Interfaces
 
+- [BrotherQLDiscoveryOptions](interfaces/BrotherQLDiscoveryOptions.md)
+- [BrotherQLNetworkOptions](interfaces/BrotherQLNetworkOptions.md)
 - [BrotherQLOpenOptions](interfaces/BrotherQLOpenOptions.md)
 
 ## Variables

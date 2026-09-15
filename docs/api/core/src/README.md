@@ -14,6 +14,7 @@
 - [JobOptions](interfaces/JobOptions.md)
 - [PageData](interfaces/PageData.md)
 - [PageOptions](interfaces/PageOptions.md)
+- [PrinterMibStatus](interfaces/PrinterMibStatus.md)
 - [RasterProtocolConfig](interfaces/RasterProtocolConfig.md)
 - [TapeGeometry](interfaces/TapeGeometry.md)
 
@@ -53,6 +54,8 @@
 - [findMediaByDimensions](functions/findMediaByDimensions.md)
 - [findMediaByWidth](functions/findMediaByWidth.md)
 - [getUsbIds](functions/getUsbIds.md)
-- [isMassStorageMode](functions/isMassStorageMode.md)
+- [hasTwoColourSibling](functions/hasTwoColourSibling.md)
+- [parseMediaName](functions/parseMediaName.md)
 - [parseStatus](functions/parseStatus.md)
 - [resolveTapeGeometry](functions/resolveTapeGeometry.md)
+- [statusFromPrinterMib](functions/statusFromPrinterMib.md)

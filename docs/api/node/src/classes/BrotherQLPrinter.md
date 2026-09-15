@@ -30,7 +30,7 @@ with `options.rotate`.
 
 ### Constructor
 
-> **new BrotherQLPrinter**(`device`, `transport`, `transportType`): `BrotherQLPrinter`
+> **new BrotherQLPrinter**(`device`, `transport`, `transportType`, `network?`): `BrotherQLPrinter`
 
 #### Parameters
 
@@ -45,6 +45,10 @@ with `options.rotate`.
 ##### transportType
 
 [`TransportType`](/contracts/api/type-aliases/TransportType)
+
+##### network?
+
+[`BrotherQLNetworkOptions`](../interfaces/BrotherQLNetworkOptions.md)
 
 #### Returns
 
@@ -186,11 +190,14 @@ For offline preview without a live connection, use the static
 
 > **getStatus**(): `Promise`\<[`PrinterStatus`](/contracts/api/interfaces/PrinterStatus)\>
 
-Poll the status endpoint until 32 bytes are available.
-
+USB / serial: poll the status endpoint until 32 bytes are available.
 The USB `transferAsync()` call resolves immediately with 0 bytes if
-the printer hasn't queued a response yet, so retry with a short
-delay up to `STATUS_POLL_ATTEMPTS` times.
+the printer hasn't queued a response yet; a transport that blocks
+instead is bounded by the read timeout. `STATUS_POLL_ATTEMPTS`
+rounds of `STATUS_POLL_INTERVAL_MS` either way.
+
+TCP: port 9100 never answers, so the status comes from the
+printer's SNMP agent and the socket is not touched.
 
 #### Returns
 

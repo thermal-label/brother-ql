@@ -22,7 +22,9 @@ multi-plane mode — only DK-22251 declares one in the registry.
 
 > `optional` **dieCutMaskedAreaDots?**: `number`
 
-Die-cut masked area in dots (registration windows).
+Die-cut page length in dots at 300 dpi: the reference's "print area
+length" (§2.3.2(b) column 4). The encoder sends exactly this many
+rows for die-cut media; see DECISIONS D20.
 
 ***
 

@@ -8,11 +8,12 @@
 
 `PrinterDiscovery` implementation for Brother QL printers.
 
-`listPrinters()` enumerates USB and skips printers in Editor Lite
-mass-storage mode (a warning is logged — the user has to switch
-them out of Editor Lite manually). Network printers open via
-`openPrinter({ host, port })`; there is no mDNS implementation so
-`listPrinters()` never surfaces them.
+`listPrinters()` is the USB enumeration plus one SNMP broadcast on the
+local subnets. Network printers open by `host`: the model comes from
+SNMP (`hrDeviceDescr`) because port 9100 carries no model or status
+signal, and `deviceKey` overrides that. A printer in Editor Lite
+(mass-storage) mode exposes a PID outside the registry, so it is
+simply absent from the USB list.
 
 ## Implements
 
@@ -22,7 +23,13 @@ them out of Editor Lite manually). Network printers open via
 
 ### Constructor
 
-> **new BrotherQLDiscovery**(): `BrotherQLDiscovery`
+> **new BrotherQLDiscovery**(`options?`): `BrotherQLDiscovery`
+
+#### Parameters
+
+##### options?
+
+[`BrotherQLDiscoveryOptions`](../interfaces/BrotherQLDiscoveryOptions.md) = `{}`
 
 #### Returns
 
@@ -41,6 +48,26 @@ Driver family identifier — matches `DeviceEntry.family`.
 `PrinterDiscovery.family`
 
 ## Methods
+
+### listMedia()
+
+> **listMedia**(): readonly [`MediaDescriptor`](/contracts/api/interfaces/MediaDescriptor)[]
+
+The driver's media registry, for callers that must let a user pick
+media by id or name instead of relying on `getStatus().detectedMedia`
+(a CLI `--media` flag; network printers whose media cannot be
+detected). Optional: drivers without a media catalog omit it, and
+callers report "driver <family> does not expose a media catalog".
+
+#### Returns
+
+readonly [`MediaDescriptor`](/contracts/api/interfaces/MediaDescriptor)[]
+
+#### Implementation of
+
+`PrinterDiscovery.listMedia`
+
+***
 
 ### listPrinters()
 
