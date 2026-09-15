@@ -63,6 +63,8 @@ export {
 } from './protocol.js';
 export type { EncoderEngine, RasterProtocolConfig } from './protocol.js';
 export { parseStatus, STATUS_REQUEST } from './status.js';
+export { parseMediaName, statusFromPrinterMib } from './network-status.js';
+export type { PrinterMibStatus } from './network-status.js';
 export { createPreviewOffline } from './preview.js';
 
 export type {
