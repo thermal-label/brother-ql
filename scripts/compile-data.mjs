@@ -92,6 +92,14 @@ function loadDevices() {
       fail(`${filename}: family must be "${DRIVER}" (got ${JSON.stringify(entry.family)})`);
     }
 
+    if (entry.modelNames !== undefined) {
+      const ok =
+        Array.isArray(entry.modelNames) &&
+        entry.modelNames.length > 0 &&
+        entry.modelNames.every(n => typeof n === 'string' && n.trim() !== '');
+      if (!ok) fail(`${filename}: modelNames must be a non-empty array of non-empty strings`);
+    }
+
     const transports = entry.transports;
     if (!transports || typeof transports !== 'object' || Array.isArray(transports)) {
       fail(`${filename}: \`transports\` must be a keyed object`);

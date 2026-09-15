@@ -56,6 +56,18 @@ describe('Device registry invariants', () => {
     }
   });
 
+  it('modelNames, where set, includes the marketing name and only distinct wire names', () => {
+    for (const dev of Object.values(DEVICES)) {
+      if (dev.modelNames === undefined) continue;
+      expect(dev.modelNames).toContain(dev.name);
+      expect(new Set(dev.modelNames).size).toBe(dev.modelNames.length);
+    }
+  });
+
+  it('QL-820NWBc reports itself as QL-820NWB on the wire', () => {
+    expect(DEVICES.QL_820NWBc.modelNames).toEqual(['QL-820NWB', 'QL-820NWBc']);
+  });
+
   it('every device declares a USB transport with hex-string vid+pid', () => {
     for (const dev of Object.values(DEVICES)) {
       expect(dev.transports.usb).toBeDefined();
