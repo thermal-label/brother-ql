@@ -65,15 +65,6 @@ export interface BrotherQLNetworkOptions {
   community?: string;
 }
 
-export interface BrotherQLNodePrintOptions extends BrotherQLPrintOptions {
-  /**
-   * TCP only: after sending, wait for `prtMarkerLifeCount` to move and
-   * reject when it does not. Default `true`. Pass `false` when the
-   * printer has SNMP disabled; the job is then sent blind.
-   */
-  confirm?: boolean;
-}
-
 function integerValue(value: SnmpValue | undefined): number | undefined {
   return value?.type === 'integer' ? value.value : undefined;
 }
@@ -167,7 +158,7 @@ export class BrotherQLPrinter implements PrinterAdapter {
   async print(
     image: RawImageData,
     media?: MediaDescriptor,
-    options?: BrotherQLNodePrintOptions,
+    options?: BrotherQLPrintOptions,
   ): Promise<void> {
     const resolvedMedia = (media ?? this.lastStatus?.detectedMedia) as BrotherQLMedia | undefined;
     if (!resolvedMedia) {
@@ -206,6 +197,8 @@ export class BrotherQLPrinter implements PrinterAdapter {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- every brother-ql device has at least one engine (data invariant)
     const engine = this.device.engines[0]!;
     const bytes = encodeJobForEngine([page], {}, engine, this.device.name);
+    // `confirm` (contracts PrintOptions): on TCP it means "wait for
+    // prtMarkerLifeCount to move"; `false` sends blind.
     if (this.transportType === 'tcp' && options?.confirm !== false) {
       await this.serializer.run(() => this.writeConfirmed(bytes, resolvedMedia));
       return;

@@ -178,8 +178,9 @@ when the roll width has a two-colour sibling. If SNMP stops answering
 after the job was sent, the rejection says `sent but could not be
 confirmed` instead, so the two cases are distinguishable. The counter
 is read before anything is sent: when SNMP is unreachable nothing goes
-out and the error tells you to pass `{ confirm: false }`, which sends
-the job blind:
+out and the error tells you to pass `{ confirm: false }` (contracts
+`PrintOptions.confirm`; the CLI does this itself when `--media` is
+given and the status query failed), which sends the job blind:
 
 ```ts
 await printer.print(image, MEDIA[259], { confirm: false });
@@ -323,5 +324,4 @@ for (const { serialNumber } of await discovery.listPrinters()) {
 | `BrotherQLDiscoveryOptions` | Constructor options                                                                                           |
 | `BrotherQLPrinter`          | Adapter class                                                                                                 |
 | `BrotherQLOpenOptions`      | `OpenOptions` (`host`, `port`, `deviceKey`, `snmpCommunity`, `serialPath`, `baudRate`, …) + deprecated `path` |
-| `BrotherQLNodePrintOptions` | `BrotherQLPrintOptions` + `confirm` (TCP print confirmation)                                                  |
 | `BrotherQLNetworkOptions`   | `{ host, community? }` the adapter's SNMP side channel                                                        |
