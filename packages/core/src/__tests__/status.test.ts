@@ -18,7 +18,8 @@ function makeStatusBytes(
   bytes[0] = 0x80;
   bytes[1] = 0x20;
   bytes[2] = 0x42;
-  bytes[3] = 0x30;
+  bytes[3] = 0x34;
+  bytes[4] = 0x41;
   bytes[8] = overrides?.errInfo1 ?? 0;
   bytes[9] = overrides?.errInfo2 ?? 0;
   bytes[10] = overrides?.mediaWidthMm ?? 62;
@@ -150,6 +151,18 @@ describe('parseStatus', () => {
 });
 
 describe('parseStatus — details[]', () => {
+  it('model-code row renders bytes 3/4 as ASCII (4A = QL-820NWB capture)', () => {
+    const status = parseStatus(CAPTURE_DK_22205);
+    expect(status.details?.[0]).toEqual({ label: 'Model code', value: '4A' });
+  });
+
+  it('model-code row falls back to hex for unprintable bytes', () => {
+    const bytes = makeStatusBytes();
+    bytes[3] = 0x00;
+    bytes[4] = 0x41;
+    expect(parseStatus(bytes).details?.[0]?.value).toBe('0x00 0x41');
+  });
+
   it('always emits a Print phase row', () => {
     const status = parseStatus(makeStatusBytes());
     expect(status.details).toBeDefined();
@@ -196,6 +209,7 @@ describe('parseStatus — details[]', () => {
   it('details carries both phase and cooling rows while printing + cooling', () => {
     const status = parseStatus(makeStatusBytes({ phaseType: 0x01, notification: 0x03 }));
     expect(status.details).toEqual([
+      { label: 'Model code', value: '4A' },
       { label: 'Print phase', value: 'printing' },
       { label: 'Head cooling', value: 'cooling started', severity: 'warn' },
     ]);
