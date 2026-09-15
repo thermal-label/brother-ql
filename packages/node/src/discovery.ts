@@ -43,7 +43,12 @@ export interface BrotherQLDiscoveryOptions {
    * for tests, air-gapped hosts, or callers that only want USB.
    */
   network?: boolean;
-  /** SNMP community for the scan. Default `'public'`. */
+  /**
+   * SNMP community for every SNMP use this discovery makes: the scan,
+   * identification on `openPrinter({ host })`, and the printer's status
+   * side channel. `OpenOptions.snmpCommunity` wins per call. Default
+   * `'public'`.
+   */
   community?: string;
 }
 
@@ -182,14 +187,15 @@ export class BrotherQLDiscovery implements PrinterDiscovery {
         ? await this.identifyTcp(host, options)
         : descriptorForKey(options.deviceKey, tcpCandidates(), 'tcp');
     const transport = await TcpTransport.connect(host, options.port);
+    const community = options.snmpCommunity ?? this.community;
     return new BrotherQLPrinter(descriptor, transport, 'tcp', {
       host,
-      ...(options.snmpCommunity === undefined ? {} : { community: options.snmpCommunity }),
+      ...(community === undefined ? {} : { community }),
     });
   }
 
   private async identifyTcp(host: string, options: BrotherQLOpenOptions): Promise<DeviceEntry> {
-    const snmp = snmpOptions(options.snmpCommunity);
+    const snmp = snmpOptions(options.snmpCommunity ?? this.community);
     let reason: string;
     try {
       const found = await identifyNetworkDevice(host, REGISTRY, snmp);

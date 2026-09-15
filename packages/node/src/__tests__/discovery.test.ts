@@ -306,6 +306,51 @@ describe('BrotherQLDiscovery', () => {
       expect(tcpConnect).toHaveBeenCalledWith('10.0.0.5', 9101);
     });
 
+    it('uses the discovery community for identify and the status side channel', async () => {
+      identify.mockResolvedValueOnce(networked());
+      tcpConnect.mockResolvedValue(fakeTransport());
+
+      const office = new BrotherQLDiscovery({ community: 'office' });
+      const printer = await office.openPrinter({ host: '192.168.1.67' });
+      expect(identify).toHaveBeenCalledWith('192.168.1.67', Object.values(DEVICES), {
+        community: 'office',
+      });
+      await expect(printer.getStatus()).resolves.toBeDefined();
+      expect(snmpGet).toHaveBeenCalledWith('192.168.1.67', expect.any(Array), {
+        community: 'office',
+      });
+    });
+
+    it('per-call snmpCommunity wins over the discovery community', async () => {
+      identify.mockResolvedValueOnce(networked());
+      tcpConnect.mockResolvedValue(fakeTransport());
+
+      const office = new BrotherQLDiscovery({ community: 'office' });
+      const printer = await office.openPrinter({ host: '192.168.1.67', snmpCommunity: 'lab' });
+      expect(identify).toHaveBeenCalledWith('192.168.1.67', Object.values(DEVICES), {
+        community: 'lab',
+      });
+      await expect(printer.getStatus()).resolves.toBeDefined();
+      expect(snmpGet).toHaveBeenCalledWith('192.168.1.67', expect.any(Array), {
+        community: 'lab',
+      });
+    });
+
+    it('carries the discovery community into a serial-number network re-open', async () => {
+      enumerateNetwork.mockResolvedValueOnce([networked()]);
+      tcpConnect.mockResolvedValue(fakeTransport());
+
+      const office = new BrotherQLDiscovery({ community: 'office' });
+      const printer = await office.openPrinter({ serialNumber: 'M5G679125' });
+      expect(enumerateNetwork).toHaveBeenCalledWith(Object.values(DEVICES), {
+        community: 'office',
+      });
+      await expect(printer.getStatus()).resolves.toBeDefined();
+      expect(snmpGet).toHaveBeenCalledWith('192.168.1.67', expect.any(Array), {
+        community: 'office',
+      });
+    });
+
     it('deviceKey wins: no SNMP, that descriptor', async () => {
       tcpConnect.mockResolvedValue(fakeTransport());
 
