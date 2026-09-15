@@ -249,6 +249,26 @@ function resolveEncoderGeometry(
   return resolveTapeGeometry(media, engine);
 }
 
+/**
+ * Page length for die-cut media: `dieCutMaskedAreaDots` is the
+ * reference's "print area length" (§2.3.2(b) column 4) at 300 dpi;
+ * `doubleRows` is set when the caller supplied 600 dpi rows (QL
+ * high-res, where the encoder does not duplicate lines).
+ */
+function resolveDieCutRows(
+  media: BrotherQLMedia,
+  doubleRows: boolean,
+): { rows: number; highRes: boolean } | undefined {
+  if (media.type !== 'die-cut') return undefined;
+  const area = media.dieCutMaskedAreaDots;
+  if (typeof area !== 'number') {
+    throw new Error(
+      `die-cut media ${media.id.toString()} (${media.name}) has no dieCutMaskedAreaDots; page length unknown`,
+    );
+  }
+  return { rows: doubleRows ? area * 2 : area, highRes: doubleRows };
+}
+
 interface EncodeContext {
   config: RasterProtocolConfig;
   engine?: EncoderEngine | undefined;
@@ -302,7 +322,21 @@ function encodeRasterJob(pages: PageData[], options: JobOptions, ctx: EncodeCont
     // Per §7.3: PT high-res doubles the feed margin and duplicates
     // each raster line. QL high-res leaves both untouched.
     const baseMargin = opts.marginDots ?? config.feedMarginDots;
-    const marginDots = config.duplicateRasterLines && highRes ? baseMargin * 2 : baseMargin;
+    const feedMargin = config.duplicateRasterLines && highRes ? baseMargin * 2 : baseMargin;
+
+    // Die-cut pages are fixed-length (reference §2.3.3 / §2.3.4): the
+    // printer cuts at raster count + margin, not at the gap, so the page
+    // is always the print-area length with `ESC i d` 0 and the bitmap
+    // sits centred in it. Continuous pages are the bitmap's own height.
+    const dieCut = resolveDieCutRows(media, highRes && !config.duplicateRasterLines);
+    const rowCount = dieCut?.rows ?? bitmap.heightPx;
+    const marginDots = dieCut ? 0 : feedMargin;
+    if (dieCut && bitmap.heightPx > rowCount) {
+      throw new Error(
+        `Bitmap is ${bitmap.heightPx.toString()} rows but ${media.name} prints exactly ${rowCount.toString()}${dieCut.highRes ? ' (high-res)' : ''}; resize the image`,
+      );
+    }
+    const padTop = dieCut ? Math.floor((rowCount - bitmap.heightPx) / 2) : 0;
 
     // Multi-ink media (e.g. DK-22251) requires two-color mode even for black-only jobs.
     // Auto-create an empty red plane when the tape demands it but caller didn't supply one.
@@ -316,8 +350,6 @@ function encodeRasterJob(pages: PageData[], options: JobOptions, ctx: EncodeCont
         throw new Error('Two-color bitmaps must have identical dimensions');
       }
     }
-
-    const rowCount = bitmap.heightPx;
 
     chunks.push(buildRasterMode());
     chunks.push(buildStatusRequest());
@@ -343,18 +375,20 @@ function encodeRasterJob(pages: PageData[], options: JobOptions, ctx: EncodeCont
     // Per §7.3: PT high-res duplicates each raster line. QL doesn't.
     const duplicate = config.duplicateRasterLines && highRes;
     for (let r = 0; r < rowCount; r++) {
-      const blackSrc = getRow(bitmap, r);
+      // Rows outside the bitmap (die-cut padding) stay blank.
+      const src = r - padTop;
+      const inBitmap = src >= 0 && src < bitmap.heightPx;
       const blackBytes = new Uint8Array(rowByteLen);
-      placeBits(blackSrc, bitmap.widthPx, blackBytes, leftMarginPins);
+      if (inBitmap) placeBits(getRow(bitmap, src), bitmap.widthPx, blackBytes, leftMarginPins);
       const blackPayload = compress ? packBits(blackBytes) : blackBytes;
       const blackChunk = buildRasterRow(blackPayload, 'black', twoColor);
       chunks.push(blackChunk);
       if (duplicate) chunks.push(blackChunk);
 
       if (twoColor && redBitmap !== undefined) {
-        const redSrc = getRow(redBitmap, r);
         const redBytes = new Uint8Array(rowByteLen);
-        placeBits(redSrc, redBitmap.widthPx, redBytes, leftMarginPins);
+        if (inBitmap)
+          placeBits(getRow(redBitmap, src), redBitmap.widthPx, redBytes, leftMarginPins);
         const redPayload = compress ? packBits(redBytes) : redBytes;
         const redChunk = buildRasterRow(redPayload, 'red', twoColor);
         chunks.push(redChunk);

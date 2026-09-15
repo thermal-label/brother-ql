@@ -105,7 +105,7 @@ Net effect for users: input images are treated as the intended
 visual; landscape input on rectangular die-cut media auto-rotates
 to read along the tape feed direction. `print(image, media, { rotate
 })` lets callers force a specific angle. `flipHorizontal` (the
-pin-mirror compensation) still runs *after* rotation since it
+pin-mirror compensation) still runs _after_ rotation since it
 addresses head geometry, not image orientation.
 
 ## D9 — Bluetooth on the QL-820NWB goes through the serial transports
@@ -190,7 +190,7 @@ the dispatch (DK → flat fields, TZe/HSe → narrow/wide via
 ## D14 — nbuchwitz/ptouch is the source-of-truth for PT PIDs and pin configs
 
 `nbuchwitz/ptouch` (Python, LGPL-2.1, active 2024-2026) transcribes
-Brother's official *Raster Command Reference* PDFs and ships per-model
+Brother's official _Raster Command Reference_ PDFs and ships per-model
 USB PIDs and full pin configurations. We treat it as primary. Each PT
 device entry's `hardwareQuirks` field cites the source path
 (`nbuchwitz/ptouch/src/ptouch/printers.py:<class>`) and the Brother
@@ -203,7 +203,7 @@ Secondary sources kept for cross-reference:
 - **`brother-label` / `pklaus/brother_ql`** — useful for golden-byte
   stream generation only. Their `Model(...)` entries carry no USB
   PIDs (vendor-only enumeration, runtime-PID-from-URL pattern), so
-  they are *not* useful for PID lookup.
+  they are _not_ useful for PID lookup.
 
 The 128-pin HSe configs carry an inherited "shifted -2 pins (up) based
 on testing" correction from nbuchwitz; the 560-pin HSe configs carry
@@ -307,3 +307,26 @@ clearance is the firmware's autocut. The new field is the
 encoder-side pad amount, which is zero here. The field becomes
 relevant if a future Brother device ever ships without firmware feed
 support; until then, omit / default.
+
+## D20 — Die-cut pages are sent at the print-area length with margin 0
+
+The QL cuts at raster count + `ESC i d` margin, not at the label gap.
+Sending the bitmap's own height with the 35-dot continuous margin cut
+a 608-row job on DK-11201 at ~54 mm, mid-label (bench 2026-09-15,
+QL-820NWBc over TCP; USB has the same defect). The reference is
+explicit: die-cut length is "Fixed" (§2.3.4), the margin command must
+carry 0 (§2.3.3, `ESC i d`), and §2.3.2(b) column 4 gives the
+print-area length per label (991 dots for 29×90). Python `brother_ql`
+enforces the same by refusing images that are not exactly
+`dots_printable`.
+
+`encodeRasterJob` therefore treats `media.type === 'die-cut'` as a
+fixed page: raster number and rows sent = `dieCutMaskedAreaDots`
+(the column-4 value; the field name predates this reading and is
+kept), doubled when the caller supplies QL high-res rows, the bitmap
+centred with blank rows around it, margin 0 whatever `marginDots`
+says. A taller bitmap is an error naming both numbers rather than a
+crop: the excess would never have fitted on the label. Continuous
+media is untouched (locked by a digest test). There is no layout step
+to move this into: `print()` encodes the caller's bitmap as-is, so
+the encoder is the one place the page length is known.

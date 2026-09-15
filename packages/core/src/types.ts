@@ -107,7 +107,11 @@ export interface BrotherQLMedia extends MediaDescriptor {
   printableDots?: number;
   leftMarginPins?: number;
   rightMarginPins?: number;
-  /** Die-cut masked area in dots (registration windows). */
+  /**
+   * Die-cut page length in dots at 300 dpi: the reference's "print area
+   * length" (§2.3.2(b) column 4). The encoder sends exactly this many
+   * rows for die-cut media; see DECISIONS D20.
+   */
   dieCutMaskedAreaDots?: number;
 }
 
