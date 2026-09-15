@@ -91,20 +91,23 @@ function dimToMm(value: number, unit: number): number | undefined {
   return undefined;
 }
 
-/** Dim OIDs win when the agent fills them; the name string is the fallback. */
+/**
+ * The name string wins; the Dim OIDs are the fallback. Bench
+ * (QL-820NWB, DK-11201): `prtInputDimUnit` = 4 (micrometres) with
+ * `2900 × 9000`, which is 1/100 mm, so trusting the unit yields a
+ * 3 × 9 mm label. The name is the only value measured to be right.
+ */
 function resolveDimensions(
   input: PrinterMibStatus,
 ): { widthMm: number; heightMm: number } | undefined {
-  const { xFeedDir, feedDir, dimUnit } = input;
-  if (xFeedDir !== undefined && xFeedDir >= 0 && dimUnit !== undefined) {
-    const widthMm = dimToMm(xFeedDir, dimUnit);
-    if (widthMm !== undefined) {
-      const heightMm = feedDir !== undefined && feedDir >= 0 ? dimToMm(feedDir, dimUnit) : 0;
-      return { widthMm, heightMm: heightMm ?? 0 };
-    }
-  }
   const parsed = parseMediaName(input.mediaName);
-  return parsed && { widthMm: parsed.widthMm, heightMm: parsed.heightMm ?? 0 };
+  if (parsed) return { widthMm: parsed.widthMm, heightMm: parsed.heightMm ?? 0 };
+  const { xFeedDir, feedDir, dimUnit } = input;
+  if (xFeedDir === undefined || xFeedDir < 0 || dimUnit === undefined) return undefined;
+  const widthMm = dimToMm(xFeedDir, dimUnit);
+  if (widthMm === undefined) return undefined;
+  const heightMm = feedDir !== undefined && feedDir >= 0 ? dimToMm(feedDir, dimUnit) : 0;
+  return { widthMm, heightMm: heightMm ?? 0 };
 }
 
 /**

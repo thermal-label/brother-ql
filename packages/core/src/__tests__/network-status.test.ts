@@ -106,7 +106,14 @@ describe('statusFromPrinterMib', () => {
     ]);
   });
 
-  it('prefers Dim OIDs in ten-thousandths of an inch (unit 3)', () => {
+  it('the name wins over Dim OIDs (bench: unit 4 claimed, 1/100 mm sent)', () => {
+    const status = statusFromPrinterMib(
+      mib({ mediaName: DK_11201_NAME, xFeedDir: 2900, feedDir: 9000, dimUnit: 4 }),
+    );
+    expect(status.detectedMedia?.id).toBe(271);
+  });
+
+  it('falls back to Dim OIDs in ten-thousandths of an inch (unit 3)', () => {
     // 29 mm = 11417, 90 mm = 35433 ten-thousandths of an inch.
     const status = statusFromPrinterMib(
       mib({ mediaName: 'nonsense', xFeedDir: 11417, feedDir: 35433, dimUnit: 3 }),
@@ -114,22 +121,22 @@ describe('statusFromPrinterMib', () => {
     expect(status.detectedMedia?.id).toBe(271);
   });
 
-  it('prefers Dim OIDs in micrometres (unit 4)', () => {
+  it('falls back to Dim OIDs in micrometres (unit 4)', () => {
     const status = statusFromPrinterMib(
       mib({ mediaName: 'nonsense', xFeedDir: 62000, feedDir: -1, dimUnit: 4 }),
     );
     expect(status.detectedMedia?.id).toBe(259);
   });
 
-  it('falls back to the name when the Dim OIDs are negative or the unit is unknown', () => {
+  it('no media when the name is unparseable and the Dim OIDs are negative or unitless', () => {
     expect(
-      statusFromPrinterMib(mib({ mediaName: DK_11201_NAME, xFeedDir: -1, feedDir: -1, dimUnit: 3 }))
-        .detectedMedia?.id,
-    ).toBe(271);
+      statusFromPrinterMib(mib({ mediaName: 'nonsense', xFeedDir: -1, feedDir: -1, dimUnit: 3 }))
+        .detectedMedia,
+    ).toBeUndefined();
     expect(
-      statusFromPrinterMib(mib({ mediaName: DK_11201_NAME, xFeedDir: 11417, feedDir: 35433 }))
-        .detectedMedia?.id,
-    ).toBe(271);
+      statusFromPrinterMib(mib({ mediaName: 'nonsense', xFeedDir: 11417, feedDir: 35433 }))
+        .detectedMedia,
+    ).toBeUndefined();
   });
 
   it('unrecognised media name → no media, warn row with the raw string', () => {
