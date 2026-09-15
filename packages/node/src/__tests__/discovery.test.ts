@@ -1,7 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { DEVICES, getUsbIds } from '@thermal-label/brother-ql-core';
-import type { DeviceEntry } from '@thermal-label/contracts';
+import {
+  DeviceIdentificationRequiredError,
+  DeviceNotFoundError,
+  type DeviceEntry,
+} from '@thermal-label/contracts';
+import type { BrotherQLPrinter } from '../printer.js';
 
 const { usbOpen, tcpConnect, serialOpen, enumerate } = vi.hoisted(() => ({
   usbOpen: vi.fn(),
@@ -137,37 +142,103 @@ describe('BrotherQLDiscovery', () => {
     });
 
     it('throws DeviceNotFoundError when no matching device is attached', async () => {
-      await expect(discovery.openPrinter()).rejects.toThrow('No compatible device found');
+      await expect(discovery.openPrinter()).rejects.toBeInstanceOf(DeviceNotFoundError);
     });
+  });
 
-    it('opens a TCP printer when host is provided', async () => {
+  describe('openPrinter (TCP)', () => {
+    it('opens with the descriptor named by deviceKey', async () => {
       tcpConnect.mockResolvedValue(fakeTransport());
 
-      const printer = await discovery.openPrinter({ host: '192.168.1.100' });
+      const printer = await discovery.openPrinter({
+        host: '192.168.1.100',
+        deviceKey: 'QL_820NWBc',
+      });
       expect(printer.transportType).toBe('tcp');
+      expect(printer.device).toBe(DEVICES.QL_820NWBc);
       expect(tcpConnect).toHaveBeenCalledWith('192.168.1.100', undefined);
     });
 
     it('passes port override to TcpTransport', async () => {
       tcpConnect.mockResolvedValue(fakeTransport());
 
-      await discovery.openPrinter({ host: '10.0.0.5', port: 9101 });
+      await discovery.openPrinter({ host: '10.0.0.5', port: 9101, deviceKey: 'PT_E550W' });
       expect(tcpConnect).toHaveBeenCalledWith('10.0.0.5', 9101);
     });
 
-    it('opens a serial printer when path is provided', async () => {
+    it('throws DeviceIdentificationRequiredError without deviceKey, before connecting', async () => {
+      const err = await discovery.openPrinter({ host: '192.168.1.100' }).catch((e: unknown) => e);
+      expect(err).toBeInstanceOf(DeviceIdentificationRequiredError);
+      const typed = err as DeviceIdentificationRequiredError;
+      expect(typed.message).toMatch(/Port 9100 on 192\.168\.1\.100 carries no model signal/);
+      expect(typed.message).toMatch(/Pass deviceKey, one of: .*PT_E550W.*QL_820NWBc/);
+      expect(typed.candidates.every(c => c.transports.tcp !== undefined)).toBe(true);
+      expect(tcpConnect).not.toHaveBeenCalled();
+
+      tcpConnect.mockResolvedValue(fakeTransport());
+      const printers = await typed.continueWith('QL_820NWBc');
+      expect(Object.keys(printers)).toEqual(['primary']);
+      expect((printers.primary as BrotherQLPrinter).device.key).toBe('QL_820NWBc');
+      expect(tcpConnect).toHaveBeenCalledWith('192.168.1.100', undefined);
+    });
+
+    it('rejects an unknown deviceKey before connecting', async () => {
+      await expect(
+        discovery.openPrinter({ host: '192.168.1.100', deviceKey: 'QL_9999' }),
+      ).rejects.toThrow(/Unknown deviceKey "QL_9999".*TCP-capable Brother QL keys: .*QL_820NWBc/);
+      expect(tcpConnect).not.toHaveBeenCalled();
+    });
+
+    it('rejects a deviceKey without a TCP transport before connecting', async () => {
+      await expect(
+        discovery.openPrinter({ host: '192.168.1.100', deviceKey: 'QL_700' }),
+      ).rejects.toThrow(/QL_700 has no tcp transport/);
+      expect(tcpConnect).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('openPrinter (serial)', () => {
+    it('opens a serial printer with serialPath + deviceKey', async () => {
       serialOpen.mockResolvedValue(fakeTransport());
 
-      const printer = await discovery.openPrinter({ path: '/dev/rfcomm0' });
+      const printer = await discovery.openPrinter({
+        serialPath: '/dev/rfcomm0',
+        deviceKey: 'QL_820NWBc',
+      });
       expect(printer.transportType).toBe('serial');
+      expect(printer.device).toBe(DEVICES.QL_820NWBc);
       expect(serialOpen).toHaveBeenCalledWith('/dev/rfcomm0', undefined);
     });
 
-    it('forwards baudRate to SerialTransport', async () => {
+    it('still accepts the deprecated path alias and forwards baudRate', async () => {
       serialOpen.mockResolvedValue(fakeTransport());
 
-      await discovery.openPrinter({ path: 'COM3', baudRate: 115200 });
+      await discovery.openPrinter({ path: 'COM3', baudRate: 115200, deviceKey: 'PT_P910BT' });
       expect(serialOpen).toHaveBeenCalledWith('COM3', 115200);
+    });
+
+    it('throws DeviceIdentificationRequiredError without deviceKey, before opening the port', async () => {
+      const err = await discovery
+        .openPrinter({ serialPath: '/dev/rfcomm0' })
+        .catch((e: unknown) => e);
+      expect(err).toBeInstanceOf(DeviceIdentificationRequiredError);
+      const typed = err as DeviceIdentificationRequiredError;
+      expect(typed.message).toMatch(/Serial port \/dev\/rfcomm0 carries no model signal/);
+      expect(typed.candidates.map(c => c.key).sort()).toEqual(['PT_P910BT', 'QL_820NWBc']);
+      expect(serialOpen).not.toHaveBeenCalled();
+
+      serialOpen.mockResolvedValue(fakeTransport());
+      const printers = await typed.continueWith('QL_820NWBc');
+      expect((printers.primary as BrotherQLPrinter).transportType).toBe('serial');
+    });
+
+    it('rejects a deviceKey without a serial transport', async () => {
+      await expect(
+        discovery.openPrinter({ serialPath: '/dev/rfcomm0', deviceKey: 'QL_700' }),
+      ).rejects.toThrow(
+        /QL_700 has no serial transport.*Serial-capable keys: PT_P910BT, QL_820NWBc/,
+      );
+      expect(serialOpen).not.toHaveBeenCalled();
     });
   });
 });

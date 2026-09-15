@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
-import { MediaNotSpecifiedError, type Transport } from '@thermal-label/contracts';
+import {
+  MediaNotSpecifiedError,
+  TransportTimeoutError,
+  type Transport,
+} from '@thermal-label/contracts';
 import { DEVICES, MEDIA } from '@thermal-label/brother-ql-core';
 import { BrotherQLPrinter } from '../printer.js';
 
@@ -277,6 +281,46 @@ describe('BrotherQLPrinter', () => {
     // the mock was called, not to keep a `this`-bound reference.
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(transport.close)).toHaveBeenCalled();
+  });
+
+  it('getStatus() bounds each poll read and treats a timeout as "not yet"', async () => {
+    // A serial/TCP-like transport blocks instead of returning 0 bytes;
+    // the bounded read turns that into TransportTimeoutError, which the
+    // poll loop retries until the 32 bytes arrive.
+    const bytes = new Uint8Array(32);
+    bytes[10] = 62;
+    bytes[11] = 0x0a;
+    const read = vi
+      .fn<(length: number, timeout?: number) => Promise<Uint8Array>>()
+      .mockRejectedValueOnce(new TransportTimeoutError('serial', 150))
+      .mockRejectedValueOnce(new TransportTimeoutError('serial', 150))
+      .mockResolvedValueOnce(bytes);
+    const transport: Transport = {
+      get connected() {
+        return true;
+      },
+      write: vi.fn(() => Promise.resolve()),
+      read,
+      close: vi.fn(() => Promise.resolve()),
+    };
+    const printer = new BrotherQLPrinter(DEVICES.QL_820NWBc, transport, 'serial');
+    const status = await printer.getStatus();
+    expect(status.detectedMedia?.id).toBe(259);
+    expect(read).toHaveBeenCalledTimes(3);
+    for (const call of read.mock.calls) expect(call[1]).toBe(150);
+  });
+
+  it('getStatus() propagates non-timeout read errors', async () => {
+    const transport: Transport = {
+      get connected() {
+        return true;
+      },
+      write: vi.fn(() => Promise.resolve()),
+      read: vi.fn(() => Promise.reject(new Error('LIBUSB_ERROR_PIPE'))),
+      close: vi.fn(() => Promise.resolve()),
+    };
+    const printer = new BrotherQLPrinter(DEVICES.QL_820NWBc, transport, 'usb');
+    await expect(printer.getStatus()).rejects.toThrow('LIBUSB_ERROR_PIPE');
   });
 
   it('getStatus() throws when the printer never queues a response', async () => {

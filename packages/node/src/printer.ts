@@ -25,7 +25,11 @@ import type {
   Transport,
   TransportType,
 } from '@thermal-label/brother-ql-core';
-import { MediaNotSpecifiedError, WriteSerializer } from '@thermal-label/contracts';
+import {
+  MediaNotSpecifiedError,
+  TransportTimeoutError,
+  WriteSerializer,
+} from '@thermal-label/contracts';
 
 const STATUS_BYTE_COUNT = 32;
 const STATUS_POLL_INTERVAL_MS = 150;
@@ -43,6 +47,10 @@ const STATUS_POLL_ATTEMPTS = 10;
 // provides flow control; libusb bypasses that.
 const USB_CHUNK_SIZE = 1024;
 const USB_CHUNK_DELAY_MS = 20;
+
+function sleep(ms: number): Promise<void> {
+  return new Promise(r => setTimeout(r, ms));
+}
 
 /**
  * Node.js driver for Brother QL label printers.
@@ -144,7 +152,7 @@ export class BrotherQLPrinter implements PrinterAdapter {
       const end = Math.min(off + USB_CHUNK_SIZE, bytes.length);
       await this.transport.write(bytes.subarray(off, end));
       if (end < bytes.length) {
-        await new Promise<void>(r => setTimeout(r, USB_CHUNK_DELAY_MS));
+        await sleep(USB_CHUNK_DELAY_MS);
       }
     }
   }
@@ -164,8 +172,9 @@ export class BrotherQLPrinter implements PrinterAdapter {
    * Poll the status endpoint until 32 bytes are available.
    *
    * The USB `transferAsync()` call resolves immediately with 0 bytes if
-   * the printer hasn't queued a response yet, so retry with a short
-   * delay up to `STATUS_POLL_ATTEMPTS` times.
+   * the printer hasn't queued a response yet; a transport that blocks
+   * instead is bounded by the read timeout. `STATUS_POLL_ATTEMPTS`
+   * rounds of `STATUS_POLL_INTERVAL_MS` either way.
    */
   getStatus(): Promise<BrotherQLStatus> {
     // Serialised against `print()` so the status request + poll-read
@@ -173,13 +182,20 @@ export class BrotherQLPrinter implements PrinterAdapter {
     return this.serializer.run(async () => {
       await this.transport.write(STATUS_REQUEST);
       for (let attempt = 0; attempt < STATUS_POLL_ATTEMPTS; attempt++) {
-        await new Promise<void>(r => setTimeout(r, STATUS_POLL_INTERVAL_MS));
-        const bytes = await this.transport.read(STATUS_BYTE_COUNT);
+        const started = Date.now();
+        const bytes = await this.transport
+          .read(STATUS_BYTE_COUNT, STATUS_POLL_INTERVAL_MS)
+          .catch((err: unknown) => {
+            if (err instanceof TransportTimeoutError) return new Uint8Array(0);
+            throw err;
+          });
         if (bytes.length >= STATUS_BYTE_COUNT) {
           const status = parseStatus(bytes, this.device.engines[0]);
           this.lastStatus = status;
           return status;
         }
+        const remaining = STATUS_POLL_INTERVAL_MS - (Date.now() - started);
+        if (remaining > 0) await sleep(remaining);
       }
       throw new Error('Printer did not respond to status request within 1.5s');
     });
