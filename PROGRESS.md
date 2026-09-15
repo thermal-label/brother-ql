@@ -225,3 +225,23 @@
 - [x] Gates green (typecheck, lint, format, test, build)
 - [ ] Hardware verification print on DK-11201 with landscape RGBA (plan §6 step 1)
 
+---
+
+## Step 9 — Network printers: SNMP discovery, identify, status; die-cut length (plan 17)
+
+> Plan: `~/thermal-label/plans/backlog/17-network-discovery-snmp.md`. Trigger: brother-ql#7.
+
+- [x] core: die-cut pages sent at `dieCutMaskedAreaDots` rows with margin 0 (DECISIONS D20)
+- [x] core: `statusFromPrinterMib` + `parseMediaName` (`network-status.ts`), model-code details row, `modelNames` on `QL_820NWBc`
+- [x] node: `deviceKey` / `serialPath` honoured on TCP and serial; poll read bounded by the interval
+- [x] node: `listPrinters()` = USB ∪ SNMP broadcast; `openPrinter({ host })` identifies over SNMP before connecting; `getStatus()` over TCP via Printer-MIB; `listMedia()`; `BrotherQLDiscovery({ network, community })`
+- [x] node: TCP `print()` confirmed via `prtMarkerLifeCount`; `confirm: false` sends blind
+- [x] docs: `node.md` network section, `troubleshooting.md` network entries, DECISIONS D6 rewritten
+- [x] versions: core 0.6.2, node 0.6.2 (by hand; no changesets)
+- [ ] `build(node)`: pin `@thermal-label/transport ^0.6.1` + `@thermal-label/contracts ^0.6.2` from npm, drop the `link:../transport` override, lockfile — after both publish
+- [ ] Bench B1: USB print on DK-11201 cuts on the gap, text centred
+- [ ] Bench B2–B6: network list / status DK-11201 / status DK-22251 / deviceKey override / non-printer host
+- [ ] Bench B9a: `prtMarkerLifeCount` increments after a TCP print on the QL-820NWBc (gates the print confirmation; fall back to error-state only if it does not)
+- [ ] Publish core, then node
+
+Behaviour change in node 0.6.2: `listPrinters()` and `openPrinter({ serialNumber })` broadcast on the LAN and take ≥ 1 s; `new BrotherQLDiscovery({ network: false })` opts out. Serial opens now require `deviceKey` (the previous blind pick bound PT_P910BT).

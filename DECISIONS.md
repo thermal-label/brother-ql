@@ -57,14 +57,33 @@ out of Editor Lite mode.
 Used when `createPreview()` is called without media and without a
 detected roll.
 
-## D6 — `discovery` named export
+## D6 — `discovery` named export; network printers via SNMP
 
-Node package exports `discovery: PrinterDiscovery` with USB
-enumeration. Editor-Lite mass-storage devices (PIDs `0x20AA`, `0x20AB`)
-are skipped with a console warning — same behaviour as pre-retrofit.
+Node package exports `discovery: PrinterDiscovery`. `listPrinters()`
+is the USB enumeration plus one SNMP broadcast of `hrDeviceDescr.1`
+on the local subnets (transport's `enumerateNetworkDevices`), run
+concurrently, USB first; either half may be unavailable without
+hiding the other. Editor-Lite mass-storage devices expose a PID
+outside the registry and are simply absent.
 
-TCP discovery returns USB matches only from `listPrinters()`; network
-printers open via `openPrinter({ host, port })`. mDNS not implemented.
+Port 9100 is write-only (raster reference §5.9; bench 2026-09-15,
+QL-820NWBc: every `ESC i S` framing returns 0 bytes), so a network
+printer's identity, status and print confirmation all come from its
+SNMP agent (standard Host-Resources-MIB / Printer-MIB, no vendor
+OIDs). `openPrinter({ host })` resolves the registry entry before
+connecting: `deviceKey`, else `identifyNetworkDevice`, else
+`DeviceIdentificationRequiredError`. `getStatus()` over TCP never
+touches the socket. `print()` over TCP reads `prtMarkerLifeCount`
+before and after the job and rejects when it does not move, because a
+single-colour job on a DK-22251 roll (indistinguishable from DK-22205
+on every network surface) is rejected silently; `confirm: false`
+sends blind.
+
+Behaviour change in 0.6.2: `listPrinters()` and
+`openPrinter({ serialNumber })` now broadcast on the LAN and take at
+least the 1 s collection window; `new BrotherQLDiscovery({ network:
+false })` opts out. IPP and mDNS are not built (plan 17 D1): SNMP
+covers every Brother NC print server and needs only `node:dgram`.
 
 Web packages do not implement `PrinterDiscovery`.
 

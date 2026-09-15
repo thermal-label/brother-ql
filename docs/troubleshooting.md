@@ -86,13 +86,31 @@ The number printed on the roll is the last three digits of the DK product code (
 
 ### No printers found
 
-**Symptom:** `discovery.listPrinters()` returns an empty list, or `discovery.openPrinter()` throws "No compatible Brother QL printer found."
+**Symptom:** `discovery.listPrinters()` returns an empty list, or `discovery.openPrinter()` throws "No compatible device found."
+
+USB:
 
 1. Check Editor Lite mode first (green LED must be off).
 2. Unplug and replug the USB cable.
 3. Try a different USB port or cable.
 4. On Linux: check [udev rules](#linux-udev-rules-no-access) below.
 5. On Windows: check the [WinUSB driver](#windows-official-driver-blocks-usb-access) section below.
+
+Network: the scan is one SNMP broadcast on the local subnets, so a printer on another subnet, behind an access point that filters broadcast, or with SNMP disabled in its web UI does not show up. Open it directly with `openPrinter({ host })` (CLI: `--host <ip>`); if that reports "No SNMP answer", pass the model with `deviceKey` (`--device QL_820NWBc`) and the media explicitly, since status is unavailable too. On macOS the first run may trigger the application-firewall prompt for `node`; allow it.
+
+---
+
+### Network: two-colour rolls need `--media 251`
+
+**Symptom:** Over WiFi/Ethernet the status says `62mm` continuous with a "Two-colour: not detectable over network" warning, and a print on a DK-22251 roll is rejected as "the printer did not print it" (or, with `confirm: false`, prints nothing).
+
+Port 9100 carries no status and the SNMP agent reports DK-22251 and DK-22205 identically, so the driver resolves the single-colour entry (259). The printer rejects single-colour jobs on the two-colour roll. Pass the media yourself: `--media 251` on the CLI, `MEDIA[251]` in code. Over USB the status byte identifies the roll and this is automatic.
+
+---
+
+### Network: status hangs or "Could not read status … over SNMP"
+
+`getStatus()` on a network printer reads the printer's SNMP agent (UDP 161, community `public`); port 9100 never answers. A hang means an old driver (< 0.6.2) reading 9100; the error means SNMP is disabled, filtered, or uses another community (`snmpCommunity` / `--community`). Without SNMP, pass `deviceKey` and `media` explicitly and print with `{ confirm: false }`.
 
 ---
 
