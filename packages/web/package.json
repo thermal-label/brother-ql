@@ -59,7 +59,7 @@
   },
   "dependencies": {
     "@thermal-label/brother-ql-core": "workspace:*",
-    "@thermal-label/contracts": "^0.6.2",
+    "@thermal-label/contracts": "^0.6.3",
     "@thermal-label/transport": "^0.6.1"
   },
   "peerDependencies": {

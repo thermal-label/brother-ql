@@ -21,8 +21,8 @@ importers:
         specifier: ^1.1.0
         version: 1.1.0
       '@thermal-label/contracts':
-        specifier: ^0.6.2
-        version: 0.6.2
+        specifier: ^0.6.3
+        version: 0.6.3
       eslint:
         specifier: ^9.0.0
         version: 9.39.4
@@ -54,8 +54,8 @@ importers:
         specifier: ^1.3.0
         version: 1.3.0
       '@thermal-label/contracts':
-        specifier: ^0.6.2
-        version: 0.6.2
+        specifier: ^0.6.3
+        version: 0.6.3
     devDependencies:
       '@mbtech-nl/tsconfig':
         specifier: ^1.1.0
@@ -85,8 +85,8 @@ importers:
         specifier: workspace:*
         version: link:../core
       '@thermal-label/contracts':
-        specifier: ^0.6.2
-        version: 0.6.2
+        specifier: ^0.6.3
+        version: 0.6.3
       '@thermal-label/transport':
         specifier: ^0.6.1
         version: 0.6.1
@@ -117,8 +117,8 @@ importers:
         specifier: workspace:*
         version: link:../core
       '@thermal-label/contracts':
-        specifier: ^0.6.2
-        version: 0.6.2
+        specifier: ^0.6.3
+        version: 0.6.3
       '@thermal-label/transport':
         specifier: ^0.6.1
         version: 0.6.1
@@ -759,8 +759,8 @@ packages:
   '@shikijs/vscode-textmate@10.0.2':
     resolution: {integrity: sha512-83yeghZ2xxin3Nj8z1NMd/NCuca+gsYXswywDy5bHvwlWL8tpTQmzGeUuHd9FC3E/SBEMvzJRwWEOz5gGes9Qg==}
 
-  '@thermal-label/contracts@0.6.2':
-    resolution: {integrity: sha512-KAFR/+kUIvM3nKt3RWa3gwaJDXGOAAg+eXz+n86ZlvlBV782WMfOj7SpUgQqdBh5OYNP0LMLDHk0OxiqSMx+NA==}
+  '@thermal-label/contracts@0.6.3':
+    resolution: {integrity: sha512-vr4PocYMno8d8ZeJR7iTSvtbXgqMiGYKr60Eax0VNlEV3h0L+q3Us4KgTIJxBDSR8u2jZIUZgYP8XqekcN1YNQ==}
     engines: {node: '>=20.9.0'}
 
   '@thermal-label/transport@0.6.1':
@@ -2812,13 +2812,13 @@ snapshots:
 
   '@shikijs/vscode-textmate@10.0.2': {}
 
-  '@thermal-label/contracts@0.6.2':
+  '@thermal-label/contracts@0.6.3':
     dependencies:
       '@mbtech-nl/bitmap': 1.3.0
 
   '@thermal-label/transport@0.6.1':
     dependencies:
-      '@thermal-label/contracts': 0.6.2
+      '@thermal-label/contracts': 0.6.3
 
   '@tybys/wasm-util@0.10.1':
     dependencies:
