@@ -11,6 +11,8 @@
 Parse a Brother QL 32-byte status response.
 
 Fields:
+  byte 3  — series code (`'4'` for QL-800/810W/820NWB)
+  byte 4  — model code (`'8'` QL-800, `'9'` QL-810W, `'A'` QL-820NWB)
   byte 8  — error info 1 (bit mask, see ERROR_INFO_1)
   byte 9  — error info 2 (bit mask, see ERROR_INFO_2)
   byte 10 — media width (mm)
@@ -26,9 +28,9 @@ Fields:
 `findMediaByDimensions`.
 
 `details` carries the contracts-standard `StatusDetail[]` diagnostic
-rows the harness renders verbatim: the print phase (always present)
-and the head-cooling notification (only when the printer reports
-one).
+rows the harness renders verbatim: the model code and the print
+phase (always present) and the head-cooling notification (only when
+the printer reports one).
 
 ## Parameters
 

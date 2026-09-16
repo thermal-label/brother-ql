@@ -57,14 +57,33 @@ out of Editor Lite mode.
 Used when `createPreview()` is called without media and without a
 detected roll.
 
-## D6 — `discovery` named export
+## D6 — `discovery` named export; network printers via SNMP
 
-Node package exports `discovery: PrinterDiscovery` with USB
-enumeration. Editor-Lite mass-storage devices (PIDs `0x20AA`, `0x20AB`)
-are skipped with a console warning — same behaviour as pre-retrofit.
+Node package exports `discovery: PrinterDiscovery`. `listPrinters()`
+is the USB enumeration plus one SNMP broadcast of `hrDeviceDescr.1`
+on the local subnets (transport's `enumerateNetworkDevices`), run
+concurrently, USB first; either half may be unavailable without
+hiding the other. Editor-Lite mass-storage devices expose a PID
+outside the registry and are simply absent.
 
-TCP discovery returns USB matches only from `listPrinters()`; network
-printers open via `openPrinter({ host, port })`. mDNS not implemented.
+Port 9100 is write-only (raster reference §5.9; bench 2026-09-15,
+QL-820NWBc: every `ESC i S` framing returns 0 bytes), so a network
+printer's identity, status and print confirmation all come from its
+SNMP agent (standard Host-Resources-MIB / Printer-MIB, no vendor
+OIDs). `openPrinter({ host })` resolves the registry entry before
+connecting: `deviceKey`, else `identifyNetworkDevice`, else
+`DeviceIdentificationRequiredError`. `getStatus()` over TCP never
+touches the socket. `print()` over TCP reads `prtMarkerLifeCount`
+before and after the job and rejects when it does not move, because a
+single-colour job on a DK-22251 roll (indistinguishable from DK-22205
+on every network surface) is rejected silently; `confirm: false`
+sends blind.
+
+Behaviour change in 0.6.2: `listPrinters()` and
+`openPrinter({ serialNumber })` now broadcast on the LAN and take at
+least the 1 s collection window; `new BrotherQLDiscovery({ network:
+false })` opts out. IPP and mDNS are not built (plan 17 D1): SNMP
+covers every Brother NC print server and needs only `node:dgram`.
 
 Web packages do not implement `PrinterDiscovery`.
 
@@ -307,3 +326,26 @@ clearance is the firmware's autocut. The new field is the
 encoder-side pad amount, which is zero here. The field becomes
 relevant if a future Brother device ever ships without firmware feed
 support; until then, omit / default.
+
+## D20 — Die-cut pages are sent at the print-area length with margin 0
+
+The QL cuts at raster count + `ESC i d` margin, not at the label gap.
+Sending the bitmap's own height with the 35-dot continuous margin cut
+a 608-row job on DK-11201 at ~54 mm, mid-label (bench 2026-09-15,
+QL-820NWBc over TCP; USB has the same defect). The reference is
+explicit: die-cut length is "Fixed" (§2.3.4), the margin command must
+carry 0 (§2.3.3, `ESC i d`), and §2.3.2(b) column 4 gives the
+print-area length per label (991 dots for 29×90). Python `brother_ql`
+enforces the same by refusing images that are not exactly
+`dots_printable`.
+
+`encodeRasterJob` therefore treats `media.type === 'die-cut'` as a
+fixed page: raster number and rows sent = `dieCutMaskedAreaDots`
+(the column-4 value; the field name predates this reading and is
+kept), doubled when the caller supplies QL high-res rows, the bitmap
+centred with blank rows around it, margin 0 whatever `marginDots`
+says. A taller bitmap is an error naming both numbers rather than a
+crop: the excess would never have fitted on the label. Continuous
+media is untouched (locked by a digest test). There is no layout step
+to move this into: `print()` encodes the caller's bitmap as-is, so
+the encoder is the one place the page length is known.

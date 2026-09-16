@@ -31,6 +31,8 @@ const ERROR_INFO_2: { bit: number; code: string; message: string }[] = [
  * Parse a Brother QL 32-byte status response.
  *
  * Fields:
+ *   byte 3  — series code (`'4'` for QL-800/810W/820NWB)
+ *   byte 4  — model code (`'8'` QL-800, `'9'` QL-810W, `'A'` QL-820NWB)
  *   byte 8  — error info 1 (bit mask, see ERROR_INFO_1)
  *   byte 9  — error info 2 (bit mask, see ERROR_INFO_2)
  *   byte 10 — media width (mm)
@@ -46,9 +48,9 @@ const ERROR_INFO_2: { bit: number; code: string; message: string }[] = [
  * `findMediaByDimensions`.
  *
  * `details` carries the contracts-standard `StatusDetail[]` diagnostic
- * rows the harness renders verbatim: the print phase (always present)
- * and the head-cooling notification (only when the printer reports
- * one).
+ * rows the harness renders verbatim: the model code and the print
+ * phase (always present) and the head-cooling notification (only when
+ * the printer reports one).
  */
 export function parseStatus(
   bytes: Uint8Array,
@@ -59,6 +61,7 @@ export function parseStatus(
   }
 
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const modelCode = formatModelCode(view.getUint8(3), view.getUint8(4));
   const errInfo1 = view.getUint8(8);
   const errInfo2 = view.getUint8(9);
   const mediaWidthMm = view.getUint8(10);
@@ -87,15 +90,28 @@ export function parseStatus(
     mediaLoaded,
     ...(detected === undefined ? {} : { detectedMedia: detected }),
     errors,
-    details: buildStatusDetails(phaseType, notification),
+    details: buildStatusDetails(modelCode, phaseType, notification),
     rawBytes: bytes,
   };
+}
+
+/**
+ * Bytes 3/4 as Brother prints them in the reference (ASCII, e.g. `4A`
+ * for the QL-820NWB); hex for anything unprintable. Informational
+ * only: the USB/serial model signal a serial-port identify can use.
+ */
+function formatModelCode(series: number, model: number): string {
+  const printable = (b: number): boolean => b >= 0x21 && b <= 0x7e;
+  return printable(series) && printable(model)
+    ? String.fromCharCode(series, model)
+    : `0x${series.toString(16).padStart(2, '0')} 0x${model.toString(16).padStart(2, '0')}`;
 }
 
 /**
  * Build the contracts-standard `StatusDetail[]` rows for a parsed
  * Brother QL status.
  *
+ * - The model-code row (bytes 3/4) is always emitted.
  * - The print-phase row (byte 19) is always emitted — it is the most
  *   useful "is the device doing anything" signal for a stuck report.
  * - The head-cooling row (byte 22) is emitted only when the printer
@@ -103,8 +119,12 @@ export function parseStatus(
  *   normal idle status stays uncluttered. "Cooling started" is a
  *   `warn` (printing is paused), "cooling finished" is plain `info`.
  */
-function buildStatusDetails(phaseType: number, notification: number): StatusDetail[] {
-  const details: StatusDetail[] = [];
+function buildStatusDetails(
+  modelCode: string,
+  phaseType: number,
+  notification: number,
+): StatusDetail[] {
+  const details: StatusDetail[] = [{ label: 'Model code', value: modelCode }];
 
   details.push({
     label: 'Print phase',

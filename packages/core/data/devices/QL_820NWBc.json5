@@ -4,6 +4,8 @@
 {
   key: 'QL_820NWBc',
   name: 'QL-820NWBc',
+  // Wire name (SNMP hrDeviceDescr, IEEE-1284 MDL, mDNS usb_MDL) drops the `c`.
+  modelNames: ['QL-820NWB', 'QL-820NWBc'],
   family: 'brother-ql',
   transports: {
     usb: { vid: '0x04f9', pid: '0x209d' },

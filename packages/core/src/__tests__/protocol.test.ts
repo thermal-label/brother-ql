@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createBitmap } from '@mbtech-nl/bitmap';
+import { createBitmap, type LabelBitmap } from '@mbtech-nl/bitmap';
 import {
   buildInvalidate,
   buildInitialize,
@@ -16,7 +16,7 @@ import {
   encodeJobForEngine,
   type EncoderEngine,
 } from '../protocol.js';
-import type { PageData } from '../types.js';
+import type { BrotherQLMedia, PageData } from '../types.js';
 import { MEDIA } from '../media.js';
 
 describe('buildInvalidate', () => {
@@ -492,5 +492,132 @@ describe('encodeJob legacy entry point — back compat', () => {
     const out = encodeJob([{ bitmap, media: MEDIA[259]! }], {});
     for (let i = 4; i < 204; i++) expect(out[i]).toBe(0);
     expect(out[204]).toBe(0x1b);
+  });
+});
+
+describe('die-cut page length (reference §2.3.2(b), §2.3.3, §2.3.4)', () => {
+  const DK_29X90 = MEDIA[271]!; // print area length 991 dots
+  const DK_62MM = MEDIA[259]!;
+  const QL_ENGINE: EncoderEngine = {
+    protocol: 'ql-raster',
+    headDots: 720,
+    capabilities: { autocut: true, mediaDetection: true },
+  };
+
+  /** Bitmap with every pixel of one row set, so the row is recognisable on the wire. */
+  function bitmapWithBlackRow(widthPx: number, heightPx: number, row: number): LabelBitmap {
+    const bitmap = createBitmap(widthPx, heightPx);
+    const bytesPerRow = Math.ceil(widthPx / 8);
+    bitmap.data.fill(0xff, row * bytesPerRow, (row + 1) * bytesPerRow);
+    return bitmap;
+  }
+
+  function findCmd(buf: Uint8Array, third: number): number {
+    for (let i = 0; i < buf.length - 4; i++) {
+      if (buf[i] === 0x1b && buf[i + 1] === 0x69 && buf[i + 2] === third) return i;
+    }
+    return -1;
+  }
+  const rasterNumber = (buf: Uint8Array): number => {
+    const i = findCmd(buf, 0x7a);
+    return (buf[i + 7] ?? 0) | ((buf[i + 8] ?? 0) << 8);
+  };
+  const marginDots = (buf: Uint8Array): number => {
+    const i = findCmd(buf, 0x64);
+    return (buf[i + 3] ?? 0) | ((buf[i + 4] ?? 0) << 8);
+  };
+  /** Raster rows as [opcode, colour, payload] triples, in wire order. */
+  function rasterRows(buf: Uint8Array): { op: number; color: number; payload: Uint8Array }[] {
+    const rows = [];
+    // Rows start after ESC i d (5 bytes) and run until the print command.
+    let i = findCmd(buf, 0x64) + 5;
+    while (i < buf.length && (buf[i] === 0x67 || buf[i] === 0x77)) {
+      const len = buf[i + 2] ?? 0;
+      rows.push({ op: buf[i]!, color: buf[i + 1]!, payload: buf.subarray(i + 3, i + 3 + len) });
+      i += 3 + len;
+    }
+    return rows;
+  }
+
+  it('sends the print-area length as the raster number and margin 0 on DK-11201', () => {
+    const bitmap = createBitmap(306, 608);
+    const out = encodeJobForEngine([{ bitmap, media: DK_29X90 }], {}, QL_ENGINE);
+    expect(rasterNumber(out)).toBe(991);
+    expect(marginDots(out)).toBe(0);
+    expect(rasterRows(out)).toHaveLength(991);
+  });
+
+  it('ignores marginDots on die-cut media', () => {
+    const bitmap = createBitmap(306, 10);
+    const out = encodeJobForEngine(
+      [{ bitmap, media: DK_29X90, options: { marginDots: 100 } }],
+      {},
+      QL_ENGINE,
+    );
+    expect(marginDots(out)).toBe(0);
+  });
+
+  it('centres the bitmap in the page', () => {
+    const bitmap = bitmapWithBlackRow(306, 3, 1);
+    const out = encodeJobForEngine([{ bitmap, media: DK_29X90 }], {}, QL_ENGINE);
+    const rows = rasterRows(out);
+    const black = rows.map((r, i) => (r.payload.some(b => b !== 0) ? i : -1)).filter(i => i >= 0);
+    // padTop = floor((991 - 3) / 2) = 494; the black row is bitmap row 1.
+    expect(black).toEqual([495]);
+  });
+
+  it('doubles the page length when QL high-res rows are supplied', () => {
+    const bitmap = createBitmap(306, 100);
+    const out = encodeJob([{ bitmap, media: DK_29X90, options: { highResolution: true } }]);
+    expect(rasterNumber(out)).toBe(1982);
+    expect(rasterRows(out)).toHaveLength(1982);
+    expect(marginDots(out)).toBe(0);
+  });
+
+  it('rejects a bitmap taller than the page, naming both numbers', () => {
+    const bitmap = createBitmap(306, 1200);
+    expect(() => encodeJobForEngine([{ bitmap, media: DK_29X90 }], {}, QL_ENGINE)).toThrow(
+      /1200 rows.*exactly 991/,
+    );
+  });
+
+  it('pads both planes alike on two-colour die-cut', () => {
+    const bitmap = bitmapWithBlackRow(306, 3, 1);
+    const redBitmap = bitmapWithBlackRow(306, 3, 1);
+    const out = encodeJobForEngine([{ bitmap, redBitmap, media: DK_29X90 }], {}, QL_ENGINE);
+    const rows = rasterRows(out);
+    expect(rows).toHaveLength(991 * 2);
+    const inked = rows
+      .map((r, i) => (r.payload.some(b => b !== 0) ? { i, color: r.color } : undefined))
+      .filter(r => r !== undefined);
+    expect(inked).toEqual([
+      { i: 495 * 2, color: 0x01 },
+      { i: 495 * 2 + 1, color: 0x02 },
+    ]);
+  });
+
+  it('throws when a die-cut entry lacks dieCutMaskedAreaDots', () => {
+    const media: BrotherQLMedia = { ...DK_29X90 };
+    delete media.dieCutMaskedAreaDots;
+    const bitmap = createBitmap(306, 10);
+    expect(() => encodeJobForEngine([{ bitmap, media }], {}, QL_ENGINE)).toThrow(
+      /dieCutMaskedAreaDots/,
+    );
+  });
+
+  it('leaves the continuous path byte-identical', async () => {
+    const { createHash } = await import('node:crypto');
+    const bitmap = bitmapWithBlackRow(696, 40, 7);
+    const out = encodeJobForEngine(
+      [{ bitmap, media: DK_62MM, options: { marginDots: 50 } }],
+      { copies: 2 },
+      QL_ENGINE,
+    );
+    expect(rasterNumber(out)).toBe(40);
+    expect(marginDots(out)).toBe(50);
+    // Digest recorded from the encoder before die-cut padding existed.
+    expect(createHash('sha256').update(out).digest('hex')).toBe(
+      'ebc2b5f467faca133f0f72c6f3123671d4e4dc130f2dd8cad8d9a69fa50e95fc',
+    );
   });
 });

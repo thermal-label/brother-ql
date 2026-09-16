@@ -8,10 +8,11 @@
 
 Driver-specific `openPrinter` options.
 
-Extends the contracts `OpenOptions` with `path` / `baudRate` for
-serial (RFCOMM over OS-paired Bluetooth on the QL-820NWB, or any
-USB-to-serial adapter). Baud rate is forwarded to the OS driver;
-RFCOMM ignores it, but `serialport` requires a value.
+Serial (RFCOMM over OS-paired Bluetooth on the QL-820NWB, or any
+USB-to-serial adapter) uses the contract's `serialPath` / `baudRate`;
+the pre-0.6.2 `path` spelling is still accepted for one release.
+Serial and TCP both need a registry key when the printer cannot be
+identified: see `BrotherQLDiscovery.openPrinter`.
 
 ## Extends
 
@@ -19,22 +20,10 @@ RFCOMM ignores it, but `serialport` requires a value.
 
 ## Properties
 
-### baudRate?
-
-> `optional` **baudRate?**: `number`
-
-Baud rate override; defaults to 9600.
-
-#### Overrides
-
-`OpenOptions.baudRate`
-
-***
-
-### path?
+### ~~path?~~
 
 > `optional` **path?**: `string`
 
-Serial device path — e.g. `/dev/rfcomm0` (Linux) or `COM3`
-(Windows) after pairing the printer via the OS Bluetooth
-settings. Mutually exclusive with `host` and the USB fields.
+#### Deprecated
+
+Use `serialPath`. Removed in the next minor.

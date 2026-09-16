@@ -1,127 +1,222 @@
-import { DEVICES, findDevice, getUsbIds, isMassStorageMode } from '@thermal-label/brother-ql-core';
-import type { BrotherQLDevice } from '@thermal-label/brother-ql-core';
-import type { DiscoveredPrinter, OpenOptions, PrinterDiscovery } from '@thermal-label/contracts';
-import { SerialTransport, TcpTransport, UsbTransport } from '@thermal-label/transport/node';
-import * as usb from 'usb';
+import { DEVICES, getUsbIds, MEDIA } from '@thermal-label/brother-ql-core';
+import type {
+  DeviceEntry,
+  DiscoveredPrinter,
+  MediaDescriptor,
+  OpenOptions,
+  PrinterAdapterMap,
+  PrinterDiscovery,
+} from '@thermal-label/contracts';
+import { DeviceIdentificationRequiredError, DeviceNotFoundError } from '@thermal-label/contracts';
+import {
+  enumerateNetworkDevices,
+  enumerateUsbDevices,
+  identifyNetworkDevice,
+  PRINTER_MIB,
+  SerialTransport,
+  snmpGet,
+  TcpTransport,
+  UsbTransport,
+  type EnumeratedNetworkDevice,
+  type SnmpOptions,
+} from '@thermal-label/transport/node';
 import { BrotherQLPrinter } from './printer.js';
 
 /**
  * Driver-specific `openPrinter` options.
  *
- * Extends the contracts `OpenOptions` with `path` / `baudRate` for
- * serial (RFCOMM over OS-paired Bluetooth on the QL-820NWB, or any
- * USB-to-serial adapter). Baud rate is forwarded to the OS driver;
- * RFCOMM ignores it, but `serialport` requires a value.
+ * Serial (RFCOMM over OS-paired Bluetooth on the QL-820NWB, or any
+ * USB-to-serial adapter) uses the contract's `serialPath` / `baudRate`;
+ * the pre-0.6.2 `path` spelling is still accepted for one release.
+ * Serial and TCP both need a registry key when the printer cannot be
+ * identified: see `BrotherQLDiscovery.openPrinter`.
  */
 export interface BrotherQLOpenOptions extends OpenOptions {
-  /**
-   * Serial device path — e.g. `/dev/rfcomm0` (Linux) or `COM3`
-   * (Windows) after pairing the printer via the OS Bluetooth
-   * settings. Mutually exclusive with `host` and the USB fields.
-   */
+  /** @deprecated Use `serialPath`. Removed in the next minor. */
   path?: string;
-  /** Baud rate override; defaults to 9600. */
-  baudRate?: number;
 }
 
-const BROTHER_VID = 0x04f9;
-
-async function readSerialNumber(device: usb.Device, idx: number): Promise<string | undefined> {
-  return new Promise(resolve => {
-    device.getStringDescriptor(idx, (err, value) => {
-      resolve(err ? undefined : value);
-    });
-  });
+export interface BrotherQLDiscoveryOptions {
+  /**
+   * Scan the LAN (SNMP broadcast) in `listPrinters()` and fall back to
+   * it in `openPrinter({ serialNumber })`. Default `true`; set `false`
+   * for tests, air-gapped hosts, or callers that only want USB.
+   */
+  network?: boolean;
+  /**
+   * SNMP community for every SNMP use this discovery makes: the scan,
+   * identification on `openPrinter({ host })`, and the printer's status
+   * side channel. `OpenOptions.snmpCommunity` wins per call. Default
+   * `'public'`.
+   */
+  community?: string;
 }
 
-async function enumerateUsbDevices(): Promise<
-  { device: usb.Device; descriptor: BrotherQLDevice; serialNumber: string | undefined }[]
-> {
-  const results: {
-    device: usb.Device;
-    descriptor: BrotherQLDevice;
-    serialNumber: string | undefined;
-  }[] = [];
+const REGISTRY = Object.values(DEVICES);
 
-  for (const device of usb.getDeviceList()) {
-    const desc = device.deviceDescriptor;
-    if (desc.idVendor !== BROTHER_VID) continue;
+function tcpCandidates(): DeviceEntry[] {
+  return REGISTRY.filter(d => d.transports.tcp !== undefined);
+}
 
-    if (isMassStorageMode(desc.idProduct)) {
-      // eslint-disable-next-line no-console
-      console.warn(
-        `[brother-ql] Detected printer in Editor Lite (mass storage) mode (PID 0x${desc.idProduct.toString(16).toUpperCase()}). ` +
-          'Hold the Editor Lite button until the LED turns off to switch to printer mode.',
-      );
-      continue;
-    }
+function serialCandidates(): DeviceEntry[] {
+  return REGISTRY.filter(
+    d => d.transports.serial !== undefined || d.transports['bluetooth-spp'] !== undefined,
+  );
+}
 
-    const descriptor = findDevice(desc.idVendor, desc.idProduct);
-    if (!descriptor) continue;
+function keyList(candidates: readonly DeviceEntry[]): string {
+  return candidates
+    .map(d => d.key)
+    .sort()
+    .join(', ');
+}
 
-    let serialNumber: string | undefined;
-    if (desc.iSerialNumber) {
-      device.open();
-      try {
-        serialNumber = await readSerialNumber(device, desc.iSerialNumber);
-      } finally {
-        device.close();
-      }
-    }
+function snmpOptions(community: string | undefined): SnmpOptions {
+  return community === undefined ? {} : { community };
+}
 
-    results.push({ device, descriptor, serialNumber });
-  }
+function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
+}
 
-  return results;
+/**
+ * `DeviceIdentificationRequiredError` with a message that says why the
+ * printer could not be identified, instead of the contract's generic
+ * one; `candidates` and `continueWith` keep the contract shape.
+ */
+function identificationRequired(
+  candidates: readonly DeviceEntry[],
+  reason: string,
+  open: (deviceKey: string) => Promise<BrotherQLPrinter>,
+): DeviceIdentificationRequiredError {
+  const err = new DeviceIdentificationRequiredError(
+    candidates,
+    async (deviceKey): Promise<PrinterAdapterMap> => {
+      const printer = await open(deviceKey);
+      return { [printer.device.engines[0]?.role ?? 'primary']: printer };
+    },
+  );
+  err.message = `${reason}. Pass deviceKey, one of: ${keyList(candidates)}.`;
+  return err;
 }
 
 /**
  * `PrinterDiscovery` implementation for Brother QL printers.
  *
- * `listPrinters()` enumerates USB and skips printers in Editor Lite
- * mass-storage mode (a warning is logged — the user has to switch
- * them out of Editor Lite manually). Network printers open via
- * `openPrinter({ host, port })`; there is no mDNS implementation so
- * `listPrinters()` never surfaces them.
+ * `listPrinters()` is the USB enumeration plus one SNMP broadcast on the
+ * local subnets. Network printers open by `host`: the model comes from
+ * SNMP (`hrDeviceDescr`) because port 9100 carries no model or status
+ * signal, and `deviceKey` overrides that. A printer in Editor Lite
+ * (mass-storage) mode exposes a PID outside the registry, so it is
+ * simply absent from the USB list.
  */
 export class BrotherQLDiscovery implements PrinterDiscovery {
   readonly family = 'brother-ql';
 
+  private readonly network: boolean;
+  private readonly community: string | undefined;
+
+  constructor(options: BrotherQLDiscoveryOptions = {}) {
+    this.network = options.network ?? true;
+    this.community = options.community;
+  }
+
   async listPrinters(): Promise<DiscoveredPrinter[]> {
-    const found = await enumerateUsbDevices();
-    return found.map(({ device, descriptor, serialNumber }) => ({
-      device: descriptor,
-      ...(serialNumber === undefined ? {} : { serialNumber }),
-      transport: 'usb' as const,
-      connectionId: `${String(device.busNumber)}.${String(device.deviceAddress)}`,
-    }));
+    const [usb, network] = await Promise.allSettled([
+      enumerateUsbDevices(REGISTRY),
+      this.network ? enumerateNetworkDevices(REGISTRY, snmpOptions(this.community)) : [],
+    ]);
+    // Either half may be unavailable (no `usb` addon installed, no
+    // network); the other still lists. Both failing is a real error.
+    if (usb.status === 'rejected' && network.status === 'rejected') {
+      throw usb.reason instanceof Error ? usb.reason : new Error(String(usb.reason));
+    }
+    const printers: DiscoveredPrinter[] = [];
+    if (usb.status === 'fulfilled') {
+      for (const { descriptor, serialNumber, connectionId } of usb.value) {
+        printers.push({
+          device: descriptor,
+          ...(serialNumber === undefined ? {} : { serialNumber }),
+          transport: 'usb',
+          connectionId,
+        });
+      }
+    }
+    if (network.status === 'fulfilled') {
+      for (const found of network.value) printers.push(networkPrinter(found));
+    }
+    return printers;
+  }
+
+  listMedia(): readonly MediaDescriptor[] {
+    return Object.values(MEDIA);
   }
 
   async openPrinter(options: BrotherQLOpenOptions = {}): Promise<BrotherQLPrinter> {
-    if (options.path !== undefined) {
-      const transport = await SerialTransport.open(options.path, options.baudRate);
-      // Serial (typically RFCOMM over OS-paired Bluetooth) carries no
-      // identifying metadata — attach any descriptor that declares the
-      // `bluetooth-spp` transport. `getStatus()` returns accurate
-      // detectedMedia regardless of which descriptor we attach, but
-      // the descriptor's `name` is what surfaces in logs.
-      const descriptor = Object.values(DEVICES).find(
-        d => d.transports['bluetooth-spp'] !== undefined,
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- alias kept for one release
+    const serialPath = options.serialPath ?? options.path;
+    if (serialPath !== undefined) return this.openSerial(serialPath, options);
+    if (options.host !== undefined) return this.openTcp(options.host, options);
+    return this.openUsb(options);
+  }
+
+  private async openSerial(
+    serialPath: string,
+    options: BrotherQLOpenOptions,
+  ): Promise<BrotherQLPrinter> {
+    // Serial carries no identifying metadata and the registry has more
+    // than one serial-capable entry, so the caller names the model.
+    const candidates = serialCandidates();
+    if (options.deviceKey === undefined) {
+      throw identificationRequired(
+        candidates,
+        `Serial port ${serialPath} carries no model signal`,
+        deviceKey => this.openSerial(serialPath, { ...options, deviceKey }),
       );
-      /* v8 ignore next -- the registry carries QL_820NWBc with bluetooth-spp */
-      if (!descriptor) throw new Error('No bluetooth-spp-capable Brother QL descriptor found.');
-      return new BrotherQLPrinter(descriptor, transport, 'serial');
     }
+    const descriptor = descriptorForKey(options.deviceKey, candidates, 'serial');
+    const transport = await SerialTransport.open(serialPath, options.baudRate);
+    return new BrotherQLPrinter(descriptor, transport, 'serial');
+  }
 
-    if (options.host !== undefined) {
-      const transport = await TcpTransport.connect(options.host, options.port);
-      const descriptor = Object.values(DEVICES).find(d => d.transports.tcp !== undefined);
-      /* v8 ignore next -- the registry always has TCP-capable entries */
-      if (!descriptor) throw new Error('No network-capable Brother QL descriptor found.');
-      return new BrotherQLPrinter(descriptor, transport, 'tcp');
+  private async openTcp(host: string, options: BrotherQLOpenOptions): Promise<BrotherQLPrinter> {
+    // Resolve the descriptor before connecting: a declined open must
+    // leave no session on a print server that serves one 9100 client.
+    const descriptor =
+      options.deviceKey === undefined
+        ? await this.identifyTcp(host, options)
+        : descriptorForKey(options.deviceKey, tcpCandidates(), 'tcp');
+    const transport = await TcpTransport.connect(host, options.port);
+    const community = options.snmpCommunity ?? this.community;
+    return new BrotherQLPrinter(descriptor, transport, 'tcp', {
+      host,
+      ...(community === undefined ? {} : { community }),
+    });
+  }
+
+  private async identifyTcp(host: string, options: BrotherQLOpenOptions): Promise<DeviceEntry> {
+    const snmp = snmpOptions(options.snmpCommunity ?? this.community);
+    let reason: string;
+    try {
+      const found = await identifyNetworkDevice(host, REGISTRY, snmp);
+      if (found) return found.descriptor;
+      reason = `${host} reports ${await reportedModel(host, snmp)}, which is not in the brother-ql registry`;
+    } catch (err) {
+      // "no SNMP answer" / "status is unavailable" are matched by
+      // thermal-label-cli to add `--media` to its hint; keep them.
+      reason = `No SNMP answer from ${host} (${errorMessage(err)}); the model cannot be identified and status is unavailable, so pass media too`;
     }
+    throw identificationRequired(tcpCandidates(), reason, deviceKey =>
+      this.openTcp(host, { ...options, deviceKey }),
+    );
+  }
 
-    const found = await enumerateUsbDevices();
+  private async openUsb(options: BrotherQLOpenOptions): Promise<BrotherQLPrinter> {
+    let usbError: unknown;
+    const found = await enumerateUsbDevices(REGISTRY).catch((err: unknown) => {
+      usbError = err;
+      return [];
+    });
     const match = found.find(entry => {
       const ids = getUsbIds(entry.descriptor);
       if (options.vid !== undefined && ids?.vid !== options.vid) return false;
@@ -131,7 +226,21 @@ export class BrotherQLDiscovery implements PrinterDiscovery {
       return true;
     });
 
-    if (!match) throw new Error('No compatible Brother QL printer found.');
+    if (!match) {
+      // A serial number can also belong to a network printer.
+      if (options.serialNumber !== undefined && this.network) {
+        const remote = await this.findNetworkBySerial(options.serialNumber);
+        if (remote) {
+          return this.openTcp(remote.host, {
+            ...options,
+            port: remote.port,
+            deviceKey: remote.descriptor.key,
+          });
+        }
+      }
+      if (usbError instanceof Error) throw usbError;
+      throw new DeviceNotFoundError();
+    }
 
     const ids = getUsbIds(match.descriptor);
     /* v8 ignore next -- USB-discovered devices always have USB transport */
@@ -139,6 +248,57 @@ export class BrotherQLDiscovery implements PrinterDiscovery {
     const transport = await UsbTransport.open(ids.vid, ids.pid);
     return new BrotherQLPrinter(match.descriptor, transport, 'usb');
   }
+
+  private async findNetworkBySerial(
+    serialNumber: string,
+  ): Promise<EnumeratedNetworkDevice | undefined> {
+    const found = await enumerateNetworkDevices(REGISTRY, snmpOptions(this.community)).catch(
+      () => [],
+    );
+    return found.find(d => d.serialNumber === serialNumber);
+  }
+}
+
+function descriptorForKey(
+  deviceKey: string,
+  candidates: readonly DeviceEntry[],
+  kind: 'tcp' | 'serial',
+): DeviceEntry {
+  const descriptor = (DEVICES as Record<string, DeviceEntry | undefined>)[deviceKey];
+  if (!descriptor) {
+    throw new Error(
+      `Unknown deviceKey "${deviceKey}". ${kind === 'tcp' ? 'TCP' : 'Serial'}-capable Brother QL keys: ${keyList(candidates)}.`,
+    );
+  }
+  if (!candidates.includes(descriptor)) {
+    throw new Error(
+      `Device ${descriptor.key} has no ${kind} transport — it cannot be opened over ${kind === 'tcp' ? '`host`' : '`serialPath`'}. ${kind === 'tcp' ? 'TCP' : 'Serial'}-capable keys: ${keyList(candidates)}.`,
+    );
+  }
+  return descriptor;
+}
+
+/** One extra unicast, only on the failure path, so the message can name the model. */
+async function reportedModel(host: string, snmp: SnmpOptions): Promise<string> {
+  try {
+    const answers = await snmpGet(host, [PRINTER_MIB.hrDeviceDescr, PRINTER_MIB.sysDescr], snmp);
+    const value = answers[PRINTER_MIB.hrDeviceDescr] ?? answers[PRINTER_MIB.sysDescr];
+    if (value?.type === 'string' && value.value.length > 0) return JSON.stringify(value.value);
+  } catch {
+    /* fall through */
+  }
+  return 'a model';
+}
+
+function networkPrinter(found: EnumeratedNetworkDevice): DiscoveredPrinter {
+  return {
+    device: found.descriptor,
+    ...(found.serialNumber === undefined ? {} : { serialNumber: found.serialNumber }),
+    transport: 'tcp',
+    connectionId: found.connectionId,
+    host: found.host,
+    port: found.port,
+  };
 }
 
 /**

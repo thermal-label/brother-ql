@@ -33,7 +33,7 @@ export {
   UnsupportedOperationError,
 } from '@thermal-label/contracts';
 
-export { DEVICE_REGISTRY, DEVICES, findDevice, getUsbIds, isMassStorageMode } from './devices.js';
+export { DEVICE_REGISTRY, DEVICES, findDevice, getUsbIds } from './devices.js';
 
 /**
  * Protocols this core's encoder produces correct wire bytes for.
@@ -63,6 +63,8 @@ export {
 } from './protocol.js';
 export type { EncoderEngine, RasterProtocolConfig } from './protocol.js';
 export { parseStatus, STATUS_REQUEST } from './status.js';
+export { hasTwoColourSibling, parseMediaName, statusFromPrinterMib } from './network-status.js';
+export type { PrinterMibStatus } from './network-status.js';
 export { createPreviewOffline } from './preview.js';
 
 export type {
