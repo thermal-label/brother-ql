@@ -137,6 +137,12 @@ describe('statusFromPrinterMib', () => {
       statusFromPrinterMib(mib({ mediaName: 'nonsense', xFeedDir: 11417, feedDir: 35433 }))
         .detectedMedia,
     ).toBeUndefined();
+    // RFC 3805 only defines 3 and 4; anything else is not converted.
+    expect(
+      statusFromPrinterMib(
+        mib({ mediaName: 'nonsense', xFeedDir: 11417, feedDir: 35433, dimUnit: 1 }),
+      ).detectedMedia,
+    ).toBeUndefined();
   });
 
   it('unrecognised media name → no media, warn row with the raw string', () => {
