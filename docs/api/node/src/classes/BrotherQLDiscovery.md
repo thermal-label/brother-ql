@@ -57,7 +57,9 @@ The driver's media registry, for callers that must let a user pick
 media by id or name instead of relying on `getStatus().detectedMedia`
 (a CLI `--media` flag; network printers whose media cannot be
 detected). Optional: drivers without a media catalog omit it, and
-callers report "driver <family> does not expose a media catalog".
+callers report `driver <family> does not expose a media catalog`.
+(Code span on purpose: typedoc emits the text raw and VitePress
+reads a bare `<family>` as an unclosed element.)
 
 #### Returns
 
