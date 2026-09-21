@@ -52,20 +52,20 @@ port 9100.
 | Device       | USB PID  | Head pins | Two-color | Network    | Status      |
 | ------------ | -------- | --------- | --------- | ---------- | ----------- |
 | QL-820NWB(c) | `0x209D` | 720       | ✅        | WiFi + LAN | ✅ Verified |
-| QL-800       | `0x209B` | 720       | ✅        | —          | 🟡 Expected |
+| QL-800       | `0x209B` | 720       | ✅        | —          | ✅ Verified |
 | QL-810W      | `0x209C` | 720       | ✅        | WiFi       | 🟡 Expected |
-| QL-700       | `0x2042` | 720       | —         | —          | 🟡 Expected |
-| QL-710W      | `0x2044` | 720       | —         | WiFi       | 🟡 Expected |
-| QL-720NW     | `0x2045` | 720       | —         | LAN        | 🟡 Expected |
-| QL-600       | `0x2100` | 720       | —         | —          | 🟡 Expected |
-| QL-580N      | `0x201B` | 720       | —         | LAN        | 🟡 Expected |
-| QL-570       | `0x2019` | 720       | —         | —          | 🟡 Expected |
-| QL-560       | `0x2018` | 720       | —         | —          | 🟡 Expected |
+| QL-700       | `0x2042` | 720       | —         | —          | ✅ Verified |
+| QL-710W      | `0x2043` | 720       | —         | WiFi       | 🟡 Expected |
+| QL-720NW     | `0x2044` | 720       | —         | LAN        | ✅ Verified |
+| QL-600       | `0x20C0` | 720       | —         | —          | 🟡 Expected |
+| QL-580N      | `0x2029` | 720       | —         | LAN        | 🟡 Expected |
+| QL-570       | `0x2028` | 720       | —         | —          | 🟡 Expected |
+| QL-560       | `0x2027` | 720       | —         | —          | 🟡 Expected |
 | QL-550       | `0x2016` | 720       | —         | —          | 🟡 Expected |
-| QL-500       | `0x2013` | 720       | —         | —          | 🟡 Expected |
-| QL-650TD     | `0x201C` | 720       | —         | —          | 🟡 Expected |
-| QL-1050      | `0x2027` | 1296      | —         | —          | 🟡 Expected |
-| QL-1060N     | `0x2028` | 1296      | —         | LAN        | 🟡 Expected |
+| QL-500       | `0x2015` | 720       | —         | —          | 🟡 Expected |
+| QL-650TD     | `0x201B` | 720       | —         | —          | 🟡 Expected |
+| QL-1050      | `0x2020` | 1296      | —         | —          | 🟡 Expected |
+| QL-1060N     | `0x202A` | 1296      | —         | LAN        | 🟡 Expected |
 | QL-1100      | `0x20A7` | 1296      | —         | —          | 🟡 Expected |
 | QL-1110NWB   | `0x20A8` | 1296      | —         | WiFi + LAN | 🟡 Expected |
 | QL-1115NWB   | `0x20AB` | 1296      | —         | WiFi + LAN | 🟡 Expected |
