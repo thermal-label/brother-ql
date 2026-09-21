@@ -3,7 +3,7 @@
   name: 'QL-720NW',
   family: 'brother-ql',
   transports: {
-    usb: { vid: '0x04f9', pid: '0x2045' },
+    usb: { vid: '0x04f9', pid: '0x2044' },
     tcp: { port: 9100 },
   },
   engines: [
@@ -19,5 +19,22 @@
       },
     },
   ],
-  support: { status: 'untested' },
+  support: {
+    status: 'verified',
+    transports: {
+      usb: 'verified',
+    },
+    lastVerified: '2026-09-19',
+    packageVersion: '0.6.1',
+    reports: [
+      {
+        issue: 10,
+        reporter: '@viktis',
+        date: '2026-09-19',
+        result: 'verified',
+        os: 'macOS',
+        notes: 'WebUSB on Chromium 152 / macOS with DK-22205, clean status and phase advancing to printing; filed as QL-710W because of the PID mix-up fixed in #11.',
+      },
+    ],
+  },
 }

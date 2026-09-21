@@ -3,7 +3,7 @@
   name: 'QL-650TD',
   family: 'brother-ql',
   transports: {
-    usb: { vid: '0x04f9', pid: '0x201c' },
+    usb: { vid: '0x04f9', pid: '0x201b' },
   },
   engines: [
     {

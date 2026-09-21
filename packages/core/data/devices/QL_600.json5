@@ -3,7 +3,7 @@
   name: 'QL-600',
   family: 'brother-ql',
   transports: {
-    usb: { vid: '0x04f9', pid: '0x2100' },
+    usb: { vid: '0x04f9', pid: '0x20c0' },
   },
   engines: [
     {
