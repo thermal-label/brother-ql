@@ -36,7 +36,7 @@
         date: '2026-05-21',
         result: 'verified',
         os: 'Windows',
-        notes: 'WebUSB on Edge 148 / Windows 11, 62mm continuous (DK-22205). Pre- and post-print status clean: no errors, phase advanced to printing.',
+        notes: 'WebUSB on Edge 148 / Windows 11 with DK-22205, clean status and phase advancing to printing.',
       },
     ],
   },

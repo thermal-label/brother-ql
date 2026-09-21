@@ -47,7 +47,7 @@
         date: '2026-08-25',
         result: 'verified',
         os: 'macOS',
-        notes: 'WebUSB on Chromium 150 / macOS 26.5, 62mm continuous two-colour (DK-22251). Pre- and post-print status clean: no errors, two-colour flag set, phase advanced to printing.',
+        notes: 'WebUSB on Chromium 150 / macOS with DK-22251 two-colour, clean status with the two-colour flag set and phase advancing to printing.',
       },
     ],
   },
