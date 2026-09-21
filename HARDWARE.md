@@ -19,7 +19,7 @@ same raster command family. The driver branches per `engine.protocol`
 | QL-720NW | `0x2044` | 720 | 300 | ❌ | LAN | ❌ | ✅ Verified | USB verified via #10 |
 | QL-800 | `0x209B` | 720 | 300 | ✅ | ❌ | ❌ | ✅ Verified | USB verified via #2 |
 | QL-810W | `0x209C` | 720 | 300 | ✅ | WiFi | ❌ | 🟡 Expected | |
-| QL-820NWBc | `0x209D` | 720 | 300 | ✅ | WiFi + LAN | ✅ Classic SPP | ✅ Verified | Tested by maintainer; QL-820NWB and QL-820NWBc share this PID |
+| QL-820NWBc | `0x209D` | 720 | 300 | ✅ | WiFi + LAN | ✅ Classic SPP | ✅ Verified | USB verified via #6 and maintainer bench (USB + TCP); QL-820NWB and QL-820NWBc share this PID |
 | QL-600 | `0x20C0` | 720 | 300 | ❌ | ❌ | ❌ | 🟡 Expected | |
 | QL-1050 | `0x2020` | 1296 | 300 | ❌ | ❌ | ❌ | 🟡 Expected | Wide head |
 | QL-1060N | `0x202A` | 1296 | 300 | ❌ | LAN | ❌ | 🟡 Expected | Wide head |
