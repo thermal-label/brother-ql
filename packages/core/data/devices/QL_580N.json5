@@ -3,7 +3,7 @@
   name: 'QL-580N',
   family: 'brother-ql',
   transports: {
-    usb: { vid: '0x04f9', pid: '0x201b' },
+    usb: { vid: '0x04f9', pid: '0x2029' },
     tcp: { port: 9100 },
   },
   engines: [

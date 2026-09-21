@@ -17,7 +17,7 @@ describe('findDevice', () => {
   });
 
   it('returns correct entry for QL-500', () => {
-    const dev = findDevice(0x04f9, 0x2013);
+    const dev = findDevice(0x04f9, 0x2015);
     expect(dev).toBeDefined();
     expect(dev!.name).toBe('QL-500');
     // QL-500 has no autocut — the capability flag is absent.
@@ -73,6 +73,39 @@ describe('Device registry invariants', () => {
       expect(dev.transports.usb).toBeDefined();
       expect(dev.transports.usb!.vid).toMatch(/^0x[0-9a-f]+$/);
       expect(dev.transports.usb!.pid).toMatch(/^0x[0-9a-f]+$/);
+    }
+  });
+});
+
+describe('QL-* USB PIDs', () => {
+  // Pinned to usb.ids (linux-usb.org). The 0.6.2 registry had ten of
+  // these off by one or swapped with a sibling; issue #10 surfaced it
+  // when a QL-720NW (0x2044) was reported as a QL-710W.
+  it('every QL entry resolves by its usb.ids PID', () => {
+    const expected: Record<string, number> = {
+      QL_500: 0x2015,
+      QL_550: 0x2016,
+      QL_560: 0x2027,
+      QL_570: 0x2028,
+      QL_580N: 0x2029,
+      QL_600: 0x20c0,
+      QL_650TD: 0x201b,
+      QL_700: 0x2042,
+      QL_710W: 0x2043,
+      QL_720NW: 0x2044,
+      QL_800: 0x209b,
+      QL_810W: 0x209c,
+      QL_820NWBc: 0x209d,
+      QL_1050: 0x2020,
+      QL_1060N: 0x202a,
+      QL_1100: 0x20a7,
+      QL_1110NWB: 0x20a8,
+      QL_1115NWB: 0x20ab,
+    };
+    for (const [key, pid] of Object.entries(expected)) {
+      const dev = findDevice(0x04f9, pid);
+      expect(dev, key).toBeDefined();
+      expect(dev!.key).toBe(key);
     }
   });
 });

@@ -3,7 +3,7 @@
   name: 'QL-560',
   family: 'brother-ql',
   transports: {
-    usb: { vid: '0x04f9', pid: '0x2018' },
+    usb: { vid: '0x04f9', pid: '0x2027' },
   },
   engines: [
     {

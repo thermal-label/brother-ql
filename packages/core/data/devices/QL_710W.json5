@@ -3,7 +3,7 @@
   name: 'QL-710W',
   family: 'brother-ql',
   transports: {
-    usb: { vid: '0x04f9', pid: '0x2044' },
+    usb: { vid: '0x04f9', pid: '0x2043' },
     tcp: { port: 9100 },
   },
   engines: [
