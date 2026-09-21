@@ -19,5 +19,22 @@
       },
     },
   ],
-  support: { status: 'untested' },
+  support: {
+    status: 'verified',
+    transports: {
+      usb: 'verified',
+    },
+    lastVerified: '2026-09-19',
+    packageVersion: '0.6.1',
+    reports: [
+      {
+        issue: 10,
+        reporter: '@viktis',
+        date: '2026-09-19',
+        result: 'verified',
+        os: 'macOS',
+        notes: 'WebUSB on Chromium 152 / macOS 26.6, 62mm continuous (DK-22205). Pre- and post-print status clean: no errors, phase advanced to printing. Filed as QL-710W because the registry had PID 0x2044 on the 710W entry; status byte 4 = 0x37 (QL-720NW per the Brother reference) and usb.ids both identify 0x2044 as the QL-720NW, fixed alongside this report.',
+      },
+    ],
+  },
 }
